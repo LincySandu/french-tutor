@@ -16,36 +16,44 @@ const scenarios = [
 id: 'cafe',
 name: '☕ At the Café',
 description: 'Order something to eat or drink',
-context: "You're at a French café. The server says hello and asks what you'd like to order.",
+context:
+"You're at a French café. The server says hello and asks what you'd like to order.",
 firstPrompt: "Bonjour! Qu'est-ce que je peux faire pour toi?",
 },
 {
 id: 'classroom',
 name: '✏️ In Class',
 description: 'Introduce yourself to a classmate',
-context: 'A new student sits next to you. You want to get to know them.',
+context:
+'A new student sits next to you. You want to get to know them.',
 firstPrompt: "Bonjour! Comment t'appelles-tu?",
 },
 {
 id: 'park',
 name: '🌳 At the Park',
 description: 'Ask someone about their hobbies',
-context: 'You meet a French kid at the park. You want to know what games they like.',
-firstPrompt: 'Salut! Tu joues souvent au parc? Quels sont tes jeux préférés?',
+context:
+'You meet a French kid at the park. You want to know what games they like.',
+firstPrompt:
+'Salut! Tu joues souvent au parc? Quels sont tes jeux préférés?',
 },
 {
 id: 'family',
 name: '👨‍👩‍👧‍👦 About Your Family',
 description: 'Describe your family members',
-context: 'Your pen pal asks about your family. Tell them about someone.',
-firstPrompt: 'Tu as une famille? Raconte-moi un peu! Tes parents, tes frères et sœurs?',
+context:
+'Your pen pal asks about your family. Tell them about someone.',
+firstPrompt:
+'Tu as une famille? Raconte-moi un peu! Tes parents, tes frères et sœurs?',
 },
 {
 id: 'animals',
 name: '🐶 About Animals',
 description: 'Talk about animals you like',
-context: 'Your friend asks what animals you like and why.',
-firstPrompt: "J'adore les animaux! Quel est ton animal préféré? Pourquoi?",
+context:
+'Your friend asks what animals you like and why.',
+firstPrompt:
+"J'adore les animaux! Quel est ton animal préféré? Pourquoi?",
 },
 ];
 
@@ -60,7 +68,10 @@ scrollToBottom();
 const startScenario = (idx) => {
 setCurrentScenario(idx);
 setDialogue([
-{ speaker: 'scenario', text: scenarios[idx].firstPrompt }
+{
+speaker: 'scenario',
+text: scenarios[idx].firstPrompt,
+},
 ]);
 setUserInput('');
 setError('');
@@ -75,9 +86,12 @@ return;
 ```
 const userMessage = userInput.trim();
 
-setDialogue(prev => [
+setDialogue((prev) => [
   ...prev,
-  { speaker: 'user', text: userMessage }
+  {
+    speaker: 'user',
+    text: userMessage,
+  },
 ]);
 
 setUserInput('');
@@ -85,36 +99,7 @@ setError('');
 setIsLoading(true);
 
 try {
-  const systemPrompt = `You are a patient, encouraging French tutor for a 9-year-old beginner learning French.
-```
-
-The child knows basic verbs and simple sentences.
-
-Current scenario:
-${scenarios[currentScenario].context}
-
-Your role:
-
-1. Evaluate their French response (grammar, vocabulary, correctness).
-2. Give warm, specific feedback (what they did well, gentle correction if needed).
-3. Continue the conversation naturally in French.
-4. Use simple vocabulary appropriate for a beginner.
-5. Ask follow-up questions to build confidence.
-6. Celebrate effort and progress.
-
-Format your response as:
-
-[FEEDBACK] Your feedback here (1-2 sentences)
-[RESPONSE] Your next French response to the child.`;
-
-```
-  /*
-   * This demo currently does not connect to an AI API.
-   * Replace the section below with your API call when you are
-   * ready to connect the tutor to an AI service.
-   */
-
-  await new Promise(resolve => setTimeout(resolve, 700));
+  await new Promise((resolve) => setTimeout(resolve, 700));
 
   const fallbackResponses = [
     'Très bien! Peux-tu me dire pourquoi?',
@@ -124,9 +109,11 @@ Format your response as:
   ];
 
   const response =
-    fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    fallbackResponses[
+      Math.floor(Math.random() * fallbackResponses.length)
+    ];
 
-  setDialogue(prev => [
+  setDialogue((prev) => [
     ...prev,
     {
       speaker: 'scenario',
@@ -134,7 +121,7 @@ Format your response as:
     },
   ]);
 
-  setCompleted(prev => {
+  setCompleted((prev) => {
     const updated = new Set(prev);
     updated.add(scenarios[currentScenario].id);
     return updated;
@@ -180,7 +167,12 @@ maxWidth: '900px',
 margin: '0 auto',
 }}
 >
-<header style={{ textAlign: 'center', marginBottom: '35px' }}>
+<header
+style={{
+textAlign: 'center',
+marginBottom: '35px',
+}}
+>
 <h1
 style={{
 fontSize: '42px',
@@ -400,8 +392,8 @@ color: '#1f2937',
           >
             <input
               value={userInput}
-              onChange={e => setUserInput(e.target.value)}
-              onKeyDown={e => {
+              onChange={(e) => setUserInput(e.target.value)}
+              onKeyDown={(e) => {
                 if (e.key === 'Enter' && !isLoading) {
                   sendMessage();
                 }
