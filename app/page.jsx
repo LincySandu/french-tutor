@@ -15,24 +15,30 @@ const FrenchTutor = () => {
   const scenarios = [
     {
       id: 'cafe',
-      name: '☕ At the Café',
+      emoji: '☕',
+      name: 'At the Café',
       description: 'Order something to eat or drink',
+      level: 'Beginner',
       context:
         "You're at a French café. The server says hello and asks what you'd like to order.",
       firstPrompt: "Bonjour! Qu'est-ce que je peux faire pour toi?",
     },
     {
       id: 'classroom',
-      name: '✏️ In Class',
+      emoji: '✏️',
+      name: 'In Class',
       description: 'Introduce yourself to a classmate',
+      level: 'Beginner',
       context:
         'A new student sits next to you. You want to get to know them.',
       firstPrompt: "Bonjour! Comment t'appelles-tu?",
     },
     {
       id: 'park',
-      name: '🌳 At the Park',
-      description: 'Ask someone about their hobbies',
+      emoji: '🌳',
+      name: 'At the Park',
+      description: 'Talk about your favourite games',
+      level: 'Beginner',
       context:
         'You meet a French kid at the park. You want to know what games they like.',
       firstPrompt:
@@ -40,8 +46,10 @@ const FrenchTutor = () => {
     },
     {
       id: 'family',
-      name: '👨‍👩‍👧‍👦 About Your Family',
-      description: 'Describe your family members',
+      emoji: '👨‍👩‍👧‍👦',
+      name: 'My Family',
+      description: 'Talk about your family',
+      level: 'Beginner',
       context:
         'Your pen pal asks about your family. Tell them about someone.',
       firstPrompt:
@@ -49,8 +57,10 @@ const FrenchTutor = () => {
     },
     {
       id: 'animals',
-      name: '🐶 About Animals',
+      emoji: '🐶',
+      name: 'Animals',
       description: 'Talk about animals you like',
+      level: 'Beginner',
       context:
         'Your friend asks what animals you like and why.',
       firstPrompt:
@@ -204,18 +214,23 @@ const FrenchTutor = () => {
     setIsSpeaking(false);
   };
 
+  const current = currentScenario !== null
+    ? scenarios[currentScenario]
+    : null;
+
   return (
     <main
       style={{
         minHeight: '100vh',
-        background: '#f5f7fb',
-        padding: '40px 20px',
+        background:
+          'linear-gradient(135deg, #eef2ff 0%, #f8fafc 50%, #ecfeff 100%)',
+        padding: '30px 20px 60px',
         fontFamily: 'Arial, sans-serif',
       }}
     >
       <div
         style={{
-          maxWidth: '900px',
+          maxWidth: '1000px',
           margin: '0 auto',
         }}
       >
@@ -225,44 +240,94 @@ const FrenchTutor = () => {
             marginBottom: '35px',
           }}
         >
-          <h1
+          <div
             style={{
-              fontSize: '42px',
-              marginBottom: '10px',
-              color: '#1f2937',
+              display: 'inline-block',
+              background: 'white',
+              padding: '8px 16px',
+              borderRadius: '999px',
+              fontSize: '14px',
+              fontWeight: '700',
+              color: '#4f46e5',
+              marginBottom: '15px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
             }}
           >
-            🇫🇷 French Tutor
+            🇫🇷 French Adventure
+          </div>
+
+          <h1
+            style={{
+              fontSize: '46px',
+              margin: '0 0 10px',
+              color: '#111827',
+            }}
+          >
+            Learn French by Talking!
           </h1>
 
           <p
             style={{
               fontSize: '18px',
-              color: '#6b7280',
+              color: '#64748b',
+              margin: 0,
             }}
           >
-            Practice French through fun conversations!
+            Choose a mission and start speaking French.
           </p>
         </header>
 
         {currentScenario === null ? (
           <section>
-            <h2
+            <div
               style={{
-                textAlign: 'center',
-                color: '#1f2937',
-                marginBottom: '25px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '20px',
               }}
             >
-              Choose a scenario
-            </h2>
+              <div>
+                <h2
+                  style={{
+                    margin: 0,
+                    color: '#111827',
+                    fontSize: '28px',
+                  }}
+                >
+                  🎯 Choose your mission
+                </h2>
+
+                <p
+                  style={{
+                    margin: '6px 0 0',
+                    color: '#64748b',
+                  }}
+                >
+                  Pick a situation and practise your French.
+                </p>
+              </div>
+
+              <div
+                style={{
+                  background: 'white',
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  color: '#f59e0b',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                }}
+              >
+                ⭐ {completed.size} / {scenarios.length}
+              </div>
+            </div>
 
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns:
-                  'repeat(auto-fit, minmax(240px, 1fr))',
-                gap: '18px',
+                  'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '20px',
               }}
             >
               {scenarios.map((scenario, index) => (
@@ -271,45 +336,80 @@ const FrenchTutor = () => {
                   onClick={() => startScenario(index)}
                   style={{
                     padding: '24px',
-                    borderRadius: '16px',
-                    border: '1px solid #e5e7eb',
+                    borderRadius: '20px',
+                    border: '2px solid transparent',
                     background: 'white',
                     cursor: 'pointer',
                     textAlign: 'left',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.07)',
+                    transition: 'transform 0.15s ease',
                   }}
                 >
                   <div
                     style={{
-                      fontSize: '24px',
-                      fontWeight: '700',
-                      marginBottom: '10px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '42px',
+                        marginBottom: '15px',
+                      }}
+                    >
+                      {scenario.emoji}
+                    </div>
+
+                    {completed.has(scenario.id) && (
+                      <div
+                        style={{
+                          background: '#dcfce7',
+                          color: '#15803d',
+                          padding: '5px 9px',
+                          borderRadius: '999px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                        }}
+                      >
+                        ✓ Done
+                      </div>
+                    )}
+                  </div>
+
+                  <h3
+                    style={{
+                      fontSize: '23px',
+                      margin: '0 0 8px',
                       color: '#111827',
                     }}
                   >
                     {scenario.name}
-                  </div>
+                  </h3>
 
-                  <div
+                  <p
                     style={{
-                      color: '#6b7280',
+                      color: '#64748b',
                       lineHeight: '1.5',
+                      margin: '0 0 18px',
                     }}
                   >
                     {scenario.description}
-                  </div>
+                  </p>
 
-                  {completed.has(scenario.id) && (
-                    <div
-                      style={{
-                        marginTop: '12px',
-                        color: '#16a34a',
-                        fontWeight: '600',
-                      }}
-                    >
-                      ✓ Completed
-                    </div>
-                  )}
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      background: '#eef2ff',
+                      color: '#4f46e5',
+                      padding: '6px 10px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                    }}
+                  >
+                    ⭐ {scenario.level}
+                  </div>
                 </button>
               ))}
             </div>
@@ -322,7 +422,6 @@ const FrenchTutor = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '20px',
-                gap: '10px',
               }}
             >
               <button
@@ -335,43 +434,84 @@ const FrenchTutor = () => {
                   border: 'none',
                   background: 'transparent',
                   cursor: 'pointer',
-                  color: '#2563eb',
-                  fontWeight: '600',
+                  color: '#4f46e5',
+                  fontWeight: '700',
+                  fontSize: '15px',
                 }}
               >
-                ← Back to scenarios
+                ← All missions
               </button>
 
               <button
                 onClick={resetScenario}
                 style={{
-                  padding: '8px 14px',
-                  borderRadius: '8px',
+                  padding: '9px 15px',
+                  borderRadius: '10px',
                   border: '1px solid #d1d5db',
                   background: 'white',
                   cursor: 'pointer',
+                  fontWeight: '600',
                 }}
               >
-                Restart
+                🔄 Restart
               </button>
             </div>
 
             <div
               style={{
                 background: 'white',
-                borderRadius: '18px',
-                padding: '25px',
-                boxShadow: '0 5px 20px rgba(0,0,0,0.07)',
+                borderRadius: '24px',
+                padding: '30px',
+                boxShadow: '0 10px 35px rgba(0,0,0,0.08)',
               }}
             >
-              <h2
+              <div
                 style={{
-                  marginTop: 0,
-                  color: '#111827',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  marginBottom: '25px',
                 }}
               >
-                {scenarios[currentScenario].name}
-              </h2>
+                <div
+                  style={{
+                    fontSize: '48px',
+                    background: '#eef2ff',
+                    width: '75px',
+                    height: '75px',
+                    borderRadius: '20px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  {current.emoji}
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: '#4f46e5',
+                      fontWeight: '700',
+                      marginBottom: '4px',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    Mission
+                  </div>
+
+                  <h2
+                    style={{
+                      margin: 0,
+                      color: '#111827',
+                      fontSize: '28px',
+                    }}
+                  >
+                    {current.name}
+                  </h2>
+                </div>
+              </div>
 
               <div
                 style={{
@@ -385,7 +525,7 @@ const FrenchTutor = () => {
                   <div
                     key={index}
                     style={{
-                      marginBottom: '14px',
+                      marginBottom: '18px',
                     }}
                   >
                     <div
@@ -400,17 +540,21 @@ const FrenchTutor = () => {
                       <div
                         style={{
                           maxWidth: '75%',
-                          padding: '13px 16px',
-                          borderRadius: '14px',
+                          padding: '15px 18px',
+                          borderRadius:
+                            message.speaker === 'user'
+                              ? '18px 18px 4px 18px'
+                              : '18px 18px 18px 4px',
                           background:
                             message.speaker === 'user'
-                              ? '#2563eb'
-                              : '#f3f4f6',
+                              ? '#4f46e5'
+                              : '#f1f5f9',
                           color:
                             message.speaker === 'user'
                               ? 'white'
                               : '#111827',
-                          lineHeight: '1.5',
+                          lineHeight: '1.6',
+                          fontSize: '16px',
                         }}
                       >
                         {message.text}
@@ -422,9 +566,9 @@ const FrenchTutor = () => {
                         onClick={() => speakText(message.text)}
                         disabled={isSpeaking}
                         style={{
-                          marginTop: '7px',
-                          padding: '7px 12px',
-                          borderRadius: '8px',
+                          marginTop: '8px',
+                          padding: '8px 13px',
+                          borderRadius: '9px',
                           border: '1px solid #d1d5db',
                           background: 'white',
                           cursor: isSpeaking
@@ -432,9 +576,12 @@ const FrenchTutor = () => {
                             : 'pointer',
                           color: '#374151',
                           fontSize: '14px',
+                          fontWeight: '600',
                         }}
                       >
-                        {isSpeaking ? '🔊 Playing...' : '🔊 Listen'}
+                        {isSpeaking
+                          ? '🔊 Playing...'
+                          : '🔊 Listen'}
                       </button>
                     )}
                   </div>
@@ -443,11 +590,12 @@ const FrenchTutor = () => {
                 {isLoading && (
                   <div
                     style={{
-                      color: '#6b7280',
+                      color: '#64748b',
                       padding: '10px',
+                      fontStyle: 'italic',
                     }}
                   >
-                    Thinking...
+                    🤔 Thinking...
                   </div>
                 )}
 
@@ -458,7 +606,7 @@ const FrenchTutor = () => {
                 <div
                   style={{
                     color: '#dc2626',
-                    marginBottom: '10px',
+                    marginBottom: '12px',
                     padding: '10px',
                     background: '#fef2f2',
                     borderRadius: '8px',
@@ -473,7 +621,7 @@ const FrenchTutor = () => {
                 style={{
                   display: 'flex',
                   gap: '10px',
-                  marginTop: '15px',
+                  marginTop: '20px',
                 }}
               >
                 <input
@@ -488,10 +636,11 @@ const FrenchTutor = () => {
                   disabled={isLoading}
                   style={{
                     flex: 1,
-                    padding: '14px',
-                    borderRadius: '10px',
-                    border: '1px solid #d1d5db',
+                    padding: '15px',
+                    borderRadius: '12px',
+                    border: '2px solid #e2e8f0',
                     fontSize: '16px',
+                    outline: 'none',
                   }}
                 />
 
@@ -499,16 +648,19 @@ const FrenchTutor = () => {
                   onClick={sendMessage}
                   disabled={isLoading}
                   style={{
-                    padding: '14px 22px',
-                    borderRadius: '10px',
+                    padding: '15px 24px',
+                    borderRadius: '12px',
                     border: 'none',
-                    background: '#2563eb',
+                    background: '#4f46e5',
                     color: 'white',
-                    cursor: isLoading ? 'default' : 'pointer',
+                    cursor: isLoading
+                      ? 'default'
+                      : 'pointer',
                     fontWeight: '700',
+                    fontSize: '16px',
                   }}
                 >
-                  {isLoading ? '...' : 'Send'}
+                  {isLoading ? '...' : 'Send →'}
                 </button>
               </div>
             </div>
