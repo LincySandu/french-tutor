@@ -196,7 +196,7 @@ const languages = {
           'Découvre les animaux et décris tes préférés.',
         category: 'NATURE',
         intro:
-          'Imagine que nous visitons un parc animalier. Je vais t'aider à parler de différents animaux et à décrire ceux que tu aimes.',
+          "Imagine que nous visitons un parc animalier. Je vais t'aider à parler de différents animaux et à décrire ceux que tu aimes.",
         meaning:
           'Nous allons pratiquer le français pour décrire les animaux et parler de tes préférés.',
       },
@@ -216,7 +216,7 @@ const languages = {
           'Présente ta famille et parle des personnes que tu aimes.',
         category: 'PERSONNES',
         intro:
-          'Parlons de ta famille. Je vais t'aider à présenter les personnes de ta famille et à dire quelques choses sur elles.',
+          "Parlons de ta famille. Je vais t'aider à présenter les personnes de ta famille et à dire quelques choses sur elles.",
         meaning:
           'Nous allons pratiquer le français pour parler de ta famille.',
       },
@@ -236,7 +236,7 @@ const languages = {
           'Explore le parc et parle de ce que tu peux voir.',
         category: 'DEHORS',
         intro:
-          'Imagine que nous passons l'après-midi dans un parc français. Parlons de ce que nous pouvons voir et de ce que nous aimons faire dehors.',
+          "Imagine que nous passons l'après-midi dans un parc français. Parlons de ce que nous pouvons voir et de ce que nous aimons faire dehors.",
         meaning:
           'Nous allons pratiquer le français pour parler de ce que tu vois et fais dans un parc.',
       },
@@ -246,7 +246,7 @@ const languages = {
           'Apprends le français utile pour les magasins, les vêtements et les prix.',
         category: 'VIE QUOTIDIENNE',
         intro:
-          'Imagine que nous sommes dans un magasin français. Je vais t'aider à pratiquer des mots utiles pour les vêtements, les couleurs, les prix et les achats.',
+          "Imagine que nous sommes dans un magasin français. Je vais t'aider à pratiquer des mots utiles pour les vêtements, les couleurs, les prix et les achats.",
         meaning:
           'Nous allons pratiquer le français utile pour faire des achats.',
       },
@@ -841,17 +841,34 @@ function MissionIcon({ type }) {
 }
 
 export default function Home() {
-  const [interfaceLanguage, setInterfaceLanguage] = useState('en');
-  const [secondaryLanguage, setSecondaryLanguage] = useState('en');
-  const [selectedScenario, setSelectedScenario] = useState(null);
-  const [showIntro, setShowIntro] = useState(false);
+  const [interfaceLanguage, setInterfaceLanguage] =
+    useState('en');
+
+  const [secondaryLanguage, setSecondaryLanguage] =
+    useState('en');
+
+  const [selectedScenario, setSelectedScenario] =
+    useState(null);
+
+  const [showIntro, setShowIntro] =
+    useState(false);
+
   const [messages, setMessages] = useState([]);
+
   const [input, setInput] = useState('');
+
   const [loading, setLoading] = useState(false);
+
   const [xp, setXp] = useState(0);
-  const [answerOptions, setAnswerOptions] = useState([]);
-  const [vocabulary, setVocabulary] = useState([]);
-  const [showMeaning, setShowMeaning] = useState(false);
+
+  const [answerOptions, setAnswerOptions] =
+    useState([]);
+
+  const [vocabulary, setVocabulary] =
+    useState([]);
+
+  const [showMeaning, setShowMeaning] =
+    useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -864,6 +881,7 @@ export default function Home() {
       window.localStorage.getItem(
         'mimiInterfaceLanguage'
       );
+
     const savedSecondaryLanguage =
       window.localStorage.getItem(
         'mimiSecondaryLanguage'
@@ -873,14 +891,18 @@ export default function Home() {
       savedInterfaceLanguage &&
       languages[savedInterfaceLanguage]
     ) {
-      setInterfaceLanguage(savedInterfaceLanguage);
+      setInterfaceLanguage(
+        savedInterfaceLanguage
+      );
     }
 
     if (
       savedSecondaryLanguage &&
       languages[savedSecondaryLanguage]
     ) {
-      setSecondaryLanguage(savedSecondaryLanguage);
+      setSecondaryLanguage(
+        savedSecondaryLanguage
+      );
     }
   }, []);
 
@@ -903,7 +925,9 @@ export default function Home() {
   }
 
   useEffect(() => {
-    if (!selectedScenario || showIntro) return;
+    if (!selectedScenario || showIntro) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({
@@ -992,8 +1016,7 @@ export default function Home() {
             role: 'mimi',
             text: data.reply,
             speechText:
-              data.speechText ||
-              data.reply,
+              data.speechText || '',
             meaning: data.meaning || '',
           },
         ]);
@@ -1010,12 +1033,11 @@ export default function Home() {
             : []
         );
 
-        setTimeout(() => {
-          speakFrench(
-            data.speechText ||
-              data.reply
-          );
-        }, 150);
+        if (data.speechText) {
+          setTimeout(() => {
+            speakFrench(data.speechText);
+          }, 150);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -1125,9 +1147,7 @@ export default function Home() {
           data.reply ||
           'Très bien !',
         speechText:
-          data.speechText ||
-          data.reply ||
-          'Très bien !',
+          data.speechText || '',
         meaning: data.meaning || '',
       };
 
@@ -1148,13 +1168,11 @@ export default function Home() {
           : []
       );
 
-      setTimeout(() => {
-        speakFrench(
-          data.speechText ||
-            data.reply ||
-            'Très bien !'
-        );
-      }, 100);
+      if (data.speechText) {
+        setTimeout(() => {
+          speakFrench(data.speechText);
+        }, 100);
+      }
     } catch (error) {
       console.error(error);
 
@@ -1338,136 +1356,100 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="heroCharacter">
-              <div className="characterGlow" />
-
-              <div className="characterCard">
-                <Mimi />
-
-                <div className="speechBubble">
-                  <span>Salut!</span>
-                  <small>
-                    {ui.readyToPlay}
-                  </small>
-                </div>
-              </div>
-
-              <div className="floatingShape shapeOne" />
-              <div className="floatingShape shapeTwo" />
-              <div className="floatingShape shapeThree" />
+            <div className="heroMimi">
+              <div className="heroBlob" />
+              <Mimi />
             </div>
           </div>
 
-          <section className="missionsSection">
-            <div className="sectionHeading">
-              <div>
-                <span className="sectionEyebrow">
-                  {ui.chooseAdventure}
-                </span>
-
-                <h2>
-                  {ui.pickMission}
-                </h2>
-              </div>
-
-              <span className="missionCount">
-                {scenarios.length}{' '}
-                {ui.toExplore}
-              </span>
-            </div>
-
-            <div className="missionGrid">
-              {scenarios.map(
-                (scenario) => {
-                  const translatedScenario =
-                    languages[
-                      interfaceLanguage
-                    ]?.scenarios?.[
-                      scenario.id
-                    ] ||
-                    languages.en
-                      .scenarios[
-                        scenario.id
-                      ];
-
-                  return (
-                    <button
-                      key={scenario.id}
-                      className="missionCard"
-                      onClick={() =>
-                        selectScenario(
-                          scenario
-                        )
-                      }
-                      style={{
-                        '--accent':
-                          scenario.color,
-                      }}
-                    >
-                      <div className="missionTop">
-                        <span className="missionNumber">
-                          {scenario.number}
-                        </span>
-
-                        <span className="missionArrow">
-                          ↗
-                        </span>
-                      </div>
-
-                      <MissionIcon
-                        type={
-                          scenario.icon
-                        }
-                      />
-
-                      <div className="missionContent">
-                        <span className="missionCategory">
-                          {
-                            translatedScenario.category
-                          }
-                        </span>
-
-                        <h3>
-                          {
-                            translatedScenario.name
-                          }
-                        </h3>
-
-                        <p>
-                          {
-                            translatedScenario.description
-                          }
-                        </p>
-                      </div>
-
-                      <div className="playLabel">
-                        <span>
-                          {
-                            ui.playMission
-                          }
-                        </span>
-
-                        <span>→</span>
-                      </div>
-                    </button>
-                  );
-                }
-              )}
-            </div>
-          </section>
-
-          <div className="homeTip">
-            <div className="tipIcon">
-              ★
-            </div>
-
+          <div className="missionsHeader">
             <div>
+              <span className="sectionEyebrow">
+                {ui.chooseAdventure}
+              </span>
+
+              <h2>
+                {ui.pickMission}{' '}
+                <span>
+                  {ui.toExplore}
+                </span>
+              </h2>
+            </div>
+
+            <div className="tip">
               <strong>
                 {ui.littleTip}
               </strong>
-
-              <p>{ui.tipText}</p>
+              <span>{ui.tipText}</span>
             </div>
+          </div>
+
+          <div className="missionGrid">
+            {scenarios.map(
+              (scenario) => {
+                const scenarioInfo =
+                  languages[
+                    interfaceLanguage
+                  ]?.scenarios?.[
+                    scenario.id
+                  ] ||
+                  languages.en.scenarios[
+                    scenario.id
+                  ];
+
+                return (
+                  <button
+                    key={scenario.id}
+                    className="missionCard"
+                    onClick={() =>
+                      selectScenario(
+                        scenario
+                      )
+                    }
+                  >
+                    <div
+                      className="missionNumber"
+                      style={{
+                        background:
+                          scenario.color,
+                      }}
+                    >
+                      {scenario.number}
+                    </div>
+
+                    <MissionIcon
+                      type={
+                        scenario.icon
+                      }
+                    />
+
+                    <div className="missionInfo">
+                      <span>
+                        {
+                          scenarioInfo.category
+                        }
+                      </span>
+
+                      <h3>
+                        {
+                          scenarioInfo.name
+                        }
+                      </h3>
+
+                      <p>
+                        {
+                          scenarioInfo.description
+                        }
+                      </p>
+                    </div>
+
+                    <div className="missionArrow">
+                      →
+                    </div>
+                  </button>
+                );
+              }
+            )}
           </div>
         </section>
       )}
@@ -1475,9 +1457,6 @@ export default function Home() {
       {selectedScenario &&
         showIntro && (
           <section className="introScreen">
-            <div className="introBackgroundShape introShapeOne" />
-            <div className="introBackgroundShape introShapeTwo" />
-
             <button
               className="backButton"
               onClick={goHome}
@@ -1486,13 +1465,24 @@ export default function Home() {
             </button>
 
             <div className="introCard">
-              <div
-                className="introMissionIcon"
-                style={{
-                  '--accent':
-                    selectedScenario.color,
-                }}
-              >
+              <div className="introTop">
+                <div>
+                  <span className="sectionEyebrow">
+                    {ui.mission}{' '}
+                    {selectedScenario.number}
+                  </span>
+
+                  <h1>
+                    {
+                      languages[
+                        interfaceLanguage
+                      ]?.scenarios?.[
+                        selectedScenario.id
+                      ]?.name
+                    }
+                  </h1>
+                </div>
+
                 <MissionIcon
                   type={
                     selectedScenario.icon
@@ -1500,24 +1490,21 @@ export default function Home() {
                 />
               </div>
 
-              <span className="introNumber">
-                {ui.mission}{' '}
-                {
-                  selectedScenario.number
-                }
-              </span>
+              <div className="introMimi">
+                <Mimi small />
 
-              <h1>
-                {
-                  languages[
-                    interfaceLanguage
-                  ]?.scenarios?.[
-                    selectedScenario.id
-                  ]?.name
-                }
-              </h1>
+                <div>
+                  <strong>
+                    {ui.hiMimi}
+                  </strong>
 
-              <p>
+                  <p>
+                    {ui.practise}
+                  </p>
+                </div>
+              </div>
+
+              <p className="introDescription">
                 {
                   languages[
                     interfaceLanguage
@@ -1527,33 +1514,12 @@ export default function Home() {
                 }
               </p>
 
-              <div className="introMimi">
-                <Mimi small />
-
-                <div className="introMessage">
-                  <strong>
-                    {ui.hiMimi}
-                  </strong>
-
-                  <span>
-                    {ui.practise}
-                  </span>
-                </div>
-              </div>
-
               <button
                 className="startButton"
-                onClick={
-                  beginMission
-                }
+                onClick={beginMission}
               >
-                <span>
-                  {ui.startMission}
-                </span>
-
-                <span className="startArrow">
-                  →
-                </span>
+                {ui.startMission}
+                <span>→</span>
               </button>
             </div>
           </section>
@@ -1561,8 +1527,8 @@ export default function Home() {
 
       {selectedScenario &&
         !showIntro && (
-          <section className="conversation">
-            <div className="conversationHeader">
+          <section className="conversationScreen">
+            <div className="conversationTop">
               <button
                 className="backButton"
                 onClick={goHome}
@@ -1571,26 +1537,11 @@ export default function Home() {
               </button>
 
               <div className="conversationTitle">
-                <div
-                  className="conversationMission"
-                  style={{
-                    background:
-                      selectedScenario.color,
-                  }}
-                >
-                  {
-                    selectedScenario.number
-                  }
-                </div>
-
                 <div>
                   <span>
+                    {ui.mission}{' '}
                     {
-                      languages[
-                        interfaceLanguage
-                      ]?.scenarios?.[
-                        selectedScenario.id
-                      ]?.category
+                      selectedScenario.number
                     }
                   </span>
 
@@ -1604,11 +1555,11 @@ export default function Home() {
                     }
                   </h1>
                 </div>
-              </div>
 
-              <div className="readyStatus">
-                <span />
-                {ui.ready}
+                <div className="readyBadge">
+                  <span />
+                  {ui.ready}
+                </div>
               </div>
             </div>
 
@@ -1616,22 +1567,22 @@ export default function Home() {
               <div className="chatHeader">
                 <div className="chatMimi">
                   <Mimi small />
-                </div>
 
-                <div>
-                  <strong>Mimi</strong>
-                  <span>
-                    {ui.frenchFriend}
-                  </span>
+                  <div>
+                    <strong>
+                      Mimi
+                    </strong>
+
+                    <span>
+                      {ui.frenchFriend}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               <div className="messages">
                 {messages.map(
-                  (
-                    message,
-                    index
-                  ) => (
+                  (message, index) => (
                     <div
                       key={`${message.role}-${index}`}
                       className={`messageRow ${message.role}`}
@@ -1656,8 +1607,7 @@ export default function Home() {
                                 className="listenButton"
                                 onClick={() =>
                                   speakFrench(
-                                    message.speechText ||
-                                      message.text
+                                    message.speechText
                                   )
                                 }
                                 title="Listen to the French pronunciation"
@@ -1666,7 +1616,9 @@ export default function Home() {
                                   🔊
                                 </span>
 
-                                {ui.listen}
+                                {
+                                  ui.listen
+                                }
                               </button>
                             )}
 
@@ -1709,7 +1661,7 @@ export default function Home() {
                     </div>
 
                     <div className="messageContent">
-                      <div className="messageBubble typingBubble">
+                      <div className="typingBubble">
                         <span />
                         <span />
                         <span />
@@ -1719,62 +1671,58 @@ export default function Home() {
                 )}
 
                 <div
-                  ref={
-                    messagesEndRef
-                  }
+                  ref={messagesEndRef}
                 />
               </div>
 
-              {vocabulary.length > 0 && (
-                <div className="vocabularyArea">
-                  <div className="vocabularyTitle">
-                    {ui.usefulWords}
+              {vocabulary.length > 0 &&
+                !loading && (
+                  <div className="vocabulary">
+                    <div className="vocabularyTitle">
+                      {ui.usefulWords}
+                    </div>
+
+                    <div className="vocabularyList">
+                      {vocabulary.map(
+                        (word, index) => {
+                          const french =
+                            typeof word ===
+                            'string'
+                              ? word
+                              : word?.french ||
+                                '';
+
+                          const translation =
+                            typeof word ===
+                            'string'
+                              ? ''
+                              : word?.translation ||
+                                word?.english ||
+                                '';
+
+                          return (
+                            <div
+                              className="vocabItem"
+                              key={index}
+                            >
+                              <strong>
+                                {french}
+                              </strong>
+
+                              {translation && (
+                                <span>
+                                  {
+                                    translation
+                                  }
+                                </span>
+                              )}
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
                   </div>
-
-                  <div className="vocabularyList">
-                    {vocabulary.map(
-                      (
-                        word,
-                        index
-                      ) => {
-                        const french =
-                          typeof word ===
-                          'string'
-                            ? word
-                            : word?.french ||
-                              '';
-
-                        const translation =
-                          typeof word ===
-                          'string'
-                            ? ''
-                            : word?.translation ||
-                              word?.english ||
-                              '';
-
-                        return (
-                          <div
-                            className="vocabItem"
-                            key={index}
-                          >
-                            <strong>
-                              {french}
-                            </strong>
-
-                            {translation && (
-                              <span>
-                                {
-                                  translation
-                                }
-                              </span>
-                            )}
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                </div>
-              )}
+                )}
 
               {answerOptions.length >
                 0 &&
@@ -1786,7 +1734,9 @@ export default function Home() {
                       </span>
 
                       <small>
-                        {ui.chooseOrType}
+                        {
+                          ui.chooseOrType
+                        }
                       </small>
                     </div>
 
@@ -1847,48 +1797,50 @@ export default function Home() {
                 )}
 
               <div className="inputArea">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(event) =>
-                    setInput(
-                      event.target.value
-                    )
-                  }
-                  onKeyDown={(event) => {
-                    if (
-                      event.key ===
-                      'Enter'
-                    ) {
-                      sendMessage();
+                <div className="inputWrap">
+                  <input
+                    type="text"
+                    value={input}
+                    onChange={(event) =>
+                      setInput(
+                        event.target.value
+                      )
                     }
-                  }}
-                  placeholder={
-                    ui.placeholder
-                  }
-                  disabled={loading}
-                />
+                    onKeyDown={(event) => {
+                      if (
+                        event.key ===
+                        'Enter'
+                      ) {
+                        sendMessage();
+                      }
+                    }}
+                    placeholder={
+                      ui.placeholder
+                    }
+                    disabled={loading}
+                  />
 
-                <button
-                  className="sendButton"
-                  onClick={() =>
-                    sendMessage()
-                  }
-                  disabled={
-                    loading ||
-                    !input.trim()
-                  }
-                  aria-label="Send"
-                >
-                  →
-                </button>
-              </div>
+                  <button
+                    className="sendButton"
+                    onClick={() =>
+                      sendMessage()
+                    }
+                    disabled={
+                      loading ||
+                      !input.trim()
+                    }
+                    aria-label="Send"
+                  >
+                    →
+                  </button>
+                </div>
 
-              <div className="conversationTip">
-                <span>
-                  {ui.tip}
-                </span>
-                {ui.mistakes}
+                <div className="inputTip">
+                  <strong>
+                    {ui.tip}
+                  </strong>{' '}
+                  {ui.mistakes}
+                </div>
               </div>
             </div>
           </section>
@@ -1898,1672 +1850,1347 @@ export default function Home() {
 }
 
 const styles = `
-  * {
-    box-sizing: border-box;
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  min-height: 100vh;
+  background: #ffffff;
+  color: #303147;
+}
+
+.topbar {
+  height: 76px;
+  padding: 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0eff5;
+  background: rgba(255,255,255,0.96);
+}
+
+.brand {
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.brandMark {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #263c91;
+  position: relative;
+}
+
+.brandBlue {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 34%;
+  height: 100%;
+  background: #263c91;
+}
+
+.brandWhite {
+  position: absolute;
+  left: 34%;
+  top: 0;
+  width: 33%;
+  height: 100%;
+  background: #ffffff;
+}
+
+.brandRed {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 33%;
+  height: 100%;
+  background: #ef5965;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.brandText strong {
+  font-size: 15px;
+  color: #303147;
+  font-weight: 850;
+}
+
+.brandText span {
+  margin-top: 4px;
+  font-size: 8px;
+  color: #9b9cab;
+  letter-spacing: 0.04em;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.languageSelector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.languageSelector span {
+  font-size: 9px;
+  color: #999aaa;
+  white-space: nowrap;
+}
+
+.languageSelector select {
+  border: 1px solid #e5e4ed;
+  border-radius: 9px;
+  background: #fff;
+  padding: 7px 25px 7px 9px;
+  color: #45465a;
+  font-size: 10px;
+  outline: none;
+}
+
+.xpArea {
+  width: 140px;
+}
+
+.levelLabel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.levelLabel span {
+  color: #999aaa;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.levelLabel strong {
+  color: #7569d5;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.xpBar {
+  width: 100%;
+  height: 5px;
+  border-radius: 99px;
+  background: #eeeef5;
+  overflow: hidden;
+}
+
+.xpFill {
+  height: 100%;
+  border-radius: 99px;
+  background: #7569d5;
+  transition: width 0.3s ease;
+}
+
+.home {
+  width: min(1120px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 50px 0 70px;
+  position: relative;
+}
+
+.decor {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.decorOne {
+  width: 12px;
+  height: 12px;
+  background: #ffd86b;
+  top: 84px;
+  right: 110px;
+}
+
+.decorTwo {
+  width: 8px;
+  height: 8px;
+  background: #a9d98b;
+  top: 175px;
+  right: 44px;
+}
+
+.decorThree {
+  width: 18px;
+  height: 18px;
+  border: 4px solid #c5a7f7;
+  top: 210px;
+  left: 15px;
+}
+
+.hero {
+  min-height: 310px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 50px 0;
+  background: #faf9ff;
+  border-radius: 30px;
+  overflow: hidden;
+  position: relative;
+}
+
+.heroText {
+  max-width: 560px;
+  position: relative;
+  z-index: 2;
+}
+
+.helloPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px;
+  background: #ffffff;
+  border-radius: 999px;
+  color: #7569d5;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  box-shadow: 0 5px 18px rgba(60,54,110,0.05);
+}
+
+.helloDot {
+  width: 6px;
+  height: 6px;
+  background: #7dd9ea;
+  border-radius: 50%;
+}
+
+.hero h1 {
+  margin: 16px 0 13px;
+  color: #303147;
+  font-size: clamp(34px, 4.1vw, 53px);
+  line-height: 0.99;
+  letter-spacing: -0.055em;
+  font-weight: 900;
+}
+
+.hero h1 span {
+  color: #7569d5;
+}
+
+.heroText > p {
+  max-width: 455px;
+  color: #88899a;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.heroStats {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.heroStats > div:not(.statDivider) {
+  display: flex;
+  flex-direction: column;
+}
+
+.heroStats strong {
+  color: #303147;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.heroStats span {
+  color: #a1a1af;
+  font-size: 8px;
+  margin-top: 5px;
+}
+
+.statDivider {
+  width: 1px;
+  height: 27px;
+  background: #dedde8;
+}
+
+.heroMimi {
+  width: 330px;
+  height: 290px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.heroBlob {
+  width: 245px;
+  height: 245px;
+  position: absolute;
+  right: 15px;
+  bottom: -55px;
+  border-radius: 48% 52% 44% 56%;
+  background: #e7e3fb;
+}
+
+.mimi {
+  width: 150px;
+  height: 210px;
+  position: relative;
+  z-index: 2;
+}
+
+.mimiEar {
+  width: 36px;
+  height: 48px;
+  position: absolute;
+  top: 22px;
+  background: #f1b4a6;
+  border-radius: 50%;
+}
+
+.mimiEarLeft {
+  left: 5px;
+  transform: rotate(-24deg);
+}
+
+.mimiEarRight {
+  right: 5px;
+  transform: rotate(24deg);
+}
+
+.mimiHead {
+  width: 125px;
+  height: 130px;
+  position: absolute;
+  top: 25px;
+  left: 12px;
+  border-radius: 48% 48% 45% 45%;
+  background: #f6c6b7;
+  box-shadow: inset 0 -5px 0 rgba(185,100,85,0.08);
+}
+
+.mimiEye {
+  width: 9px;
+  height: 12px;
+  position: absolute;
+  top: 50px;
+  border-radius: 50%;
+  background: #3d3e52;
+}
+
+.mimiEyeLeft {
+  left: 34px;
+}
+
+.mimiEyeRight {
+  right: 34px;
+}
+
+.mimiNose {
+  width: 8px;
+  height: 7px;
+  position: absolute;
+  top: 69px;
+  left: 58px;
+  border-radius: 50%;
+  background: #df988a;
+}
+
+.mimiSmile {
+  width: 27px;
+  height: 13px;
+  position: absolute;
+  left: 49px;
+  top: 79px;
+  border-bottom: 3px solid #3d3e52;
+  border-radius: 0 0 50% 50%;
+}
+
+.mimiBody {
+  width: 112px;
+  height: 78px;
+  position: absolute;
+  bottom: 0;
+  left: 19px;
+  background: #7569d5;
+  border-radius: 42px 42px 15px 15px;
+}
+
+.mimiScarf {
+  width: 84px;
+  height: 15px;
+  position: absolute;
+  top: 8px;
+  left: 14px;
+  border-radius: 99px;
+  background: #ffd86b;
+}
+
+.mimiSmall {
+  transform: scale(0.45);
+  transform-origin: bottom center;
+  width: 68px;
+  height: 95px;
+}
+
+.missionsHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 48px 5px 20px;
+}
+
+.sectionEyebrow {
+  display: block;
+  color: #aaaab8;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  font-weight: 850;
+  margin-bottom: 5px;
+}
+
+.missionsHeader h2 {
+  font-size: 23px;
+  color: #303147;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.missionsHeader h2 span {
+  color: #a4a4b1;
+  font-weight: 450;
+}
+
+.tip {
+  width: 310px;
+  padding: 12px 15px;
+  background: #fffaf0;
+  border: 1px solid #f7ebcf;
+  border-radius: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tip strong {
+  color: #b18a35;
+  font-size: 9px;
+}
+
+.tip span {
+  color: #99918a;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.missionGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.missionCard {
+  position: relative;
+  min-height: 170px;
+  padding: 20px 17px 17px;
+  border: 1px solid #eeedf4;
+  border-radius: 19px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.missionCard:hover {
+  transform: translateY(-4px);
+  border-color: #ddd9ef;
+  box-shadow: 0 12px 28px rgba(65,61,100,0.08);
+}
+
+.missionNumber {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  min-width: 26px;
+  height: 19px;
+  padding: 0 6px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #555666;
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.missionIcon {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 18px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.missionInfo > span {
+  color: #aaaab7;
+  font-size: 7px;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+}
+
+.missionInfo h3 {
+  margin-top: 5px;
+  color: #343548;
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.missionInfo p {
+  margin-top: 5px;
+  color: #999aaa;
+  font-size: 8px;
+  line-height: 1.45;
+}
+
+.missionArrow {
+  position: absolute;
+  right: 15px;
+  bottom: 14px;
+  color: #c1bfd0;
+  font-size: 15px;
+  transition: transform 0.15s ease;
+}
+
+.missionCard:hover .missionArrow {
+  transform: translateX(3px);
+}
+
+.bookShape {
+  position: absolute;
+  width: 21px;
+  height: 29px;
+  top: 8px;
+  background: #7dd9ea;
+  border-radius: 3px 5px 5px 3px;
+}
+
+.bookLeft {
+  left: 2px;
+  transform: skewY(5deg);
+}
+
+.bookRight {
+  right: 2px;
+  transform: skewY(-5deg);
+  background: #5fc1d4;
+}
+
+.bookLine {
+  position: absolute;
+  width: 2px;
+  height: 29px;
+  top: 8px;
+  left: 22px;
+  background: #ffffff;
+}
+
+.ballShape {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ffb86b;
+  position: absolute;
+}
+
+.ballLine {
+  position: absolute;
+  width: 27px;
+  height: 2px;
+  background: rgba(255,255,255,0.8);
+}
+
+.ballLineOne {
+  transform: rotate(45deg);
+}
+
+.ballLineTwo {
+  transform: rotate(-45deg);
+}
+
+.pawPad {
+  width: 28px;
+  height: 25px;
+  background: #a9d98b;
+  border-radius: 50% 50% 45% 45%;
+  position: absolute;
+  bottom: 2px;
+}
+
+.pawDot {
+  width: 12px;
+  height: 14px;
+  background: #a9d98b;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.pawDotOne {
+  top: 3px;
+  left: 5px;
+}
+
+.pawDotTwo {
+  top: 0;
+  left: 17px;
+}
+
+.pawDotThree {
+  top: 11px;
+  left: 0;
+}
+
+.pawDotFour {
+  top: 10px;
+  right: 0;
+}
+
+.starShape {
+  color: #c5a7f7;
+  font-size: 43px;
+  line-height: 1;
+}
+
+.person {
+  position: absolute;
+  border-radius: 50%;
+  background: #f4a6c8;
+}
+
+.personOne {
+  width: 17px;
+  height: 17px;
+  top: 2px;
+  left: 4px;
+}
+
+.personTwo {
+  width: 20px;
+  height: 20px;
+  top: 0;
+  left: 14px;
+  background: #d890b0;
+}
+
+.personThree {
+  width: 17px;
+  height: 17px;
+  top: 4px;
+  right: 1px;
+}
+
+.cakeCandle {
+  width: 5px;
+  height: 13px;
+  background: #ffd86b;
+  position: absolute;
+  top: 0;
+  left: 20px;
+}
+
+.cakeTop {
+  width: 39px;
+  height: 15px;
+  background: #f4a6c8;
+  position: absolute;
+  top: 13px;
+  left: 4px;
+  border-radius: 5px;
+}
+
+.cakeBottom {
+  width: 46px;
+  height: 17px;
+  background: #d98bab;
+  position: absolute;
+  top: 27px;
+  left: 1px;
+  border-radius: 4px 4px 8px 8px;
+}
+
+.treeTop {
+  width: 43px;
+  height: 42px;
+  background: #8ed5ae;
+  border-radius: 50%;
+  position: absolute;
+  top: 0;
+}
+
+.treeTrunk {
+  width: 9px;
+  height: 20px;
+  background: #b88967;
+  position: absolute;
+  bottom: 0;
+  left: 19px;
+  border-radius: 3px;
+}
+
+.bagHandle {
+  width: 24px;
+  height: 17px;
+  border: 4px solid #9dbaf4;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  position: absolute;
+  top: 0;
+}
+
+.bagBody {
+  width: 42px;
+  height: 37px;
+  background: #9dbaf4;
+  position: absolute;
+  top: 13px;
+  border-radius: 4px 4px 8px 8px;
+}
+
+.introScreen {
+  width: min(820px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 34px 0 70px;
+}
+
+.backButton {
+  border: 0;
+  background: transparent;
+  color: #8f8fa0;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  padding: 7px 0;
+}
+
+.introCard {
+  margin-top: 22px;
+  padding: 34px;
+  border: 1px solid #eeedf4;
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(63,58,100,0.06);
+}
+
+.introTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.introTop h1 {
+  color: #303147;
+  font-size: 31px;
+  letter-spacing: -0.04em;
+}
+
+.introMimi {
+  margin-top: 28px;
+  padding: 13px 17px;
+  min-height: 72px;
+  border-radius: 15px;
+  background: #faf9ff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.introMimi strong {
+  color: #45465a;
+  font-size: 11px;
+}
+
+.introMimi p {
+  margin-top: 3px;
+  color: #999aaa;
+  font-size: 9px;
+}
+
+.introDescription {
+  margin: 25px 0;
+  color: #77788a;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.startButton {
+  border: 0;
+  border-radius: 13px;
+  background: #7569d5;
+  color: white;
+  padding: 12px 18px;
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 20px;
+  transition: transform 0.15s ease;
+}
+
+.startButton:hover {
+  transform: translateY(-2px);
+}
+
+.conversationScreen {
+  width: min(900px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 25px 0 50px;
+}
+
+.conversationTop {
+  margin-bottom: 15px;
+}
+
+.conversationTitle {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.conversationTitle > div:first-child > span {
+  color: #aaaab7;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.conversationTitle h1 {
+  margin-top: 3px;
+  color: #303147;
+  font-size: 25px;
+  letter-spacing: -0.04em;
+}
+
+.readyBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #7b7c8c;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.readyBadge span {
+  width: 6px;
+  height: 6px;
+  background: #8ed5ae;
+  border-radius: 50%;
+}
+
+.chatCard {
+  overflow: hidden;
+  border: 1px solid #eeedf4;
+  border-radius: 21px;
+  background: #fff;
+  box-shadow: 0 12px 35px rgba(63,58,100,0.05);
+}
+
+.chatHeader {
+  padding: 12px 22px;
+  border-bottom: 1px solid #f0f0f5;
+}
+
+.chatMimi {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 40px;
+}
+
+.chatMimi strong {
+  display: block;
+  color: #45465a;
+  font-size: 11px;
+}
+
+.chatMimi span {
+  display: block;
+  color: #aaaab7;
+  font-size: 8px;
+  margin-top: 2px;
+}
+
+.messages {
+  min-height: 280px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding: 22px;
+}
+
+.messageRow {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 17px;
+  width: 100%;
+  min-width: 0;
+}
+
+.messageRow.user {
+  justify-content: flex-end;
+}
+
+.messageAvatar {
+  width: 34px;
+  height: 39px;
+  flex: 0 0 34px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.messageContent {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 1;
+}
+
+.messageBubble {
+  width: 500px;
+  max-width: 100%;
+  padding: 12px 15px;
+  border-radius: 17px 17px 17px 5px;
+  background: #f4f3fb;
+  color: #3d3e52;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.messageRow.user .messageContent {
+  margin-left: auto;
+}
+
+.messageRow.user .messageBubble {
+  background: #7569d5;
+  color: #fff;
+  border-radius: 17px 17px 5px 17px;
+}
+
+.messageTools {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.listenButton,
+.meaningButton {
+  border: 0;
+  background: transparent;
+  color: #999aaa;
+  padding: 3px 4px;
+  cursor: pointer;
+  font-size: 8px;
+}
+
+.listenButton:hover,
+.meaningButton:hover {
+  color: #7569d5;
+}
+
+.speakerIcon {
+  margin-right: 3px;
+}
+
+.meaningBox {
+  margin-top: 8px;
+  width: 500px;
+  max-width: 100%;
+  padding: 9px 12px;
+  border-left: 3px solid #c5a7f7;
+  border-radius: 7px;
+  background: #faf9ff;
+  color: #7b7b8d;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.typingBubble {
+  width: fit-content;
+  padding: 13px 16px;
+  border-radius: 17px 17px 17px 5px;
+  background: #f4f3fb;
+  display: flex;
+  gap: 4px;
+}
+
+.typingBubble span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #aaa7c3;
+  animation: typing 1s infinite ease-in-out;
+}
+
+.typingBubble span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typingBubble span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.45;
   }
 
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    min-height: 100%;
+  30% {
+    transform: translateY(-3px);
+    opacity: 1;
   }
+}
 
-  body {
-    background: #ffffff;
-    color: #25263a;
-    font-family:
-      Inter,
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif;
-  }
+.vocabulary {
+  padding: 13px 22px 14px;
+  border-top: 1px solid #f0f0f5;
+}
 
-  button,
-  input,
-  select {
-    font: inherit;
-  }
+.vocabularyTitle {
+  margin-bottom: 8px;
+  color: #aaaab7;
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
 
-  button {
-    cursor: pointer;
-  }
+.vocabularyList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
 
-  .page {
-    min-height: 100vh;
-    background:
-      radial-gradient(
-        circle at 80% 8%,
-        rgba(228, 224, 255, 0.55),
-        transparent 24%
-      ),
-      linear-gradient(
-        180deg,
-        #ffffff 0%,
-        #faf9ff 100%
-      );
-    overflow-x: hidden;
-  }
+.vocabItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 7px 10px;
+  border-radius: 9px;
+  background: #faf9ff;
+}
 
-  .topbar {
-    height: 76px;
-    padding: 0 42px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #eeeef4;
-    background: rgba(255, 255, 255, 0.94);
-    position: relative;
-    z-index: 10;
-  }
+.vocabItem strong {
+  color: #55566a;
+  font-size: 9px;
+}
 
-  .brand {
-    border: 0;
-    background: transparent;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    gap: 11px;
-    text-align: left;
-  }
+.vocabItem span {
+  color: #a0a0ae;
+  font-size: 7px;
+}
 
-  .brandMark {
-    width: 31px;
-    height: 31px;
-    border-radius: 10px;
-    background: #7569d5;
-    position: relative;
-    overflow: hidden;
-    transform: rotate(-6deg);
-  }
+.answerArea {
+  padding: 16px 22px 12px;
+  border-top: 1px solid #f0f0f5;
+}
 
-  .brandBlue,
-  .brandWhite,
-  .brandRed {
-    position: absolute;
-    height: 7px;
-    width: 22px;
-    border-radius: 8px;
-    left: 5px;
-  }
+.answerTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-  .brandBlue {
-    top: 5px;
-    background: #7dcce0;
-  }
+.answerTitle span {
+  color: #303147;
+  font-size: 12px;
+  font-weight: 850;
+}
 
-  .brandWhite {
-    top: 12px;
-    background: #ffffff;
-  }
+.answerTitle small {
+  color: #999aaa;
+  font-size: 9px;
+}
 
-  .brandRed {
-    top: 19px;
-    background: #ef879e;
-  }
+.answerOptions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
 
-  .brandText {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
+.answerOptions button {
+  min-height: 55px;
+  border: 1px solid #e7e6ef;
+  background: #fff;
+  border-radius: 13px;
+  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  color: #45465a;
+  font-size: 10px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
 
-  .brandText strong {
-    color: #34354a;
-    font-size: 15px;
-    font-weight: 850;
-    line-height: 1;
-  }
+.answerOptions button:hover {
+  transform: translateY(-2px);
+  border-color: #c7c0ef;
+  background: #faf9ff;
+}
 
-  .brandText span {
-    color: #9b9baa;
-    font-size: 9px;
-    line-height: 1;
-  }
+.optionNumber {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  border-radius: 8px;
+  background: #f0effa;
+  color: #7569d5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 850;
+  font-size: 9px;
+}
 
-  .headerRight {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-  }
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
 
-  .languageSelector {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
+.optionText strong {
+  color: #45465a;
+  font-size: 10px;
+  font-weight: 750;
+}
 
-  .languageSelector > span {
-    color: #999aaa;
-    font-size: 9px;
-    font-weight: 700;
-  }
+.optionText small {
+  color: #999aaa;
+  font-size: 8px;
+  line-height: 1.25;
+}
 
-  .languageSelector select {
-    border: 1px solid #e8e7ef;
-    border-radius: 9px;
-    padding: 6px 25px 6px 9px;
-    background: #fff;
-    color: #444559;
-    font-size: 10px;
-    outline: none;
-  }
+.inputArea {
+  padding: 13px 22px 17px;
+  border-top: 1px solid #f0f0f5;
+}
 
-  .xpArea {
-    width: 145px;
-  }
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-  .levelLabel {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-    color: #9a9baa;
-    font-size: 8px;
-    font-weight: 750;
-  }
+.inputWrap input {
+  flex: 1;
+  min-width: 0;
+  height: 39px;
+  padding: 0 13px;
+  border: 1px solid #e6e5ee;
+  border-radius: 11px;
+  outline: none;
+  color: #45465a;
+  font-size: 10px;
+}
 
-  .levelLabel strong {
-    color: #7569d5;
-    font-size: 9px;
-  }
+.inputWrap input:focus {
+  border-color: #c8c1ed;
+}
 
-  .xpBar {
-    width: 100%;
-    height: 5px;
-    border-radius: 99px;
-    background: #ecebf4;
-    overflow: hidden;
-  }
+.sendButton {
+  width: 39px;
+  height: 39px;
+  border: 0;
+  border-radius: 11px;
+  background: #7569d5;
+  color: #fff;
+  font-size: 17px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
 
-  .xpFill {
-    height: 100%;
-    border-radius: inherit;
-    background: #7569d5;
-    transition: width 0.3s ease;
-  }
+.sendButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
 
-  .home {
-    position: relative;
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 62px 35px 60px;
-  }
+.sendButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
-  .decor {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-  }
+.inputTip {
+  margin-top: 7px;
+  color: #aaaab7;
+  font-size: 8px;
+}
 
-  .decorOne {
-    width: 110px;
-    height: 110px;
-    background: #eef9fb;
-    left: -80px;
-    top: 210px;
-  }
+.inputTip strong {
+  color: #7569d5;
+}
 
-  .decorTwo {
-    width: 70px;
-    height: 70px;
-    background: #f8edf3;
-    right: -20px;
-    top: 420px;
-  }
-
-  .decorThree {
-    width: 35px;
-    height: 35px;
-    border: 6px solid #eeeafc;
-    right: 80px;
-    top: 80px;
+@media (max-width: 900px) {
+  .missionGrid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .hero {
-    min-height: 390px;
-    display: grid;
-    grid-template-columns: 1fr 0.9fr;
-    align-items: center;
-    gap: 50px;
+    padding-left: 32px;
+    padding-right: 20px;
   }
 
-  .heroText {
-    position: relative;
-    z-index: 2;
+  .heroMimi {
+    width: 260px;
   }
+}
 
-  .helloPill {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 10px;
-    border-radius: 99px;
-    background: #f3f1fd;
-    color: #7569d5;
-    font-size: 8px;
-    font-weight: 850;
-    letter-spacing: 0.08em;
-  }
-
-  .helloDot {
-    width: 6px;
-    height: 6px;
-    background: #7569d5;
-    border-radius: 50%;
-  }
-
-  .hero h1 {
-    margin: 17px 0 14px;
-    color: #303147;
-    font-size: clamp(39px, 5vw, 62px);
-    line-height: 0.98;
-    letter-spacing: -0.045em;
-    font-weight: 900;
-  }
-
-  .hero h1 span {
-    color: #7569d5;
-  }
-
-  .heroText > p {
-    max-width: 470px;
-    color: #858697;
-    font-size: 14px;
-    line-height: 1.65;
-    margin: 0;
-  }
-
-  .heroStats {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-    margin-top: 27px;
-  }
-
-  .heroStats > div:not(.statDivider) {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-  }
-
-  .heroStats strong {
-    color: #35364b;
-    font-size: 22px;
-    line-height: 1;
-  }
-
-  .heroStats span {
-    color: #9b9baa;
-    font-size: 8px;
-    font-weight: 700;
-  }
-
-  .statDivider {
-    width: 1px;
-    height: 30px;
-    background: #e7e6ef;
-  }
-
-  .heroCharacter {
-    min-height: 350px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .characterGlow {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    background: #f2f0fd;
-  }
-
-  .characterCard {
-    position: relative;
-    z-index: 2;
-    width: 270px;
-    height: 290px;
-    border-radius: 35px;
-    background: #ffffff;
-    box-shadow:
-      0 20px 55px rgba(82, 77, 130, 0.12),
-      0 4px 15px rgba(82, 77, 130, 0.05);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .speechBubble {
-    position: absolute;
-    right: -65px;
-    top: 32px;
-    min-width: 115px;
-    padding: 10px 13px;
-    border-radius: 13px 13px 13px 3px;
-    background: #7569d5;
-    color: #fff;
-    box-shadow: 0 8px 20px rgba(117, 105, 213, 0.2);
-  }
-
-  .speechBubble span,
-  .speechBubble small {
-    display: block;
-  }
-
-  .speechBubble span {
-    font-size: 11px;
-    font-weight: 800;
-  }
-
-  .speechBubble small {
-    margin-top: 2px;
-    font-size: 8px;
-    opacity: 0.8;
-  }
-
-  .floatingShape {
-    position: absolute;
-    z-index: 1;
-  }
-
-  .shapeOne {
-    width: 22px;
-    height: 22px;
-    border-radius: 7px;
-    background: #ffd86b;
-    top: 42px;
-    left: 20px;
-    transform: rotate(15deg);
-  }
-
-  .shapeTwo {
-    width: 28px;
-    height: 28px;
-    border: 7px solid #f4a6c8;
-    border-radius: 50%;
-    right: 5px;
-    bottom: 48px;
-  }
-
-  .shapeThree {
-    width: 16px;
-    height: 16px;
-    background: #8ed5ae;
-    border-radius: 4px;
-    left: 55px;
-    bottom: 28px;
-    transform: rotate(25deg);
-  }
-
-  .mimi {
-    width: 130px;
-    height: 190px;
-    position: relative;
-  }
-
-  .mimiSmall {
-    transform: scale(0.45);
-    transform-origin: bottom center;
-    width: 130px;
-    height: 190px;
-  }
-
-  .mimiEar {
-    position: absolute;
-    top: 23px;
-    width: 39px;
-    height: 53px;
-    border-radius: 50% 50% 42% 42%;
-    background: #7569d5;
-    z-index: 1;
-  }
-
-  .mimiEarLeft {
-    left: 9px;
-    transform: rotate(-19deg);
-  }
-
-  .mimiEarRight {
-    right: 9px;
-    transform: rotate(19deg);
-  }
-
-  .mimiHead {
-    position: absolute;
-    z-index: 2;
-    top: 23px;
-    left: 18px;
-    width: 94px;
-    height: 96px;
-    border-radius: 48% 48% 45% 45%;
-    background: #c8a07c;
-    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.03);
-  }
-
-  .mimiEye {
-    position: absolute;
-    top: 38px;
-    width: 9px;
-    height: 12px;
-    border-radius: 50%;
-    background: #303147;
-  }
-
-  .mimiEyeLeft {
-    left: 26px;
-  }
-
-  .mimiEyeRight {
-    right: 26px;
-  }
-
-  .mimiNose {
-    position: absolute;
-    top: 53px;
-    left: 43px;
-    width: 8px;
-    height: 7px;
-    border-radius: 50%;
-    background: #8d6652;
-  }
-
-  .mimiSmile {
-    position: absolute;
-    left: 36px;
-    top: 63px;
-    width: 23px;
-    height: 11px;
-    border-bottom: 3px solid #5b4140;
-    border-radius: 0 0 50% 50%;
-  }
-
-  .mimiBody {
-    position: absolute;
-    left: 23px;
-    top: 108px;
-    width: 84px;
-    height: 74px;
-    border-radius: 38px 38px 18px 18px;
-    background: #7569d5;
-  }
-
-  .mimiScarf {
-    position: absolute;
-    top: 2px;
-    left: 7px;
-    right: 7px;
-    height: 15px;
-    border-radius: 99px;
-    background: #f4a6c8;
-  }
-
-  .missionsSection {
-    margin-top: 35px;
-  }
-
-  .sectionHeading {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 19px;
-  }
-
-  .sectionEyebrow {
-    display: block;
-    color: #aaaaba;
-    font-size: 8px;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-    margin-bottom: 4px;
-  }
-
-  .sectionHeading h2 {
-    margin: 0;
-    color: #35364b;
-    font-size: 24px;
-    letter-spacing: -0.025em;
-  }
-
-  .missionCount {
-    color: #a0a0ae;
-    font-size: 9px;
-    font-weight: 700;
-  }
-
-  .missionGrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 13px;
-  }
-
-  .missionCard {
-    min-height: 235px;
-    padding: 15px;
-    border: 1px solid #ecebf2;
-    border-radius: 20px;
-    background: #fff;
-    text-align: left;
-    position: relative;
-    overflow: hidden;
-    transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease,
-      border-color 0.18s ease;
-  }
-
-  .missionCard:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent);
-    box-shadow: 0 12px 30px rgba(70, 67, 105, 0.09);
-  }
-
-  .missionTop {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .missionNumber {
-    color: #b0afbc;
-    font-size: 8px;
-    font-weight: 850;
-  }
-
-  .missionArrow {
-    color: #a9a8b7;
-    font-size: 15px;
-  }
-
-  .missionIcon {
-    width: 62px;
-    height: 62px;
-    margin: 18px 0 15px;
-    border-radius: 19px;
-    background: color-mix(in srgb, var(--accent, #7569d5) 22%, white);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .missionIcon-book,
-  .missionIcon-ball,
-  .missionIcon-paw,
-  .missionIcon-star,
-  .missionIcon-family,
-  .missionIcon-cake,
-  .missionIcon-tree,
-  .missionIcon-bag {
-    --accent: #7569d5;
-  }
-
-  .bookShape {
-    position: absolute;
-    width: 18px;
-    height: 25px;
-    background: #7569d5;
-    border-radius: 3px;
-    bottom: 18px;
-  }
-
-  .bookLeft {
-    left: 14px;
-    transform: skewY(7deg);
-  }
-
-  .bookRight {
-    right: 14px;
-    transform: skewY(-7deg);
-  }
-
-  .bookLine {
-    position: absolute;
-    width: 3px;
-    height: 28px;
-    background: #fff;
-    opacity: 0.8;
-  }
-
-  .ballShape {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #7569d5;
-  }
-
-  .ballLine {
-    position: absolute;
-    background: #fff;
-    height: 2px;
-    width: 23px;
-  }
-
-  .ballLineOne {
-    transform: rotate(45deg);
-  }
-
-  .ballLineTwo {
-    transform: rotate(-45deg);
-  }
-
-  .pawPad {
-    width: 24px;
-    height: 22px;
-    border-radius: 50% 50% 45% 45%;
-    background: #7569d5;
-    position: absolute;
-    bottom: 16px;
-  }
-
-  .pawDot {
-    width: 10px;
-    height: 12px;
-    border-radius: 50%;
-    background: #7569d5;
-    position: absolute;
-  }
-
-  .pawDotOne {
-    left: 13px;
-    top: 17px;
-    transform: rotate(-25deg);
-  }
-
-  .pawDotTwo {
-    left: 24px;
-    top: 11px;
-    transform: rotate(-8deg);
-  }
-
-  .pawDotThree {
-    right: 13px;
-    top: 17px;
-    transform: rotate(25deg);
-  }
-
-  .pawDotFour {
-    right: 23px;
-    top: 12px;
-    transform: rotate(8deg);
-  }
-
-  .starShape {
-    color: #7569d5;
-    font-size: 34px;
-    line-height: 1;
-  }
-
-  .person {
-    position: absolute;
-    bottom: 16px;
-    background: #7569d5;
-    border-radius: 50% 50% 18% 18%;
-  }
-
-  .personOne {
-    width: 17px;
-    height: 29px;
-    left: 12px;
-  }
-
-  .personTwo {
-    width: 21px;
-    height: 36px;
-    left: 21px;
-  }
-
-  .personThree {
-    width: 17px;
-    height: 29px;
-    right: 12px;
-  }
-
-  .cakeBottom {
-    position: absolute;
-    bottom: 15px;
-    width: 36px;
-    height: 20px;
-    border-radius: 5px;
-    background: #7569d5;
-  }
-
-  .cakeTop {
-    position: absolute;
-    bottom: 34px;
-    width: 29px;
-    height: 8px;
-    border-radius: 5px;
-    background: #f4a6c8;
-  }
-
-  .cakeCandle {
-    position: absolute;
-    bottom: 42px;
-    width: 4px;
-    height: 10px;
-    background: #7569d5;
-  }
-
-  .treeTop {
-    position: absolute;
-    top: 12px;
-    width: 37px;
-    height: 37px;
-    border-radius: 50%;
-    background: #7569d5;
-  }
-
-  .treeTrunk {
-    position: absolute;
-    bottom: 14px;
-    width: 9px;
-    height: 25px;
-    background: #7569d5;
-    border-radius: 3px;
-  }
-
-  .bagHandle {
-    position: absolute;
-    top: 13px;
-    width: 22px;
-    height: 17px;
-    border: 4px solid #7569d5;
-    border-bottom: 0;
-    border-radius: 12px 12px 0 0;
-  }
-
-  .bagBody {
-    width: 35px;
-    height: 29px;
-    background: #7569d5;
-    border-radius: 4px 4px 8px 8px;
-    position: absolute;
-    bottom: 14px;
-  }
-
-  .missionContent {
-    min-height: 67px;
-  }
-
-  .missionCategory {
-    color: #aaa9b7;
-    font-size: 7px;
-    font-weight: 850;
-    letter-spacing: 0.08em;
-  }
-
-  .missionContent h3 {
-    margin: 4px 0 4px;
-    color: #37384c;
-    font-size: 15px;
-  }
-
-  .missionContent p {
-    margin: 0;
-    color: #9292a1;
-    font-size: 9px;
-    line-height: 1.45;
-  }
-
-  .playLabel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 14px;
-    padding-top: 10px;
-    border-top: 1px solid #f0eff4;
-    color: #7569d5;
-    font-size: 8px;
-    font-weight: 850;
-  }
-
-  .homeTip {
-    max-width: 600px;
-    margin: 27px auto 0;
-    display: flex;
-    align-items: center;
+@media (max-width: 700px) {
+  .topbar {
+    height: auto;
+    min-height: 70px;
+    padding: 12px 18px;
     gap: 12px;
-    padding: 13px 17px;
-    border: 1px solid #eeeef4;
-    border-radius: 15px;
-    background: #fff;
   }
 
-  .tipIcon {
-    width: 30px;
-    height: 30px;
-    border-radius: 10px;
-    background: #fff4d2;
-    color: #d49b19;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-  }
-
-  .homeTip strong {
-    display: block;
-    color: #55566a;
-    font-size: 9px;
-  }
-
-  .homeTip p {
-    margin: 2px 0 0;
-    color: #9999a8;
-    font-size: 8px;
-  }
-
-  .introScreen {
-    min-height: calc(100vh - 76px);
-    position: relative;
-    padding: 40px 25px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background:
-      radial-gradient(
-        circle at 20% 30%,
-        rgba(220, 244, 248, 0.8),
-        transparent 24%
-      ),
-      #fbfaff;
-  }
-
-  .introBackgroundShape {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-  }
-
-  .introShapeOne {
-    width: 180px;
-    height: 180px;
-    left: -60px;
-    bottom: 40px;
-    background: #eef9fb;
-  }
-
-  .introShapeTwo {
-    width: 100px;
-    height: 100px;
-    right: 5%;
-    top: 100px;
-    background: #f8edf3;
-  }
-
-  .backButton {
-    align-self: flex-start;
-    border: 0;
-    background: transparent;
-    color: #8d8d9d;
-    padding: 5px 0;
-    font-size: 10px;
-    font-weight: 750;
-    position: relative;
-    z-index: 2;
-  }
-
-  .backButton:hover {
-    color: #7569d5;
-  }
-
-  .introCard {
-    width: min(100%, 550px);
-    margin: auto;
-    padding: 38px 45px 42px;
-    border-radius: 28px;
-    background: #fff;
-    box-shadow:
-      0 22px 60px rgba(80, 75, 120, 0.1),
-      0 4px 14px rgba(80, 75, 120, 0.04);
-    text-align: center;
-    position: relative;
-    z-index: 2;
-  }
-
-  .introMissionIcon {
-    width: 74px;
-    height: 74px;
-    margin: 0 auto 15px;
-    border-radius: 22px;
-    background: color-mix(
-      in srgb,
-      var(--accent) 20%,
-      white
-    );
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .introMissionIcon .missionIcon {
-    margin: 0;
-  }
-
-  .introNumber {
-    color: #aaa9b7;
-    font-size: 8px;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-  }
-
-  .introCard h1 {
-    margin: 7px 0 8px;
-    color: #35364b;
-    font-size: 30px;
-    letter-spacing: -0.035em;
-  }
-
-  .introCard > p {
-    margin: 0 auto;
-    max-width: 400px;
-    color: #8e8e9e;
-    font-size: 11px;
-    line-height: 1.6;
-  }
-
-  .introMimi {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    margin: 25px 0 26px;
-  }
-
-  .introMessage {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
-    padding: 11px 15px;
-    background: #f5f3fc;
-    border-radius: 13px 13px 13px 3px;
-  }
-
-  .introMessage strong {
-    color: #4b4b5e;
-    font-size: 10px;
-  }
-
-  .introMessage span {
-    color: #9999a7;
-    font-size: 8px;
-    margin-top: 2px;
-  }
-
-  .startButton {
-    width: 100%;
-    border: 0;
-    border-radius: 13px;
-    padding: 13px 17px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #7569d5;
-    color: #fff;
-    font-size: 10px;
-    font-weight: 850;
-    box-shadow: 0 9px 20px rgba(117, 105, 213, 0.22);
-    transition: transform 0.15s ease;
-  }
-
-  .startButton:hover {
-    transform: translateY(-2px);
-  }
-
-  .startArrow {
-    font-size: 16px;
-  }
-
-  .conversation {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 28px 30px 45px;
-  }
-
-  .conversationHeader {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    margin-bottom: 22px;
-  }
-
-  .conversationHeader .backButton {
-    justify-self: start;
-  }
-
-  .conversationTitle {
-    display: flex;
-    align-items: center;
+  .headerRight {
     gap: 10px;
   }
 
-  .conversationMission {
-    width: 39px;
-    height: 39px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 900;
+  .languageSelector {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
   }
 
-  .conversationTitle span {
-    display: block;
-    color: #aaa9b8;
+  .languageSelector span {
     font-size: 7px;
-    font-weight: 850;
-    letter-spacing: 0.08em;
   }
 
-  .conversationTitle h1 {
-    margin: 2px 0 0;
-    color: #38394d;
-    font-size: 19px;
-    line-height: 1;
+  .languageSelector select {
+    font-size: 9px;
+    padding: 6px 20px 6px 7px;
   }
 
-  .readyStatus {
-    justify-self: end;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #8f909f;
-    font-size: 8px;
-    font-weight: 800;
+  .xpArea {
+    width: 80px;
   }
 
-  .readyStatus span {
-    width: 6px;
-    height: 6px;
-    background: #8ed5ae;
-    border-radius: 50%;
+  .brandText span {
+    display: none;
   }
 
-  .chatCard {
-    overflow: hidden;
-    border: 1px solid #ecebf2;
-    border-radius: 23px;
-    background: #fff;
-    box-shadow: 0 10px 35px rgba(72, 69, 105, 0.06);
+  .home {
+    width: calc(100% - 28px);
+    padding-top: 25px;
   }
 
-  .chatHeader {
-    height: 64px;
-    padding: 0 22px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    border-bottom: 1px solid #f0eff4;
-    background: #fff;
-  }
-
-  .chatMimi {
-    width: 32px;
-    height: 42px;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .chatMimi .mimi {
-    position: absolute;
-    left: -49px;
-    top: -63px;
-    transform: scale(0.35);
-  }
-
-  .chatHeader strong,
-  .chatHeader span {
+  .hero {
+    min-height: auto;
+    padding: 30px 25px 20px;
     display: block;
   }
 
-  .chatHeader strong {
-    color: #444559;
-    font-size: 10px;
-  }
-
-  .chatHeader span {
-    color: #a0a0ae;
-    font-size: 8px;
-  }
-
-  .messages {
-    height: 430px;
-    padding: 22px;
-    overflow-y: auto;
-    background: #fff;
-  }
-
-  .messageRow {
-    display: flex;
-    gap: 9px;
-    margin-bottom: 17px;
+  .heroMimi {
     width: 100%;
-    min-width: 0;
+    height: 180px;
+    margin-top: 10px;
   }
 
-  .messageRow.user {
-    justify-content: flex-end;
+  .heroBlob {
+    right: 50%;
+    transform: translateX(50%);
   }
 
-  .messageAvatar {
-    width: 34px;
-    height: 39px;
-    flex: 0 0 34px;
-    overflow: hidden;
-    display: flex;
+  .missionsHeader {
+    display: block;
+    margin-top: 35px;
+  }
+
+  .tip {
+    width: 100%;
+    margin-top: 14px;
+  }
+
+  .missionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .introScreen,
+  .conversationScreen {
+    width: calc(100% - 28px);
+  }
+
+  .introCard {
+    padding: 23px;
+  }
+
+  .conversationTitle {
     align-items: flex-end;
   }
 
-  .messageAvatar .mimi {
-    transform: scale(0.27);
-    transform-origin: bottom left;
+  .readyBadge {
+    display: none;
+  }
+
+  .messages {
+    padding: 15px;
+    min-height: 260px;
   }
 
   .messageContent {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    flex: 1;
+    max-width: 82%;
   }
 
   .messageBubble {
-    width: 500px;
-    max-width: 100%;
-    padding: 12px 15px;
-    border-radius: 17px 17px 17px 5px;
-    background: #f4f3fb;
-    color: #3d3e52;
-    font-size: 13px;
-    line-height: 1.55;
-    overflow-wrap: break-word;
-    word-break: normal;
-  }
-
-  .messageRow.user .messageContent {
-    margin-left: auto;
-  }
-
-  .messageRow.user .messageBubble {
-    background: #7569d5;
-    color: #fff;
-    border-radius: 17px 17px 5px 17px;
-  }
-
-  .messageTools {
-    display: flex;
-    gap: 6px;
-    margin-top: 7px;
-  }
-
-  .listenButton,
-  .meaningButton {
-    border: 1px solid #e9e8f0;
-    background: #fff;
-    border-radius: 8px;
-    padding: 4px 7px;
-    color: #898999;
-    font-size: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .listenButton:hover,
-  .meaningButton:hover {
-    color: #7569d5;
-    border-color: #d7d2f0;
-    background: #f9f8fd;
-  }
-
-  .speakerIcon {
-    display: inline-block;
-    margin-right: 3px;
-    font-size: 10px;
+    width: auto;
   }
 
   .meaningBox {
-    max-width: 500px;
-    margin-top: 7px;
-    padding: 9px 11px;
-    border-radius: 10px;
-    background: #faf9fd;
-    color: #858595;
-    font-size: 9px;
-    line-height: 1.5;
-  }
-
-  .typingBubble {
-    width: 62px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .typingBubble span {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #aaa6cf;
-    animation: typing 1.2s infinite ease-in-out;
-  }
-
-  .typingBubble span:nth-child(2) {
-    animation-delay: 0.15s;
-  }
-
-  .typingBubble span:nth-child(3) {
-    animation-delay: 0.3s;
-  }
-
-  @keyframes typing {
-    0%,
-    60%,
-    100% {
-      transform: translateY(0);
-      opacity: 0.45;
-    }
-
-    30% {
-      transform: translateY(-3px);
-      opacity: 1;
-    }
-  }
-
-  .vocabularyArea {
-    padding: 14px 22px 13px;
-    border-top: 1px solid #f0eff4;
-    background: #fcfbfe;
-  }
-
-  .vocabularyTitle {
-    color: #9d9dab;
-    font-size: 7px;
-    font-weight: 850;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-  }
-
-  .vocabularyList {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-  }
-
-  .vocabItem {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 9px;
-    border-radius: 8px;
-    background: #fff;
-    border: 1px solid #ecebf2;
-  }
-
-  .vocabItem strong {
-    color: #55566a;
-    font-size: 9px;
-  }
-
-  .vocabItem span {
-    color: #9b9baa;
-    font-size: 8px;
-  }
-
-  .answerArea {
-    padding: 16px 22px 12px;
-    border-top: 1px solid #f0f0f5;
-  }
-
-  .answerTitle {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .answerTitle span {
-    color: #303147;
-    font-size: 12px;
-    font-weight: 850;
-  }
-
-  .answerTitle small {
-    color: #999aaa;
-    font-size: 9px;
+    width: auto;
   }
 
   .answerOptions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    grid-template-columns: 1fr;
   }
 
-  .answerOptions button {
-    min-height: 55px;
-    border: 1px solid #e7e6ef;
-    background: #fff;
-    border-radius: 13px;
-    padding: 7px 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-align: left;
-    color: #45465a;
-    font-size: 10px;
-    transition:
-      transform 0.15s ease,
-      border-color 0.15s ease,
-      background 0.15s ease;
+  .answerArea,
+  .vocabulary,
+  .inputArea,
+  .chatHeader {
+    padding-left: 15px;
+    padding-right: 15px;
   }
-
-  .answerOptions button:hover {
-    transform: translateY(-2px);
-    border-color: #c7c0ef;
-    background: #faf9ff;
-  }
-
-  .optionNumber {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 22px;
-    border-radius: 8px;
-    background: #f0effa;
-    color: #7569d5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 850;
-    font-size: 9px;
-  }
-
-  .optionText {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-  }
-
-  .optionText strong {
-    color: #45465a;
-    font-size: 10px;
-    font-weight: 750;
-  }
-
-  .optionText small {
-    color: #999aaa;
-    font-size: 8px;
-    line-height: 1.25;
-  }
-
-  .inputArea {
-    display: flex;
-    gap: 8px;
-    padding: 14px 22px;
-    border-top: 1px solid #f0eff4;
-    background: #fff;
-  }
-
-  .inputArea input {
-    min-width: 0;
-    flex: 1;
-    height: 42px;
-    border: 1px solid #e7e6ef;
-    border-radius: 12px;
-    padding: 0 13px;
-    color: #4b4c5e;
-    font-size: 10px;
-    outline: none;
-  }
-
-  .inputArea input:focus {
-    border-color: #c9c3ee;
-    box-shadow: 0 0 0 3px rgba(117, 105, 213, 0.06);
-  }
-
-  .inputArea input::placeholder {
-    color: #b0afbb;
-  }
-
-  .sendButton {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
-    border: 0;
-    border-radius: 12px;
-    background: #7569d5;
-    color: #fff;
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  .sendButton:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  .conversationTip {
-    padding: 0 22px 14px;
-    color: #a1a1af;
-    font-size: 8px;
-  }
-
-  .conversationTip span {
-    color: #7569d5;
-    font-weight: 850;
-    margin-right: 4px;
-  }
-
-  @media (max-width: 900px) {
-    .missionGrid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .hero {
-      gap: 20px;
-    }
-
-    .speechBubble {
-      right: -15px;
-    }
-  }
-
-  @media (max-width: 700px) {
-    .topbar {
-      height: auto;
-      min-height: 70px;
-      padding: 12px 17px;
-      gap: 12px;
-    }
-
-    .headerRight {
-      gap: 8px;
-    }
-
-    .languageSelector > span {
-      display: none;
-    }
-
-    .xpArea {
-      width: 85px;
-    }
-
-    .brandText span {
-      display: none;
-    }
-
-    .home {
-      padding: 35px 17px 40px;
-    }
-
-    .hero {
-      min-height: auto;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-
-    .hero h1 {
-      font-size: 43px;
-    }
-
-    .heroCharacter {
-      min-height: 290px;
-    }
-
-    .characterCard {
-      width: 220px;
-      height: 230px;
-    }
-
-    .characterCard .mimi {
-      transform: scale(0.8);
-    }
-
-    .speechBubble {
-      right: -30px;
-      top: 25px;
-    }
-
-    .missionGrid {
-      grid-template-columns: 1fr;
-    }
-
-    .missionCard {
-      min-height: 205px;
-    }
-
-    .conversation {
-      padding: 20px 12px 30px;
-    }
-
-    .conversationHeader {
-      grid-template-columns: auto 1fr auto;
-      gap: 10px;
-    }
-
-    .conversationHeader .backButton {
-      font-size: 8px;
-    }
-
-    .conversationTitle h1 {
-      font-size: 15px;
-    }
-
-    .readyStatus {
-      font-size: 7px;
-    }
-
-    .chatCard {
-      border-radius: 18px;
-    }
-
-    .messages {
-      height: 430px;
-      padding: 16px 13px;
-    }
-
-    .messageContent {
-      max-width: 82%;
-    }
-
-    .messageBubble {
-      width: auto;
-      font-size: 12px;
-    }
-
-    .answerOptions {
-      grid-template-columns: 1fr;
-    }
-
-    .answerArea {
-      padding-left: 13px;
-      padding-right: 13px;
-    }
-
-    .inputArea {
-      padding-left: 13px;
-      padding-right: 13px;
-    }
-
-    .conversationTip {
-      padding-left: 13px;
-      padding-right: 13px;
-    }
-
-    .introScreen {
-      padding: 25px 15px;
-    }
-
-    .introCard {
-      padding: 30px 22px 32px;
-    }
-  }
-
-  @media (max-width: 430px) {
-    .brandText strong {
-      font-size: 13px;
-    }
-
-    .headerRight {
-      gap: 5px;
-    }
-
-    .languageSelector select {
-      max-width: 88px;
-    }
-
-    .hero h1 {
-      font-size: 38px;
-    }
-
-    .heroText > p {
-      font-size: 12px;
-    }
-
-    .conversationTitle span {
-      font-size: 6px;
-    }
-
-    .conversationTitle h1 {
-      font-size: 13px;
-    }
-
-    .conversationMission {
-      width: 34px;
-      height: 34px;
-    }
-
-    .readyStatus {
-      display: none;
-    }
-
-    .messageRow {
-      gap: 6px;
-    }
-
-    .messageAvatar {
-      width: 29px;
-      flex-basis: 29px;
-    }
-
-    .messageContent {
-      max-width: 88%;
-    }
-
-    .answerTitle {
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .vocabularyList {
-      display: grid;
-      grid-template-columns: 1fr;
-    }
-  }
+}
 `;
