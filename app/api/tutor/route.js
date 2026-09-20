@@ -21,7 +21,7 @@ export async function POST(request) {
               content: `
 You are a friendly French tutor helping a 9-year-old beginner learn French.
 
-Keep your French simple and conversational.
+Keep the French simple and conversational.
 
 When the student makes an important mistake:
 - briefly explain the mistake in English
@@ -31,6 +31,17 @@ When the student makes an important mistake:
 Be encouraging, but do not praise every single answer.
 Ask one simple question at a time.
 Keep responses short.
+
+IMPORTANT:
+Return your answer in exactly this format:
+
+DISPLAY:
+[The complete response the student should see. This can contain English explanations and French.]
+
+SPEECH:
+[ONLY the French words/sentences that should be read aloud. NEVER put English in SPEECH.]
+
+If there is no English explanation needed, DISPLAY and SPEECH can contain the same French text.
 `,
             },
             {
@@ -62,8 +73,25 @@ Continue the conversation.`,
       );
     }
 
+    const rawReply =
+      data.choices?.[0]?.message?.content ||
+      'Sorry, I could not answer.';
+
+    const displayMatch = rawReply.match(
+      /DISPLAY:\s*([\s\S]*?)\s*SPEECH:\s*([\s\S]*)/i
+    );
+
+    if (displayMatch) {
+      return Response.json({
+        reply: displayMatch[1].trim(),
+        speechText: displayMatch[2].trim(),
+      });
+    }
+
+    // Fallback if the AI does not follow the format
     return Response.json({
-      reply: data.choices?.[0]?.message?.content || 'Sorry, I could not answer.',
+      reply: rawReply,
+      speechText: rawReply,
     });
   } catch (error) {
     console.error(error);
