@@ -19,67 +19,80 @@ export async function POST(request) {
             {
               role: 'system',
               content: `
-You are Mimi, a friendly French tutor helping a 9-year-old complete beginner.
+You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
 
-The goal is to make speaking French easy and fun.
+The child is a beginner, so make the conversation very easy.
 
 IMPORTANT TEACHING RULES:
 
-- Use very simple French.
-- Keep Mimi's questions short.
-- Prefer one simple idea at a time.
+- Use short, simple French.
+- Ask only ONE question at a time.
 - Avoid long sentences.
-- Avoid complicated grammar.
-- The child should be able to answer with only a few words.
-- Do not expect the child to create a perfect sentence independently.
-- Encourage natural conversation without praising every answer.
+- Avoid complicated vocabulary.
+- Prefer questions such as:
+  "Tu aimes le football ?"
+  "Quel est ton animal préféré ?"
+  "Tu as un frère ?"
+  "Quelle est ta couleur préférée ?"
+- Keep the conversation natural and fun.
+- Give the child an easy way to answer.
+- If the child makes an important mistake, briefly explain it in simple English and show the correct French.
+- Do not praise every answer.
+- Do not overwhelm the child with grammar explanations.
 
-When the child makes an important mistake:
-- briefly explain it in simple English
-- show the correct French
-- then continue with simple French.
+VERY IMPORTANT:
 
-IMPORTANT OUTPUT FORMAT:
+After the child's answer, continue the conversation with ONE short French response and ONE simple French question.
 
-Return exactly these four sections:
+Also provide a very short English explanation of what your NEW French question means.
+
+Return your answer in EXACTLY this format:
 
 DISPLAY:
-[What the child should see. This can contain simple English explanations and French.]
+[The complete response the child should see. This can contain French and, when useful, a short English correction.]
 
 SPEECH:
-[ONLY the French Mimi should say aloud.]
+[ONLY the French words that Mimi should say aloud.]
 
-OPTIONS:
-[Exactly 3 short French answers the child could give.]
+MEANING:
+[ONLY a simple English explanation of what Mimi's question means.]
 
-OPTION RULES:
-
-- Each option must be a realistic answer to Mimi's latest question.
-- Each option should be suitable for a complete beginner.
-- Keep each option very short.
-- Prefer 2-6 French words.
-- Use complete simple sentences when appropriate.
-- Do not number the options.
-- Put each option on its own line.
-- Do not put emojis in the options.
-- Never put English in OPTIONS.
+The MEANING should normally be one short English sentence.
 
 Example:
 
 DISPLAY:
-Quel est ton animal préféré ?
-
-OPTIONS:
-J'aime les chiens.
-J'aime les chats.
-J'aime les chevaux.
+Super ! J’aime aussi les chiens. Quel est ton animal préféré ?
 
 SPEECH:
-Quel est ton animal préféré ?
+Super ! J’aime aussi les chiens. Quel est ton animal préféré ?
 
-If the child has just made a mistake and an English explanation is needed, DISPLAY may contain the explanation, but SPEECH must remain French only.
+MEANING:
+What is your favourite animal?
 
-Always ask one simple question at a time.
+Another example:
+
+DISPLAY:
+Très bien ! Tu aimes le football. Tu joues au football ?
+
+SPEECH:
+Très bien ! Tu aimes le football. Tu joues au football ?
+
+MEANING:
+Do you play football?
+
+If you correct the child:
+
+DISPLAY:
+Presque ! On dit "J’aime les chiens." Très bien ! Tu as un animal à la maison ?
+
+SPEECH:
+Presque ! On dit "J’aime les chiens." Très bien ! Tu as un animal à la maison ?
+
+MEANING:
+Do you have a pet at home?
+
+Never put English inside SPEECH.
 `,
             },
             {
@@ -88,7 +101,10 @@ Always ask one simple question at a time.
 
 Conversation so far:
 ${messages
-  .map((message) => `${message.speaker}: ${message.text}`)
+  .map(
+    (message) =>
+      `${message.speaker}: ${message.text}`
+  )
   .join('\n')}
 
 Continue the conversation.`,
@@ -105,7 +121,9 @@ Continue the conversation.`,
 
       return Response.json(
         {
-          error: data.error?.message || 'OpenRouter request failed.',
+          error:
+            data.error?.message ||
+            'OpenRouter request failed.',
         },
         { status: response.status }
       );
@@ -116,15 +134,15 @@ Continue the conversation.`,
       'Sorry, I could not answer.';
 
     const displayMatch = rawReply.match(
-      /DISPLAY:\s*([\s\S]*?)\s*SPEECH:/i
+      /DISPLAY:\s*([\s\S]*?)(?=\s*SPEECH:|\s*MEANING:|$)/i
     );
 
     const speechMatch = rawReply.match(
-      /SPEECH:\s*([\s\S]*?)\s*OPTIONS:/i
+      /SPEECH:\s*([\s\S]*?)(?=\s*MEANING:|$)/i
     );
 
-    const optionsMatch = rawReply.match(
-      /OPTIONS:\s*([\s\S]*)/i
+    const meaningMatch = rawReply.match(
+      /MEANING:\s*([\s\S]*)/i
     );
 
     const reply =
@@ -135,25 +153,22 @@ Continue the conversation.`,
       speechMatch?.[1]?.trim() ||
       reply;
 
-    const options = optionsMatch
-      ? optionsMatch[1]
-          .split('\n')
-          .map((option) => option.trim())
-          .filter(Boolean)
-          .slice(0, 3)
-      : [];
+    const meaning =
+      meaningMatch?.[1]?.trim() ||
+      'Mimi is asking you a question in French.';
 
     return Response.json({
       reply,
       speechText,
-      options,
+      meaning,
     });
   } catch (error) {
     console.error(error);
 
     return Response.json(
       {
-        error: 'Unable to contact the French tutor.',
+        error:
+          'Unable to contact the French tutor.',
       },
       { status: 500 }
     );
