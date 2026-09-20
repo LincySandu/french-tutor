@@ -4,6 +4,18 @@ export async function POST(request) {
 
     const scenario = body.scenario;
     const messages = body.messages || [];
+    const baseLanguage = body.baseLanguage || 'en';
+
+    const languageNames = {
+      en: 'English',
+      fr: 'French',
+      de: 'German',
+      ro: 'Romanian',
+      es: 'Spanish',
+    };
+
+    const selectedLanguage =
+      languageNames[baseLanguage] || 'English';
 
     const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -21,6 +33,10 @@ export async function POST(request) {
               content: `
 You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
 
+The child's support/base language is ${selectedLanguage}.
+
+French is ALWAYS the language being learned.
+
 The child is a complete beginner, so make the conversation very easy, friendly and natural.
 
 IMPORTANT TEACHING RULES:
@@ -28,25 +44,39 @@ IMPORTANT TEACHING RULES:
 - Use short, simple French.
 - Ask only ONE question at a time.
 - Avoid complicated vocabulary.
-- Keep sentences short.
+- Keep French sentences short.
 - Make it easy for a 9-year-old to answer.
 - Do not give long grammar explanations.
 - Do not praise every answer.
-- If the child makes an important mistake, briefly correct it in simple English.
+- If the child makes an important mistake, briefly correct it in ${selectedLanguage}.
 - Then continue with ONE simple French question.
 - Stay within the current scenario.
+- DISPLAY must contain French only.
+- SPEECH must contain French only.
+- MEANING must be written completely in ${selectedLanguage}.
+- OPTION translations must be written in ${selectedLanguage}.
+- VOCABULARY meanings must be written in ${selectedLanguage}.
 
 After the child's answer, produce:
 
 1. DISPLAY:
 The complete response Mimi should show the child.
 
+The French part of the response must be in simple beginner-level French.
+
+If a correction is needed, explain the correction briefly in French or, when necessary, in ${selectedLanguage}, but keep the response easy for a 9-year-old.
+
+IMPORTANT:
+Never put English into DISPLAY unless English is the child's selected support language.
+
 2. SPEECH:
 ONLY the French words Mimi should say aloud.
-Never put English inside SPEECH.
+
+Never put ${selectedLanguage} translation inside SPEECH.
 
 3. MEANING:
-A COMPLETE and SIMPLE English translation of EVERYTHING Mimi says in DISPLAY.
+A COMPLETE and SIMPLE ${selectedLanguage} translation of EVERYTHING Mimi says in DISPLAY.
+
 Do NOT translate only the question.
 
 4. OPTIONS:
@@ -54,7 +84,7 @@ Give exactly 3 very simple French answers that the child could choose from to an
 
 For EVERY option, provide:
 - the French answer
-- a simple English translation of that answer
+- a simple ${selectedLanguage} translation of that answer
 
 The options should:
 - be appropriate for a 9-year-old beginner
@@ -69,9 +99,10 @@ Choose up to 3 useful French words or short phrases from Mimi's response that ar
 
 For EVERY vocabulary item, provide:
 - the French word or phrase
-- a simple English meaning
+- a simple ${selectedLanguage} meaning
 
 Only include useful beginner-level vocabulary.
+
 Do not include tiny grammar words such as "le", "la", "un", "une", "je", "tu", etc. by themselves.
 
 Return your answer in EXACTLY this format:
@@ -83,67 +114,26 @@ SPEECH:
 [Only French words Mimi should say]
 
 MEANING:
-[Complete English translation of the entire DISPLAY]
+[Complete ${selectedLanguage} translation of the entire DISPLAY]
 
 OPTIONS:
-1. [French answer] | [English translation]
-2. [French answer] | [English translation]
-3. [French answer] | [English translation]
+1. [French answer] | [${selectedLanguage} translation]
+2. [French answer] | [${selectedLanguage} translation]
+3. [French answer] | [${selectedLanguage} translation]
 
 VOCABULARY:
-1. [French word or phrase] | [English meaning]
-2. [French word or phrase] | [English meaning]
-3. [French word or phrase] | [English meaning]
-
-Example:
-
-DISPLAY:
-Super ! Les chiens sont géniaux. Tu as un chien ?
-
-SPEECH:
-Super ! Les chiens sont géniaux. Tu as un chien ?
-
-MEANING:
-Great! Dogs are great. Do you have a dog?
-
-OPTIONS:
-1. Oui, j’ai un chien. | Yes, I have a dog.
-2. Non, je n’ai pas de chien. | No, I don't have a dog.
-3. Oui, j’adore les chiens. | Yes, I love dogs.
-
-VOCABULARY:
-1. un chien | a dog
-2. génial | great
-3. adorer | to love
-
-Another example when correcting the child:
-
-DISPLAY:
-Presque ! On dit "J’aime les chiens." Tu as un animal à la maison ?
-
-SPEECH:
-Presque ! On dit "J’aime les chiens." Tu as un animal à la maison ?
-
-MEANING:
-Almost! We say "I like dogs." Do you have a pet at home?
-
-OPTIONS:
-1. Oui, j’ai un chien. | Yes, I have a dog.
-2. Oui, j’ai un chat. | Yes, I have a cat.
-3. Non, je n’ai pas d’animal. | No, I don't have a pet.
-
-VOCABULARY:
-1. aimer | to like
-2. un animal | a pet / an animal
-3. à la maison | at home
+1. [French word or phrase] | [${selectedLanguage} meaning]
+2. [French word or phrase] | [${selectedLanguage} meaning]
+3. [French word or phrase] | [${selectedLanguage} meaning]
 
 IMPORTANT:
 - The OPTIONS must answer the NEW question Mimi asks.
-- Never put English inside DISPLAY or SPEECH.
+- Never put translations inside SPEECH.
 - Never leave OPTIONS empty.
 - Never leave VOCABULARY empty unless there are genuinely no useful vocabulary items.
 - Never ask more than one question in DISPLAY.
 - Keep VOCABULARY simple and useful for a beginner.
+- Always use ${selectedLanguage} for MEANING, option translations and vocabulary translations.
 `,
             },
             {
@@ -230,14 +220,14 @@ Continue the conversation.`,
 
           return {
             french: parts[0]?.trim() || '',
-            english:
+            translation:
               parts.slice(1).join('|').trim() || '',
           };
         })
         .filter(
           (option) =>
             option.french &&
-            option.english
+            option.translation
         )
         .slice(0, 3);
     }
@@ -256,14 +246,14 @@ Continue the conversation.`,
 
           return {
             french: parts[0]?.trim() || '',
-            english:
+            translation:
               parts.slice(1).join('|').trim() || '',
           };
         })
         .filter(
           (item) =>
             item.french &&
-            item.english
+            item.translation
         )
         .slice(0, 3);
     }
