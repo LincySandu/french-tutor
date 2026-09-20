@@ -31,76 +31,95 @@ export async function POST(request) {
             {
               role: 'system',
               content: `
-You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
+You are Mimi, a friendly French tutor helping a 9-year-old complete beginner learn French.
 
-The child's support/base language is ${selectedLanguage}.
+The target language is ALWAYS French.
 
-French is ALWAYS the language being learned.
+The child's support language is ${selectedLanguage}.
 
-The child is a complete beginner, so make the conversation very easy, friendly and natural.
+This distinction is extremely important:
 
-IMPORTANT TEACHING RULES:
+- FRENCH is what Mimi speaks to the child.
+- ${selectedLanguage} is ONLY used for explanations, meanings and translations.
+- Mimi must NEVER speak ${selectedLanguage}.
+- Mimi's DISPLAY must contain French only.
+- Mimi's SPEECH must contain French only.
+- MEANING must contain ${selectedLanguage}.
+- OPTION translations must contain ${selectedLanguage}.
+- VOCABULARY translations must contain ${selectedLanguage}.
 
-- Use short, simple French.
+The child is 9 years old and a complete beginner.
+
+TEACHING RULES:
+
+- Use very short, simple French.
+- Use vocabulary appropriate for a 9-year-old.
 - Ask only ONE question at a time.
-- Avoid complicated vocabulary.
-- Keep French sentences short.
-- Make it easy for a 9-year-old to answer.
-- Do not give long grammar explanations.
-- Do not praise every answer.
-- If the child makes an important mistake, briefly correct it in ${selectedLanguage}.
-- Then continue with ONE simple French question.
+- Keep the conversation natural and friendly.
 - Stay within the current scenario.
-
-OUTPUT RULES:
+- Do not use complicated grammar.
+- Do not give long explanations.
+- If the child makes a mistake, keep the correction simple.
+- Put any explanation or correction in MEANING, using ${selectedLanguage}.
+- Do NOT put ${selectedLanguage} inside DISPLAY.
+- Do NOT put ${selectedLanguage} inside SPEECH.
 
 DISPLAY:
-- This is what Mimi shows the child.
-- Keep the French simple and beginner-friendly.
-- It may contain a brief correction in ${selectedLanguage} if necessary.
-- Ask only ONE question.
+- French ONLY.
+- This is exactly what Mimi shows the child.
+- It should normally be one or two short French sentences.
+- It should contain exactly ONE simple question.
+- Never include an English/German/Romanian/Spanish/French translation inside DISPLAY.
 
 SPEECH:
-- ONLY French.
-- Only include the French words Mimi should say aloud.
+- French ONLY.
+- This is exactly what Mimi will say aloud.
+- It must contain ONLY French words.
 - Never include translations.
+- Never include explanations.
+- Never include ${selectedLanguage}.
+- Keep it short and natural.
+- SPEECH should normally be the same French content as DISPLAY.
 
 MEANING:
-- Give a complete and simple ${selectedLanguage} translation of everything Mimi says in DISPLAY.
+- Use ${selectedLanguage} ONLY.
+- Translate/explain everything Mimi says in DISPLAY.
+- Keep the explanation simple enough for a 9-year-old.
+- If a correction is useful, explain it here.
+- Do not write French here unless it is absolutely necessary to identify a word.
 
 OPTIONS:
 - ALWAYS provide exactly 3 options.
 - Each option must be a short, natural French answer to Mimi's NEW question.
 - Each option must have a ${selectedLanguage} translation.
+- The French answer comes FIRST.
+- The translation comes SECOND.
 - The three answers must be different.
-- Do not use the same answer three times.
-- Put each option on its own line.
-- Use this exact separator: |
-- Do not put extra text before or after the three options.
+- Do not ask another question inside an option.
 
 VOCABULARY:
 - Provide up to 3 useful beginner French words or short phrases from Mimi's response.
-- Give the ${selectedLanguage} meaning for each.
-- Do not use tiny grammar words such as "le", "la", "un", "une", "je", "tu" by themselves.
+- Each item must have a ${selectedLanguage} meaning.
+- Do not use tiny grammar words such as "le", "la", "un", "une", "je" or "tu" by themselves.
 
 VERY IMPORTANT:
-- Never leave OPTIONS empty.
-- Always provide exactly 3 numbered OPTIONS.
-- Never ask more than one question.
-- French is the target language.
-- ${selectedLanguage} is the support language.
-- Keep everything appropriate for a 9-year-old beginner.
+
+French is the LANGUAGE BEING LEARNED.
+
+${selectedLanguage} is ONLY the SUPPORT LANGUAGE.
+
+Never mix the two.
 
 Return your answer in EXACTLY this format:
 
 DISPLAY:
-[Complete response Mimi should show]
+[French only]
 
 SPEECH:
-[Only French words Mimi should say]
+[French only]
 
 MEANING:
-[Complete ${selectedLanguage} translation of DISPLAY]
+[${selectedLanguage} explanation/translation]
 
 OPTIONS:
 1. [French answer] | [${selectedLanguage} translation]
@@ -135,7 +154,7 @@ Continue the conversation.`,
     const data = await response.json();
 
     if (!response.ok) {
-      console.error(data);
+      console.error('OpenRouter error:', data);
 
       return Response.json(
         {
@@ -143,15 +162,27 @@ Continue the conversation.`,
             data.error?.message ||
             'OpenRouter request failed.',
         },
-        { status: response.status }
+        {
+          status: response.status,
+        }
       );
     }
 
     const rawReply =
-      data.choices?.[0]?.message?.content ||
-      'Sorry, I could not answer.';
+      data.choices?.[0]?.message?.content || '';
 
     console.log('Mimi raw response:', rawReply);
+
+    if (!rawReply) {
+      return Response.json(
+        {
+          error: 'Mimi did not return a response.',
+        },
+        {
+          status: 500,
+        }
+      );
+    }
 
     const displayMatch = rawReply.match(
       /DISPLAY\s*:\s*([\s\S]*?)(?=\n\s*SPEECH\s*:|\n\s*MEANING\s*:|\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
@@ -183,117 +214,50 @@ Continue the conversation.`,
 
     const meaning =
       meaningMatch?.[1]?.trim() ||
-      'Mimi is speaking French.';
+      '';
 
     let options = [];
 
     if (optionsMatch?.[1]) {
-      const optionLines = optionsMatch[1]
+      options = optionsMatch[1]
         .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean);
+        .map((line) => {
+          const cleaned = line
+            .replace(
+              /^\s*(?:\d+[\.\):\-]|\-|\•)\s*/,
+              ''
+            )
+            .trim();
 
-      for (const line of optionLines) {
-        const cleaned = line
-          .replace(
-            /^\s*(?:\d+[\.\):\-]|[\-\•])\s*/,
-            ''
-          )
-          .trim();
+          if (!cleaned) {
+            return null;
+          }
 
-        if (!cleaned) {
-          continue;
-        }
+          let parts = cleaned.split('|');
 
-        let parts = cleaned.split('|');
+          if (parts.length < 2) {
+            parts = cleaned.split(/\s+[—–-]\s+/);
+          }
 
-        if (parts.length < 2) {
-          parts = cleaned.split(/\s+[—–-]\s+/);
-        }
+          if (parts.length < 2) {
+            return null;
+          }
 
-        if (parts.length < 2) {
-          continue;
-        }
-
-        const french = parts[0].trim();
-
-        const translation = parts
-          .slice(1)
-          .join('|')
-          .trim();
-
-        if (french && translation) {
-          options.push({
-            french,
-            translation,
-          });
-        }
-      }
-    }
-
-    const uniqueOptions = [];
-
-    for (const option of options) {
-      const alreadyExists = uniqueOptions.some(
-        (existing) =>
-          existing.french.toLowerCase() ===
-          option.french.toLowerCase()
-      );
-
-      if (!alreadyExists) {
-        uniqueOptions.push(option);
-      }
-    }
-
-    options = uniqueOptions.slice(0, 3);
-
-    if (options.length < 3) {
-      const numberedLines =
-        rawReply.match(
-          /^\s*\d+[\.\):]\s*.+$/gim
-        ) || [];
-
-      const fallbackOptions = [];
-
-      for (const line of numberedLines) {
-        const cleaned = line
-          .replace(
-            /^\s*\d+[\.\):]\s*/,
-            ''
-          )
-          .trim();
-
-        if (!cleaned.includes('|')) {
-          continue;
-        }
-
-        const parts = cleaned.split('|');
-
-        const french =
-          parts[0]?.trim() || '';
-
-        const translation =
-          parts.slice(1).join('|').trim();
-
-        if (
-          french &&
-          translation &&
-          !fallbackOptions.some(
-            (item) =>
-              item.french.toLowerCase() ===
-              french.toLowerCase()
-          )
-        ) {
-          fallbackOptions.push({
-            french,
-            translation,
-          });
-        }
-      }
-
-      if (fallbackOptions.length > 0) {
-        options = fallbackOptions.slice(0, 3);
-      }
+          return {
+            french: parts[0].trim(),
+            translation: parts
+              .slice(1)
+              .join('|')
+              .trim(),
+          };
+        })
+        .filter(
+          (option) =>
+            option &&
+            option.french &&
+            option.translation
+        )
+        .slice(0, 3);
     }
 
     let vocabulary = [];
@@ -304,7 +268,7 @@ Continue the conversation.`,
         .map((line) => {
           const cleaned = line
             .replace(
-              /^\s*(?:\d+[\.\):\-]|[\-\•])\s*/,
+              /^\s*(?:\d+[\.\):\-]|\-|\•)\s*/,
               ''
             )
             .trim();
@@ -318,7 +282,10 @@ Continue the conversation.`,
           return {
             french: parts[0]?.trim() || '',
             translation:
-              parts.slice(1).join('|').trim() || '',
+              parts
+                .slice(1)
+                .join('|')
+                .trim() || '',
           };
         })
         .filter(
@@ -330,10 +297,15 @@ Continue the conversation.`,
         .slice(0, 3);
     }
 
-    console.log(
-      'Mimi parsed options:',
-      options
-    );
+    console.log('Mimi parsed response:', {
+      reply,
+      speechText,
+      meaning,
+      options,
+      vocabulary,
+      baseLanguage,
+      selectedLanguage,
+    });
 
     return Response.json({
       reply,
@@ -343,14 +315,16 @@ Continue the conversation.`,
       vocabulary,
     });
   } catch (error) {
-    console.error(error);
+    console.error('Tutor API error:', error);
 
     return Response.json(
       {
         error:
           'Unable to contact the French tutor.',
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
