@@ -876,6 +876,46 @@ export default function Home() {
                 )}
 
               {!loading &&
+                vocabulary.length > 0 && (
+                  <div className="vocabularyBox">
+                    <div className="vocabularyHeader">
+                      <div>
+                        <div className="vocabularyTitle">
+                          📚 Words I've Learned
+                        </div>
+
+                        <div className="vocabularySubtitle">
+                          New French words from Mimi
+                        </div>
+                      </div>
+
+                      <div className="vocabularyCount">
+                        {vocabulary.length}
+                      </div>
+                    </div>
+
+                    <div className="vocabularyList">
+                      {vocabulary.map(
+                        (word, index) => (
+                          <div
+                            key={index}
+                            className="vocabularyItem"
+                          >
+                            <div className="vocabularyFrench">
+                              {word.french}
+                            </div>
+
+                            <div className="vocabularyEnglish">
+                              {word.english}
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {!loading &&
                 answerOptions.length > 0 && (
                   <div className="suggestedAnswers">
                     <div className="suggestedTitle">
@@ -1446,6 +1486,76 @@ const styles = `
     color: #5f5a4a;
   }
 
+  .vocabularyBox {
+    margin: 8px 0 13px;
+    padding: 16px;
+    background: #f8fbff;
+    border: 1px solid #dfeef7;
+    border-radius: 22px;
+  }
+
+  .vocabularyHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .vocabularyTitle {
+    font-size: 14px;
+    font-weight: 900;
+    color: #4f5970;
+  }
+
+  .vocabularySubtitle {
+    margin-top: 3px;
+    font-size: 11px;
+    color: #8a859d;
+  }
+
+  .vocabularyCount {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    border-radius: 10px;
+    background: #e8f5ff;
+    color: #54718c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  .vocabularyList {
+    display: grid;
+    grid-template-columns:
+      repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .vocabularyItem {
+    background: white;
+    border: 1px solid #e5edf3;
+    border-radius: 14px;
+    padding: 11px 12px;
+  }
+
+  .vocabularyFrench {
+    font-size: 14px;
+    font-weight: 900;
+    color: #3f4760;
+    line-height: 1.35;
+  }
+
+  .vocabularyEnglish {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #8a859d;
+    line-height: 1.35;
+  }
+
   .suggestedAnswers {
     background: rgba(248, 246, 255, 0.9);
     border: 1px solid #eeeafd;
@@ -1607,6 +1717,10 @@ const styles = `
 
     .message {
       max-width: 88%;
+    }
+
+    .vocabularyList {
+      grid-template-columns: 1fr;
     }
   }
 
