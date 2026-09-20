@@ -103,6 +103,32 @@ function getScenarioText(id) {
   );
 }
 
+function getInitialMeaning(id) {
+  const meanings = {
+    school:
+      'What is your favourite school subject?',
+    sports:
+      'What is your favourite sport?',
+    animals:
+      'What is your favourite animal?',
+    hobbies:
+      'What do you like to do after school?',
+    family:
+      'Do you have any brothers or sisters?',
+    birthday:
+      'Is your birthday soon? What would you like as a present?',
+    park:
+      'Do you want to play at the park? What do you like to do outside?',
+    shopping:
+      'Do you want to buy something? What is your favourite colour?',
+  };
+
+  return (
+    meanings[id] ||
+    'Mimi is asking you a question in French.'
+  );
+}
+
 function getFrenchVoice() {
   if (
     typeof window === 'undefined' ||
@@ -222,6 +248,9 @@ export default function Home() {
         speaker: 'tutor',
         text: scenarioText,
         speechText: scenarioText,
+        meaning: getInitialMeaning(
+          selectedScenario.id
+        ),
       },
     ]);
 
@@ -348,6 +377,9 @@ export default function Home() {
         speechText:
           data.speechText ||
           data.reply,
+        meaning:
+          data.meaning ||
+          'Mimi is asking you a question in French.',
       };
 
       setMessages((current) => [
@@ -378,6 +410,8 @@ export default function Home() {
           'Oops! Let’s try that again.',
         speechText:
           'Oups ! Essayons encore !',
+        meaning:
+          'Mimi wants you to try again.',
       };
 
       setMessages((current) => [
@@ -724,9 +758,9 @@ export default function Home() {
                         </div>
 
                         <div className="meaningText">
-                          {getEnglishHelp(
-                            latestTutorMessage.text
-                          )}
+                          {
+                            latestTutorMessage.meaning
+                          }
                         </div>
                       </div>
                     )}
@@ -802,118 +836,6 @@ export default function Home() {
         )}
     </main>
   );
-}
-
-function getEnglishHelp(text) {
-  const cleanText =
-    text
-      .replace(/\s+/g, ' ')
-      .trim();
-
-  const lower =
-    cleanText.toLowerCase();
-
-  if (
-    lower.includes(
-      'quel est ton animal préféré'
-    )
-  ) {
-    return 'What is your favourite animal?';
-  }
-
-  if (
-    lower.includes(
-      'quel est ton sport préféré'
-    )
-  ) {
-    return 'What is your favourite sport?';
-  }
-
-  if (
-    lower.includes(
-      'quelle est ta matière préférée'
-    )
-  ) {
-    return 'What is your favourite school subject?';
-  }
-
-  if (
-    lower.includes(
-      'tu aimes le sport'
-    )
-  ) {
-    return 'Do you like sport?';
-  }
-
-  if (
-    lower.includes(
-      'qu’est-ce que tu aimes faire'
-    ) ||
-    lower.includes(
-      "qu'est-ce que tu aimes faire"
-    )
-  ) {
-    return 'What do you like to do?';
-  }
-
-  if (
-    lower.includes(
-      'tu as des frères ou des sœurs'
-    )
-  ) {
-    return 'Do you have any brothers or sisters?';
-  }
-
-  if (
-    lower.includes(
-      'c’est bientôt ton anniversaire'
-    ) ||
-    lower.includes(
-      "c'est bientôt ton anniversaire"
-    )
-  ) {
-    return 'Is your birthday soon?';
-  }
-
-  if (
-    lower.includes(
-      'qu’est-ce que tu voudrais'
-    ) ||
-    lower.includes(
-      "qu'est-ce que tu voudrais"
-    )
-  ) {
-    return 'What would you like?';
-  }
-
-  if (
-    lower.includes(
-      'qu’est-ce que tu aimes dehors'
-    ) ||
-    lower.includes(
-      "qu'est-ce que tu aimes dehors"
-    )
-  ) {
-    return 'What do you like to do outside?';
-  }
-
-  if (
-    lower.includes(
-      'quelle est ta couleur préférée'
-    )
-  ) {
-    return 'What is your favourite colour?';
-  }
-
-  if (
-    lower.includes(
-      'tu veux acheter quelque chose'
-    )
-  ) {
-    return 'Do you want to buy something?';
-  }
-
-  return 'Mimi is asking you a question in French. Listen to her and choose an answer below!';
 }
 
 const styles = `
