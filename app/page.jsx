@@ -2979,17 +2979,27 @@ const styles = `
   }
 
   .messageContent {
-    max-width: min(72%, 560px);
-  }
+  width: min(82%, 720px);
+  max-width: 720px;
+  min-width: 0;
+}
 
-  .messageBubble {
-    padding: 12px 15px;
-    border-radius: 17px 17px 17px 5px;
-    background: #f4f3fb;
-    color: #3d3e52;
-    font-size: 13px;
-    line-height: 1.55;
-  }
+.messageBubble {
+  width: fit-content;
+  max-width: 100%;
+  padding: 12px 15px;
+  border-radius: 17px 17px 17px 5px;
+  background: #f4f3fb;
+  color: #3d3e52;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.messageRow.user .messageContent {
+  margin-left: auto;
+}
 
   .messageRow.user .messageBubble {
     background: #7569d5;
