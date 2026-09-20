@@ -2959,7 +2959,7 @@ const styles = `
     border-radius: 20px;
   }
 
-  ..messageRow {
+  .messageRow {
   display: flex;
   gap: 9px;
   margin-bottom: 17px;
