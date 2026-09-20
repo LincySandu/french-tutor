@@ -11,6 +11,9 @@ const scenarios = [
       'Talk about school, friends and your favourite subjects!',
     color: '#7BDFF2',
     mascot: '📚',
+    missionNumber: 1,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'sports',
@@ -20,6 +23,9 @@ const scenarios = [
       'Talk about football, swimming and your favourite games!',
     color: '#B8E986',
     mascot: '🏆',
+    missionNumber: 2,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'animals',
@@ -29,6 +35,9 @@ const scenarios = [
       'Discover animals and talk about your favourites!',
     color: '#C7B8FF',
     mascot: '🐾',
+    missionNumber: 3,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'hobbies',
@@ -38,6 +47,9 @@ const scenarios = [
       'Talk about games, music, drawing and things you love!',
     color: '#FFB6C8',
     mascot: '🎨',
+    missionNumber: 4,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'family',
@@ -47,6 +59,9 @@ const scenarios = [
       'Tell Mimi about your family!',
     color: '#FFD166',
     mascot: '❤️',
+    missionNumber: 5,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'birthday',
@@ -56,6 +71,9 @@ const scenarios = [
       'Talk about your birthday, presents and cake!',
     color: '#FF9FAD',
     mascot: '🎁',
+    missionNumber: 6,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'park',
@@ -65,6 +83,9 @@ const scenarios = [
       'Play outside and talk about what you like to do!',
     color: '#9DE2B2',
     mascot: '🛝',
+    missionNumber: 7,
+    questions: 5,
+    xpReward: 50,
   },
   {
     id: 'shopping',
@@ -74,6 +95,9 @@ const scenarios = [
       'Choose toys, clothes and your favourite colours!',
     color: '#A9D6FF',
     mascot: '🧸',
+    missionNumber: 8,
+    questions: 5,
+    xpReward: 50,
   },
 ];
 
@@ -548,6 +572,10 @@ export default function Home() {
   const currentLevel =
     Math.floor(xp / 50) + 1;
 
+  const xpWithinLevel = xp % 50;
+  const xpProgress =
+    (xpWithinLevel / 50) * 100;
+
   const latestTutorMessage =
     [...messages]
       .reverse()
@@ -599,7 +627,11 @@ export default function Home() {
               🐭
             </div>
 
-            <div>
+            <div className="heroContent">
+              <div className="heroEyebrow">
+                🇫🇷 YOUR FRENCH ADVENTURE
+              </div>
+
               <h1>
                 Bonjour, explorer!
               </h1>
@@ -608,12 +640,45 @@ export default function Home() {
                 Choose a mission and
                 practise French with Mimi!
               </p>
+
+              <div className="levelProgress">
+                <div className="levelProgressTop">
+                  <span>
+                    ⭐ Level {currentLevel}
+                  </span>
+
+                  <span>
+                    {xpWithinLevel} / 50 XP
+                  </span>
+                </div>
+
+                <div className="progressTrack">
+                  <div
+                    className="progressFill"
+                    style={{
+                      width: `${xpProgress}%`,
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="missionsTitle">
-            <span>🗺️</span>
-            Choose your mission
+          <div className="missionsHeading">
+            <div>
+              <div className="missionsEyebrow">
+                YOUR ADVENTURE
+              </div>
+
+              <div className="missionsTitle">
+                <span>🗺️</span>
+                Choose your mission
+              </div>
+            </div>
+
+            <div className="missionCount">
+              {scenarios.length} missions
+            </div>
           </div>
 
           <div className="missionGrid">
@@ -621,7 +686,11 @@ export default function Home() {
               (scenario) => (
                 <button
                   key={scenario.id}
-                  className="missionCard"
+                  className={`missionCard ${
+                    scenario.missionNumber === 1
+                      ? 'featuredMission'
+                      : ''
+                  }`}
                   onClick={() =>
                     selectScenario(
                       scenario
@@ -632,11 +701,22 @@ export default function Home() {
                       scenario.color,
                   }}
                 >
+                  <div className="missionNumber">
+                    {String(
+                      scenario.missionNumber
+                    ).padStart(2, '0')}
+                  </div>
+
                   <div className="missionIcon">
                     {scenario.icon}
                   </div>
 
                   <div className="missionInfo">
+                    <div className="missionLabel">
+                      MISSION{' '}
+                      {scenario.missionNumber}
+                    </div>
+
                     <h2>
                       {scenario.name}
                     </h2>
@@ -646,18 +726,36 @@ export default function Home() {
                         scenario.description
                       }
                     </p>
+
+                    <div className="missionMeta">
+                      <span>
+                        💬 {scenario.questions}{' '}
+                        questions
+                      </span>
+
+                      <span>
+                        ⭐ +{scenario.xpReward}{' '}
+                        XP
+                      </span>
+                    </div>
                   </div>
 
                   <div className="missionMascot">
                     {scenario.mascot}
                   </div>
 
-                  <div className="arrow">
-                    →
+                  <div className="missionStart">
+                    Start
+                    <span>→</span>
                   </div>
                 </button>
               )
             )}
+          </div>
+
+          <div className="futureMissions">
+            <span>✨</span>
+            More adventures coming soon!
           </div>
         </section>
       )}
@@ -1108,16 +1206,33 @@ const styles = `
   }
 
   .heroMascot {
-    width: 100px;
-    height: 100px;
-    border-radius: 32px;
+    width: 110px;
+    height: 110px;
+    border-radius: 34px;
     background: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 56px;
+    font-size: 60px;
     box-shadow:
       0 12px 35px rgba(65, 55, 100, 0.10);
+    flex-shrink: 0;
+  }
+
+  .heroContent {
+    max-width: 620px;
+  }
+
+  .heroEyebrow {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.7px;
+    color: #756ca0;
+    background: #eeeafd;
+    padding: 6px 10px;
+    border-radius: 9px;
+    margin-bottom: 10px;
   }
 
   .hero h1 {
@@ -1132,13 +1247,73 @@ const styles = `
     font-size: 17px;
   }
 
+  .levelProgress {
+    margin-top: 18px;
+    max-width: 420px;
+  }
+
+  .levelProgressTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 7px;
+    font-size: 11px;
+    font-weight: 850;
+    color: #77748a;
+  }
+
+  .progressTrack {
+    height: 9px;
+    background: #e8e4f3;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progressFill {
+    height: 100%;
+    background:
+      linear-gradient(
+        90deg,
+        #8b79e8,
+        #b79ff7
+      );
+    border-radius: 99px;
+    transition: width 0.35s ease;
+  }
+
+  .missionsHeading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 18px;
+  }
+
+  .missionsEyebrow {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #9a94ac;
+    margin-bottom: 4px;
+  }
+
   .missionsTitle {
     display: flex;
     align-items: center;
     gap: 9px;
-    font-size: 19px;
+    font-size: 20px;
     font-weight: 900;
-    margin-bottom: 18px;
+  }
+
+  .missionCount {
+    background: white;
+    border: 1px solid #ebe7f4;
+    border-radius: 12px;
+    padding: 8px 11px;
+    color: #77748a;
+    font-size: 11px;
+    font-weight: 850;
+    white-space: nowrap;
   }
 
   .missionGrid {
@@ -1150,15 +1325,15 @@ const styles = `
 
   .missionCard {
     position: relative;
-    min-height: 145px;
-    border: none;
+    min-height: 178px;
+    border: 2px solid transparent;
     border-radius: 28px;
-    padding: 24px 60px 24px 24px;
+    padding: 21px 92px 20px 24px;
     background:
       linear-gradient(
         135deg,
         var(--card-color),
-        white
+        white 82%
       );
     text-align: left;
     overflow: hidden;
@@ -1166,46 +1341,138 @@ const styles = `
       0 10px 30px rgba(65, 55, 100, 0.08);
     transition:
       transform 0.18s ease,
-      box-shadow 0.18s ease;
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
   }
 
   .missionCard:hover {
     transform: translateY(-4px);
+    border-color: rgba(93, 75, 216, 0.18);
     box-shadow:
-      0 16px 35px rgba(65, 55, 100, 0.13);
+      0 17px 38px rgba(65, 55, 100, 0.14);
+  }
+
+  .missionCard:active {
+    transform: translateY(-1px);
+  }
+
+  .featuredMission {
+    border-color: rgba(93, 75, 216, 0.22);
+    box-shadow:
+      0 13px 34px rgba(93, 75, 216, 0.12);
+  }
+
+  .featuredMission::after {
+    content: "START HERE";
+    position: absolute;
+    top: 15px;
+    right: 16px;
+    background: #5d4bd8;
+    color: white;
+    padding: 5px 8px;
+    border-radius: 8px;
+    font-size: 8px;
+    font-weight: 950;
+    letter-spacing: 0.8px;
+  }
+
+  .missionNumber {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 43px;
+    height: 43px;
+    border-bottom-right-radius: 18px;
+    background: rgba(255,255,255,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #68627a;
+    font-size: 10px;
+    font-weight: 950;
+    letter-spacing: 0.5px;
   }
 
   .missionIcon {
-    font-size: 35px;
-    margin-bottom: 8px;
+    font-size: 34px;
+    margin: 15px 0 7px;
   }
 
   .missionInfo h2 {
-    margin: 0 0 6px;
+    margin: 0 0 5px;
     font-size: 20px;
+    line-height: 1.15;
+  }
+
+  .missionLabel {
+    font-size: 8px;
+    font-weight: 950;
+    letter-spacing: 1.2px;
+    color: #777084;
+    margin-bottom: 4px;
   }
 
   .missionInfo p {
     margin: 0;
     color: #666378;
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 400px;
+  }
+
+  .missionMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+  }
+
+  .missionMeta span {
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.8);
+    border-radius: 9px;
+    padding: 5px 7px;
+    font-size: 9px;
+    font-weight: 850;
+    color: #6c6878;
   }
 
   .missionMascot {
     position: absolute;
-    right: 18px;
-    bottom: 15px;
+    right: 17px;
+    bottom: 52px;
     font-size: 45px;
-    opacity: 0.75;
+    opacity: 0.72;
+    transform: rotate(-4deg);
   }
 
-  .arrow {
+  .missionStart {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 22px;
-    font-weight: 900;
+    right: 17px;
+    bottom: 17px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #5d4bd8;
+    font-size: 10px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .missionStart span {
+    font-size: 15px;
+  }
+
+  .futureMissions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    margin-top: 28px;
+    color: #9791a8;
+    font-size: 12px;
+    font-weight: 750;
   }
 
   .introScreen {
@@ -1702,6 +1969,19 @@ const styles = `
       text-align: center;
     }
 
+    .heroContent {
+      width: 100%;
+    }
+
+    .levelProgress {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .missionsHeading {
+      align-items: center;
+    }
+
     .missionGrid {
       grid-template-columns: 1fr;
     }
@@ -1752,6 +2032,25 @@ const styles = `
 
     .hero p {
       font-size: 15px;
+    }
+
+    .missionsHeading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .missionCard {
+      min-height: 185px;
+      padding-right: 82px;
+    }
+
+    .missionInfo p {
+      font-size: 12px;
+    }
+
+    .missionMeta span {
+      font-size: 8px;
     }
 
     .conversationCard {
