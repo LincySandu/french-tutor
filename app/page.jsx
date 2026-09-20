@@ -4,44 +4,68 @@ import { useState } from 'react';
 
 const scenarios = [
   {
-    id: 'cafe',
-    icon: '☕',
-    name: 'At the Café',
-    description: 'Order a yummy snack in French!',
-    color: '#FFD166',
-    mascot: '🥐',
-  },
-  {
     id: 'school',
     icon: '🎒',
     name: 'At School',
-    description: 'Meet your French classmates!',
+    description: 'Talk about school, friends and your favourite subjects!',
     color: '#7BDFF2',
     mascot: '📚',
   },
   {
-    id: 'park',
-    icon: '🌳',
-    name: 'At the Park',
-    description: 'Play and have fun outside!',
+    id: 'sports',
+    icon: '⚽',
+    name: 'Sports & Games',
+    description: 'Talk about football, swimming and your favourite games!',
     color: '#B8E986',
-    mascot: '⚽',
-  },
-  {
-    id: 'family',
-    icon: '👨‍👩‍👧',
-    name: 'My Family',
-    description: 'Talk about your family!',
-    color: '#FF9FAD',
-    mascot: '❤️',
+    mascot: '🏆',
   },
   {
     id: 'animals',
     icon: '🐶',
     name: 'Animals',
-    description: 'Discover your favourite animals!',
+    description: 'Discover animals and talk about your favourites!',
     color: '#C7B8FF',
     mascot: '🐾',
+  },
+  {
+    id: 'hobbies',
+    icon: '🎮',
+    name: 'Games & Hobbies',
+    description: 'Talk about games, music, drawing and things you love!',
+    color: '#FFB6C8',
+    mascot: '🎨',
+  },
+  {
+    id: 'family',
+    icon: '👨‍👩‍👦',
+    name: 'My Family',
+    description: 'Tell Mimi about your family!',
+    color: '#FFD166',
+    mascot: '❤️',
+  },
+  {
+    id: 'birthday',
+    icon: '🎂',
+    name: 'My Birthday',
+    description: 'Talk about your birthday, presents and cake!',
+    color: '#FF9FAD',
+    mascot: '🎁',
+  },
+  {
+    id: 'park',
+    icon: '🌳',
+    name: 'At the Park',
+    description: 'Play outside and talk about what you like to do!',
+    color: '#9DE2B2',
+    mascot: '🛝',
+  },
+  {
+    id: 'shopping',
+    icon: '🛍️',
+    name: 'Shopping',
+    description: 'Choose toys, clothes and your favourite colours!',
+    color: '#A9D6FF',
+    mascot: '🧸',
   },
 ];
 
@@ -83,14 +107,28 @@ export default function FrenchTutor() {
 
   function getScenarioText(id) {
     const greetings = {
-      cafe: 'Bonjour ! Bienvenue au café ! Qu’est-ce que tu veux boire ?',
-      school: 'Bonjour ! Je suis ton nouvel ami. Comment tu t’appelles ?',
-      park: 'Salut ! Tu veux jouer au parc ?',
-      family: 'Bonjour ! Parle-moi de ta famille. Tu as des frères ou des sœurs ?',
-      animals: 'Salut ! J’adore les animaux. Quel est ton animal préféré ?',
+      school:
+        'Salut ! Bienvenue à l’école ! Quelle est ta matière préférée ?',
+      sports:
+        'Salut ! Tu aimes le sport ? Quel est ton sport préféré ?',
+      animals:
+        'Salut ! J’adore les animaux ! Quel est ton animal préféré ?',
+      hobbies:
+        'Salut ! Qu’est-ce que tu aimes faire après l’école ?',
+      family:
+        'Bonjour ! Parle-moi de ta famille. Tu as des frères ou des sœurs ?',
+      birthday:
+        'Salut ! C’est bientôt ton anniversaire ? Qu’est-ce que tu voudrais comme cadeau ?',
+      park:
+        'Salut ! Tu veux jouer au parc ? Qu’est-ce que tu aimes faire dehors ?',
+      shopping:
+        'Bonjour ! Tu veux acheter quelque chose ? Quelle est ta couleur préférée ?',
     };
 
-    return greetings[id] || 'Bonjour ! Commençons à parler français !';
+    return (
+      greetings[id] ||
+      'Bonjour ! Commençons à parler français !'
+    );
   }
 
   async function sendMessage() {
@@ -235,13 +273,13 @@ export default function FrenchTutor() {
               {selectedScenario.icon}
             </div>
 
-            <div className="mascotBig">
-              🐱
-            </div>
+            <div className="mascotBig">🐱</div>
 
             <div className="introBubble">
               <div className="bubbleName">Mimi 🐱</div>
+
               <h1>Ready for a mission?</h1>
+
               <p>{selectedScenario.description}</p>
             </div>
 
@@ -269,7 +307,10 @@ export default function FrenchTutor() {
               🚀 Start Mission
             </button>
 
-            <button className="smallBack" onClick={() => setSelectedScenario(null)}>
+            <button
+              className="smallBack"
+              onClick={() => setSelectedScenario(null)}
+            >
               Maybe later
             </button>
           </section>
@@ -288,9 +329,7 @@ export default function FrenchTutor() {
                 <h1>{selectedScenario.name}</h1>
               </div>
 
-              <div className="missionXp">
-                ⭐ +10 XP
-              </div>
+              <div className="missionXp">⭐ +10 XP</div>
             </div>
 
             <div className="conversation">
@@ -298,7 +337,9 @@ export default function FrenchTutor() {
                 <div
                   key={index}
                   className={`messageRow ${
-                    message.speaker === 'you' ? 'youRow' : 'tutorRow'
+                    message.speaker === 'you'
+                      ? 'youRow'
+                      : 'tutorRow'
                   }`}
                 >
                   {message.speaker === 'tutor' && (
@@ -394,8 +435,10 @@ export default function FrenchTutor() {
         <header className="hero">
           <div className="brand">
             <div className="flag">🇫🇷</div>
+
             <div>
               <div className="brandName">FRENCH ADVENTURE</div>
+
               <div className="brandTagline">
                 Learn French. Have fun. ⭐
               </div>
@@ -410,8 +453,10 @@ export default function FrenchTutor() {
 
             <div className="levelBox">
               🏆
+
               <div>
                 <strong>Level {level}</strong>
+
                 <div className="levelProgress">
                   <div style={{ width: `${levelXp}%` }} />
                 </div>
@@ -422,9 +467,7 @@ export default function FrenchTutor() {
 
         <section className="welcome">
           <div className="welcomeMascot">
-            <div className="mascotCircle">
-              🐱
-            </div>
+            <div className="mascotCircle">🐱</div>
 
             <div className="floatingEmoji one">⭐</div>
             <div className="floatingEmoji two">🇫🇷</div>
@@ -434,7 +477,9 @@ export default function FrenchTutor() {
           <div className="welcomeText">
             <div className="speechBubble">
               <span className="bubbleTiny">Mimi says:</span>
+
               <h1>Bonjour! 👋</h1>
+
               <p>Ready for your next French adventure?</p>
             </div>
           </div>
@@ -444,6 +489,7 @@ export default function FrenchTutor() {
           <div className="sectionTitle">
             <div>
               <span className="eyebrow">YOUR ADVENTURE</span>
+
               <h2>🗺️ Choose a Mission</h2>
             </div>
 
@@ -509,14 +555,13 @@ export default function FrenchTutor() {
 
           <div className="progressText">
             <strong>Keep going, explorer!</strong>
+
             <span>
               Complete missions to earn XP and unlock new adventures.
             </span>
           </div>
 
-          <div className="stars">
-            ⭐ ⭐ ⭐
-          </div>
+          <div className="stars">⭐ ⭐ ⭐</div>
         </section>
       </div>
     </main>
@@ -929,8 +974,6 @@ const styles = `
     white-space: nowrap;
   }
 
-  /* Mission intro */
-
   .missionIntro {
     width: min(680px, 92%);
     margin: 45px auto;
@@ -1050,8 +1093,6 @@ const styles = `
     margin-top: 17px;
     font-size: 12px;
   }
-
-  /* Conversation */
 
   .conversationPage {
     width: min(820px, 92%);
