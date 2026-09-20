@@ -260,51 +260,123 @@ export default function Home() {
 
     const starterOptions = {
       school: [
-        'J’aime les maths.',
-        'J’aime le français.',
-        'J’aime le sport.',
+        {
+          french: 'J’aime les maths.',
+          english: 'I like maths.',
+        },
+        {
+          french: 'J’aime le français.',
+          english: 'I like French.',
+        },
+        {
+          french: 'J’aime le sport.',
+          english: 'I like sport.',
+        },
       ],
 
       sports: [
-        'J’aime le football.',
-        'J’aime la natation.',
-        'J’aime le tennis.',
+        {
+          french: 'J’aime le football.',
+          english: 'I like football.',
+        },
+        {
+          french: 'J’aime la natation.',
+          english: 'I like swimming.',
+        },
+        {
+          french: 'J’aime le tennis.',
+          english: 'I like tennis.',
+        },
       ],
 
       animals: [
-        'J’aime les chiens.',
-        'J’aime les chats.',
-        'J’aime les chevaux.',
+        {
+          french: 'J’aime les chiens.',
+          english: 'I like dogs.',
+        },
+        {
+          french: 'J’aime les chats.',
+          english: 'I like cats.',
+        },
+        {
+          french: 'J’aime les chevaux.',
+          english: 'I like horses.',
+        },
       ],
 
       hobbies: [
-        'J’aime jouer.',
-        'J’aime dessiner.',
-        'J’aime écouter de la musique.',
+        {
+          french: 'J’aime jouer.',
+          english: 'I like playing.',
+        },
+        {
+          french: 'J’aime dessiner.',
+          english: 'I like drawing.',
+        },
+        {
+          french: 'J’aime écouter de la musique.',
+          english: 'I like listening to music.',
+        },
       ],
 
       family: [
-        'Oui, j’ai un frère.',
-        'Oui, j’ai une sœur.',
-        'Non, je suis enfant unique.',
+        {
+          french: 'Oui, j’ai un frère.',
+          english: 'Yes, I have a brother.',
+        },
+        {
+          french: 'Oui, j’ai une sœur.',
+          english: 'Yes, I have a sister.',
+        },
+        {
+          french: 'Non, je suis enfant unique.',
+          english: 'No, I am an only child.',
+        },
       ],
 
       birthday: [
-        'Oui, bientôt !',
-        'Je voudrais un vélo.',
-        'Je voudrais un jeu.',
+        {
+          french: 'Oui, bientôt !',
+          english: 'Yes, soon!',
+        },
+        {
+          french: 'Je voudrais un vélo.',
+          english: 'I would like a bike.',
+        },
+        {
+          french: 'Je voudrais un jeu.',
+          english: 'I would like a game.',
+        },
       ],
 
       park: [
-        'J’aime jouer.',
-        'J’aime courir.',
-        'J’aime faire du vélo.',
+        {
+          french: 'J’aime jouer.',
+          english: 'I like playing.',
+        },
+        {
+          french: 'J’aime courir.',
+          english: 'I like running.',
+        },
+        {
+          french: 'J’aime faire du vélo.',
+          english: 'I like riding a bike.',
+        },
       ],
 
       shopping: [
-        'J’aime le bleu.',
-        'J’aime le rouge.',
-        'J’aime le vert.',
+        {
+          french: 'J’aime le bleu.',
+          english: 'I like blue.',
+        },
+        {
+          french: 'J’aime le rouge.',
+          english: 'I like red.',
+        },
+        {
+          french: 'J’aime le vert.',
+          english: 'I like green.',
+        },
       ],
     };
 
@@ -447,7 +519,8 @@ export default function Home() {
       .reverse()
       .find(
         (message) =>
-          message.speaker === 'tutor'
+          message.speaker ===
+          'tutor'
       );
 
   return (
@@ -771,7 +844,7 @@ export default function Home() {
                 answerOptions.length > 0 && (
                   <div className="suggestedAnswers">
                     <div className="suggestedTitle">
-                      💬 You can say:
+                      💬 Choose an answer:
                     </div>
 
                     <div className="answerOptions">
@@ -785,11 +858,17 @@ export default function Home() {
                             className="answerOption"
                             onClick={() =>
                               chooseAnswer(
-                                option
+                                option.french
                               )
                             }
                           >
-                            {option}
+                            <div className="optionFrench">
+                              {option.french}
+                            </div>
+
+                            <div className="optionEnglish">
+                              {option.english}
+                            </div>
                           </button>
                         )
                       )}
@@ -1358,7 +1437,7 @@ const styles = `
     background: white;
     color: #302d4b;
     border-radius: 16px;
-    padding: 13px 15px;
+    padding: 12px 15px;
     font-size: 15px;
     font-weight: 750;
     text-align: left;
@@ -1379,6 +1458,20 @@ const styles = `
 
   .answerOption:active {
     transform: translateY(0);
+  }
+
+  .optionFrench {
+    font-size: 15px;
+    font-weight: 850;
+    line-height: 1.4;
+  }
+
+  .optionEnglish {
+    margin-top: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #8a859d;
+    line-height: 1.35;
   }
 
   .inputArea {
