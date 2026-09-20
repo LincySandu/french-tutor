@@ -7,6 +7,7 @@ const FrenchTutor = () => {
   const [dialogue, setDialogue] = useState([]);
   const [userInput, setUserInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [completed, setCompleted] = useState(new Set());
   const [error, setError] = useState('');
   const dialogueEndRef = useRef(null);
