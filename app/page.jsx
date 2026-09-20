@@ -2959,11 +2959,13 @@ const styles = `
     border-radius: 20px;
   }
 
-  .messageRow {
-    display: flex;
-    gap: 9px;
-    margin-bottom: 17px;
-  }
+  ..messageRow {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 17px;
+  width: 100%;
+  min-width: 0;
+}
 
   .messageRow.user {
     justify-content: flex-end;
