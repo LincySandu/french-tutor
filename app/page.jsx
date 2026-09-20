@@ -2,117 +2,696 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+const languages = {
+  en: {
+    label: 'English',
+    native: 'English',
+    ui: {
+      level: 'LEVEL',
+      xp: 'XP',
+      missions: 'missions',
+      xpPerAnswer: 'XP per answer',
+      chooseAdventure: 'CHOOSE YOUR ADVENTURE',
+      pickMission: 'Pick a mission',
+      toExplore: 'to explore',
+      playMission: 'PLAY MISSION',
+      littleTip: 'Little tip from Mimi',
+      tipText:
+        "You don't need to know everything. Just try! Every answer helps you learn.",
+      allMissions: '← All missions',
+      mission: 'MISSION',
+      hiMimi: "Hi! I'm Mimi.",
+      practise: "Let's practise some French together.",
+      startMission: 'START MISSION',
+      missionsBack: '← Missions',
+      ready: 'READY',
+      frenchFriend: 'Your French friend',
+      listen: 'Listen',
+      meaning: 'Meaning',
+      hideMeaning: 'Hide meaning',
+      usefulWords: 'USEFUL WORDS',
+      yourTurn: 'Your turn!',
+      chooseOrType: 'Choose an answer or type your own.',
+      placeholder: 'Write your answer in French...',
+      tip: 'Tip',
+      mistakes: "It's okay to make mistakes!",
+      hello: 'BONJOUR!',
+      heroTitle1: 'Your French',
+      heroTitle2: 'adventure',
+      heroTitle3: 'starts here.',
+      heroText:
+        'Learn French by talking, playing and completing fun little missions with Mimi.',
+      readyToPlay: 'Ready to play?',
+      selectLanguage: 'Language',
+    },
+    scenarios: {
+      school: {
+        name: 'At School',
+        description:
+          'Talk about school, friends and your favourite subjects.',
+        category: 'EVERYDAY LIFE',
+        intro:
+          'Imagine we are at school in France. I will help you talk about your school day, your friends and the subjects you like.',
+        meaning:
+          "We are going to practise talking about school and your favourite subjects.",
+      },
+      sports: {
+        name: 'Sports',
+        description:
+          'Talk about sports, teams and what you like to play.',
+        category: 'FUN & GAMES',
+        intro:
+          'Imagine we are talking about sports after school. I will ask you about the sports you enjoy and your favourite teams.',
+        meaning:
+          'We are going to practise talking about sports and activities you enjoy.',
+      },
+      animals: {
+        name: 'Animals',
+        description:
+          'Discover animals and describe your favourites.',
+        category: 'NATURE',
+        intro:
+          'Imagine we are visiting an animal park. I will help you talk about different animals and describe the ones you like.',
+        meaning:
+          'We are going to practise describing animals and talking about your favourites.',
+      },
+      hobbies: {
+        name: 'My Hobbies',
+        description:
+          'Talk about games, music, drawing and your free time.',
+        category: 'FREE TIME',
+        intro:
+          "Let's talk about what you enjoy doing in your free time. We can talk about games, music, drawing and other hobbies.",
+        meaning:
+          'We are going to practise talking about things you enjoy doing.',
+      },
+      family: {
+        name: 'My Family',
+        description:
+          'Introduce your family and talk about the people you love.',
+        category: 'PEOPLE',
+        intro:
+          "Let's talk about your family. I will help you introduce people in your family and say a few things about them.",
+        meaning:
+          'We are going to practise talking about your family.',
+      },
+      birthday: {
+        name: 'Birthday Party',
+        description:
+          'Talk about birthdays, presents, cake and celebrations.',
+        category: 'CELEBRATIONS',
+        intro:
+          'Imagine we are at a birthday party. We can talk about birthdays, presents, cake and what you like to do at parties.',
+        meaning:
+          'We are going to practise French for a birthday party.',
+      },
+      park: {
+        name: 'At the Park',
+        description:
+          'Explore the park and talk about what you can see.',
+        category: 'OUTSIDE',
+        intro:
+          "Imagine we are spending the afternoon in a French park. Let's talk about what we can see and what we like doing outside.",
+        meaning:
+          'We are going to practise talking about things you see and do in a park.',
+      },
+      shopping: {
+        name: 'Shopping',
+        description:
+          'Learn useful French for shops, clothes and prices.',
+        category: 'EVERYDAY LIFE',
+        intro:
+          'Imagine we are in a French shop. I will help you practise useful words for clothes, colours, prices and buying things.',
+        meaning:
+          'We are going to practise useful French for shopping.',
+      },
+    },
+  },
+
+  fr: {
+    label: 'Français',
+    native: 'Français',
+    ui: {
+      level: 'NIVEAU',
+      xp: 'XP',
+      missions: 'missions',
+      xpPerAnswer: 'XP par réponse',
+      chooseAdventure: 'CHOISIS TON AVENTURE',
+      pickMission: 'Choisis une mission',
+      toExplore: 'à découvrir',
+      playMission: 'JOUER LA MISSION',
+      littleTip: 'Le petit conseil de Mimi',
+      tipText:
+        "Tu n'as pas besoin de tout savoir. Essaie simplement ! Chaque réponse t'aide à apprendre.",
+      allMissions: '← Toutes les missions',
+      mission: 'MISSION',
+      hiMimi: 'Salut ! Je suis Mimi.',
+      practise: 'Pratiquons le français ensemble.',
+      startMission: 'COMMENCER LA MISSION',
+      missionsBack: '← Missions',
+      ready: 'PRÊT',
+      frenchFriend: 'Ton amie française',
+      listen: 'Écouter',
+      meaning: 'Sens',
+      hideMeaning: 'Cacher le sens',
+      usefulWords: 'MOTS UTILES',
+      yourTurn: 'À ton tour !',
+      chooseOrType: 'Choisis une réponse ou écris la tienne.',
+      placeholder: 'Écris ta réponse en français...',
+      tip: 'Conseil',
+      mistakes: "Ce n'est pas grave de faire des erreurs !",
+      hello: 'BONJOUR !',
+      heroTitle1: 'Ton aventure',
+      heroTitle2: 'française',
+      heroTitle3: 'commence ici.',
+      heroText:
+        'Apprends le français en parlant, en jouant et en faisant de petites missions avec Mimi.',
+      readyToPlay: 'Prêt à jouer ?',
+      selectLanguage: 'Langue',
+    },
+    scenarios: {
+      school: {
+        name: 'À l’école',
+        description:
+          "Parle de l'école, de tes amis et de tes matières préférées.",
+        category: 'VIE QUOTIDIENNE',
+        intro:
+          "Imagine que nous sommes à l'école en France. Je vais t'aider à parler de ta journée, de tes amis et des matières que tu aimes.",
+        meaning:
+          "Nous allons pratiquer le français pour parler de l'école et de tes matières préférées.",
+      },
+      sports: {
+        name: 'Le sport',
+        description:
+          'Parle de sport, des équipes et de ce que tu aimes pratiquer.',
+        category: 'JEUX & PLAISIR',
+        intro:
+          'Imagine que nous parlons de sport après l’école. Je vais te poser des questions sur les sports que tu aimes et tes équipes préférées.',
+        meaning:
+          'Nous allons pratiquer le français pour parler du sport et des activités que tu aimes.',
+      },
+      animals: {
+        name: 'Les animaux',
+        description:
+          'Découvre les animaux et décris tes préférés.',
+        category: 'NATURE',
+        intro:
+          'Imagine que nous visitons un parc animalier. Je vais t’aider à parler de différents animaux et à décrire ceux que tu aimes.',
+        meaning:
+          'Nous allons pratiquer le français pour décrire les animaux et parler de tes préférés.',
+      },
+      hobbies: {
+        name: 'Mes loisirs',
+        description:
+          'Parle des jeux, de la musique, du dessin et de ton temps libre.',
+        category: 'TEMPS LIBRE',
+        intro:
+          'Parlons de ce que tu aimes faire pendant ton temps libre. Nous pouvons parler de jeux, de musique, de dessin et de loisirs.',
+        meaning:
+          'Nous allons pratiquer le français pour parler de ce que tu aimes faire.',
+      },
+      family: {
+        name: 'Ma famille',
+        description:
+          'Présente ta famille et parle des personnes que tu aimes.',
+        category: 'PERSONNES',
+        intro:
+          'Parlons de ta famille. Je vais t’aider à présenter les personnes de ta famille et à dire quelques choses sur elles.',
+        meaning:
+          'Nous allons pratiquer le français pour parler de ta famille.',
+      },
+      birthday: {
+        name: "Fête d'anniversaire",
+        description:
+          "Parle des anniversaires, des cadeaux, du gâteau et des fêtes.",
+        category: 'FÊTES',
+        intro:
+          "Imagine que nous sommes à une fête d'anniversaire. Nous pouvons parler des anniversaires, des cadeaux, du gâteau et de ce que tu aimes faire pendant les fêtes.",
+        meaning:
+          "Nous allons pratiquer le français pour parler d'une fête d'anniversaire.",
+      },
+      park: {
+        name: 'Au parc',
+        description:
+          'Explore le parc et parle de ce que tu peux voir.',
+        category: 'DEHORS',
+        intro:
+          'Imagine que nous passons l’après-midi dans un parc français. Parlons de ce que nous pouvons voir et de ce que nous aimons faire dehors.',
+        meaning:
+          'Nous allons pratiquer le français pour parler de ce que tu vois et fais dans un parc.',
+      },
+      shopping: {
+        name: 'Les achats',
+        description:
+          'Apprends le français utile pour les magasins, les vêtements et les prix.',
+        category: 'VIE QUOTIDIENNE',
+        intro:
+          'Imagine que nous sommes dans un magasin français. Je vais t’aider à pratiquer des mots utiles pour les vêtements, les couleurs, les prix et les achats.',
+        meaning:
+          'Nous allons pratiquer le français utile pour faire des achats.',
+      },
+    },
+  },
+
+  de: {
+    label: 'Deutsch',
+    native: 'Deutsch',
+    ui: {
+      level: 'LEVEL',
+      xp: 'XP',
+      missions: 'Missionen',
+      xpPerAnswer: 'XP pro Antwort',
+      chooseAdventure: 'WÄHLE DEIN ABENTEUER',
+      pickMission: 'Wähle eine Mission',
+      toExplore: 'zu entdecken',
+      playMission: 'MISSION STARTEN',
+      littleTip: 'Mimis kleiner Tipp',
+      tipText:
+        'Du musst nicht alles wissen. Versuch es einfach! Jede Antwort hilft dir beim Lernen.',
+      allMissions: '← Alle Missionen',
+      mission: 'MISSION',
+      hiMimi: 'Hallo! Ich bin Mimi.',
+      practise: 'Lass uns zusammen Französisch üben.',
+      startMission: 'MISSION STARTEN',
+      missionsBack: '← Missionen',
+      ready: 'BEREIT',
+      frenchFriend: 'Deine französische Freundin',
+      listen: 'Anhören',
+      meaning: 'Bedeutung',
+      hideMeaning: 'Bedeutung ausblenden',
+      usefulWords: 'NÜTZLICHE WÖRTER',
+      yourTurn: 'Du bist dran!',
+      chooseOrType: 'Wähle eine Antwort oder schreibe deine eigene.',
+      placeholder: 'Schreibe deine Antwort auf Französisch...',
+      tip: 'Tipp',
+      mistakes: 'Es ist okay, Fehler zu machen!',
+      hello: 'BONJOUR!',
+      heroTitle1: 'Dein Französisch-',
+      heroTitle2: 'Abenteuer',
+      heroTitle3: 'beginnt hier.',
+      heroText:
+        'Lerne Französisch mit Mimi durch Sprechen, Spielen und kleine Missionen.',
+      readyToPlay: 'Bereit zum Spielen?',
+      selectLanguage: 'Sprache',
+    },
+    scenarios: {
+      school: {
+        name: 'In der Schule',
+        description:
+          'Sprich über die Schule, Freunde und deine Lieblingsfächer.',
+        category: 'ALLTAG',
+        intro:
+          'Stell dir vor, wir sind in einer Schule in Frankreich. Ich helfe dir, über deinen Schultag, deine Freunde und deine Lieblingsfächer zu sprechen.',
+        meaning:
+          'Wir üben Französisch, um über die Schule und deine Lieblingsfächer zu sprechen.',
+      },
+      sports: {
+        name: 'Sport',
+        description:
+          'Sprich über Sport, Teams und was du gerne spielst.',
+        category: 'SPIEL & SPASS',
+        intro:
+          'Stell dir vor, wir sprechen nach der Schule über Sport. Ich frage dich nach deinen Lieblingssportarten und Teams.',
+        meaning:
+          'Wir üben Französisch, um über Sport und Aktivitäten zu sprechen, die du magst.',
+      },
+      animals: {
+        name: 'Tiere',
+        description:
+          'Entdecke Tiere und beschreibe deine Lieblingstiere.',
+        category: 'NATUR',
+        intro:
+          'Stell dir vor, wir besuchen einen Tierpark. Ich helfe dir, über verschiedene Tiere zu sprechen und deine Lieblingstiere zu beschreiben.',
+        meaning:
+          'Wir üben Französisch, um Tiere zu beschreiben und über deine Lieblingstiere zu sprechen.',
+      },
+      hobbies: {
+        name: 'Meine Hobbys',
+        description:
+          'Sprich über Spiele, Musik, Zeichnen und deine Freizeit.',
+        category: 'FREIZEIT',
+        intro:
+          'Lass uns darüber sprechen, was du in deiner Freizeit gerne machst. Wir können über Spiele, Musik, Zeichnen und andere Hobbys sprechen.',
+        meaning:
+          'Wir üben Französisch, um über Dinge zu sprechen, die du gerne machst.',
+      },
+      family: {
+        name: 'Meine Familie',
+        description:
+          'Stelle deine Familie vor und sprich über die Menschen, die du liebst.',
+        category: 'MENSCHEN',
+        intro:
+          'Lass uns über deine Familie sprechen. Ich helfe dir, deine Familie vorzustellen und etwas über sie zu erzählen.',
+        meaning:
+          'Wir üben Französisch, um über deine Familie zu sprechen.',
+      },
+      birthday: {
+        name: 'Geburtstagsparty',
+        description:
+          'Sprich über Geburtstage, Geschenke, Kuchen und Feiern.',
+        category: 'FEIERN',
+        intro:
+          'Stell dir vor, wir sind auf einer Geburtstagsparty. Wir können über Geburtstage, Geschenke, Kuchen und Partys sprechen.',
+        meaning:
+          'Wir üben Französisch für eine Geburtstagsparty.',
+      },
+      park: {
+        name: 'Im Park',
+        description:
+          'Erkunde den Park und sprich darüber, was du sehen kannst.',
+        category: 'DRAUSSEN',
+        intro:
+          'Stell dir vor, wir verbringen den Nachmittag in einem französischen Park. Lass uns darüber sprechen, was wir sehen und gerne draußen machen.',
+        meaning:
+          'Wir üben Französisch, um über Dinge zu sprechen, die du im Park siehst und machst.',
+      },
+      shopping: {
+        name: 'Einkaufen',
+        description:
+          'Lerne nützliches Französisch für Geschäfte, Kleidung und Preise.',
+        category: 'ALLTAG',
+        intro:
+          'Stell dir vor, wir sind in einem französischen Geschäft. Ich helfe dir mit Wörtern für Kleidung, Farben, Preise und Einkaufen.',
+        meaning:
+          'Wir üben nützliches Französisch zum Einkaufen.',
+      },
+    },
+  },
+
+  ro: {
+    label: 'Română',
+    native: 'Română',
+    ui: {
+      level: 'NIVEL',
+      xp: 'XP',
+      missions: 'misiuni',
+      xpPerAnswer: 'XP pentru fiecare răspuns',
+      chooseAdventure: 'ALEGE AVENTURA',
+      pickMission: 'Alege o misiune',
+      toExplore: 'de descoperit',
+      playMission: 'JOACĂ MISIUNEA',
+      littleTip: 'Micul sfat al lui Mimi',
+      tipText:
+        'Nu trebuie să știi totul. Doar încearcă! Fiecare răspuns te ajută să înveți.',
+      allMissions: '← Toate misiunile',
+      mission: 'MISIUNEA',
+      hiMimi: 'Salut! Eu sunt Mimi.',
+      practise: 'Hai să exersăm franceza împreună.',
+      startMission: 'ÎNCEPE MISIUNEA',
+      missionsBack: '← Misiuni',
+      ready: 'GATA',
+      frenchFriend: 'Prietenul tău francez',
+      listen: 'Ascultă',
+      meaning: 'Sens',
+      hideMeaning: 'Ascunde sensul',
+      usefulWords: 'CUVINTE UTILE',
+      yourTurn: 'E rândul tău!',
+      chooseOrType: 'Alege un răspuns sau scrie unul propriu.',
+      placeholder: 'Scrie răspunsul tău în franceză...',
+      tip: 'Sfat',
+      mistakes: 'Este în regulă să faci greșeli!',
+      hello: 'BONJOUR!',
+      heroTitle1: 'Aventura ta',
+      heroTitle2: 'în franceză',
+      heroTitle3: 'începe aici.',
+      heroText:
+        'Învață franceza vorbind, jucându-te și completând mici misiuni cu Mimi.',
+      readyToPlay: 'Gata de joacă?',
+      selectLanguage: 'Limbă',
+    },
+    scenarios: {
+      school: {
+        name: 'La școală',
+        description:
+          'Vorbește despre școală, prieteni și materiile tale preferate.',
+        category: 'VIAȚA DE ZI CU ZI',
+        intro:
+          'Imaginează-ți că suntem la o școală din Franța. Te voi ajuta să vorbești despre ziua ta la școală, prieteni și materiile care îți plac.',
+        meaning:
+          'Vom exersa franceza pentru a vorbi despre școală și materiile tale preferate.',
+      },
+      sports: {
+        name: 'Sport',
+        description:
+          'Vorbește despre sporturi, echipe și ce îți place să practici.',
+        category: 'JOCURI & DISTRACȚIE',
+        intro:
+          'Imaginează-ți că vorbim despre sport după școală. Te voi întreba despre sporturile și echipele tale preferate.',
+        meaning:
+          'Vom exersa franceza pentru a vorbi despre sport și activitățile care îți plac.',
+      },
+      animals: {
+        name: 'Animale',
+        description:
+          'Descoperă animale și descrie-le pe cele preferate.',
+        category: 'NATURĂ',
+        intro:
+          'Imaginează-ți că vizităm un parc cu animale. Te voi ajuta să vorbești despre animale și să le descrii pe cele care îți plac.',
+        meaning:
+          'Vom exersa franceza pentru a descrie animale și a vorbi despre preferatele tale.',
+      },
+      hobbies: {
+        name: 'Hobby-urile mele',
+        description:
+          'Vorbește despre jocuri, muzică, desen și timpul liber.',
+        category: 'TIMP LIBER',
+        intro:
+          'Hai să vorbim despre ce îți place să faci în timpul liber. Putem vorbi despre jocuri, muzică, desen și alte hobby-uri.',
+        meaning:
+          'Vom exersa franceza pentru a vorbi despre lucrurile care îți place să le faci.',
+      },
+      family: {
+        name: 'Familia mea',
+        description:
+          'Prezintă-ți familia și vorbește despre oamenii pe care îi iubești.',
+        category: 'OAMENI',
+        intro:
+          'Hai să vorbim despre familia ta. Te voi ajuta să prezinți membrii familiei și să spui câteva lucruri despre ei.',
+        meaning:
+          'Vom exersa franceza pentru a vorbi despre familia ta.',
+      },
+      birthday: {
+        name: 'Petrecere de ziua de naștere',
+        description:
+          'Vorbește despre zile de naștere, cadouri, tort și sărbători.',
+        category: 'SĂRBĂTORI',
+        intro:
+          'Imaginează-ți că suntem la o petrecere de ziua de naștere. Putem vorbi despre cadouri, tort și ce îți place să faci la petreceri.',
+        meaning:
+          'Vom exersa franceza pentru o petrecere de ziua de naștere.',
+      },
+      park: {
+        name: 'În parc',
+        description:
+          'Explorează parcul și vorbește despre ceea ce poți vedea.',
+        category: 'AFARĂ',
+        intro:
+          'Imaginează-ți că petrecem după-amiaza într-un parc francez. Hai să vorbim despre ce vedem și ce ne place să facem afară.',
+        meaning:
+          'Vom exersa franceza pentru a vorbi despre lucrurile pe care le vezi și le faci în parc.',
+      },
+      shopping: {
+        name: 'La cumpărături',
+        description:
+          'Învață franceza utilă pentru magazine, haine și prețuri.',
+        category: 'VIAȚA DE ZI CU ZI',
+        intro:
+          'Imaginează-ți că suntem într-un magazin francez. Te voi ajuta să exersezi cuvinte utile pentru haine, culori, prețuri și cumpărături.',
+        meaning:
+          'Vom exersa franceza utilă pentru cumpărături.',
+      },
+    },
+  },
+
+  es: {
+    label: 'Español',
+    native: 'Español',
+    ui: {
+      level: 'NIVEL',
+      xp: 'XP',
+      missions: 'misiones',
+      xpPerAnswer: 'XP por respuesta',
+      chooseAdventure: 'ELIGE TU AVENTURA',
+      pickMission: 'Elige una misión',
+      toExplore: 'por descubrir',
+      playMission: 'JUGAR MISIÓN',
+      littleTip: 'El pequeño consejo de Mimi',
+      tipText:
+        'No necesitas saberlo todo. ¡Solo inténtalo! Cada respuesta te ayuda a aprender.',
+      allMissions: '← Todas las misiones',
+      mission: 'MISIÓN',
+      hiMimi: '¡Hola! Soy Mimi.',
+      practise: 'Vamos a practicar francés juntos.',
+      startMission: 'EMPEZAR MISIÓN',
+      missionsBack: '← Misiones',
+      ready: 'LISTO',
+      frenchFriend: 'Tu amiga francesa',
+      listen: 'Escuchar',
+      meaning: 'Significado',
+      hideMeaning: 'Ocultar significado',
+      usefulWords: 'PALABRAS ÚTILES',
+      yourTurn: '¡Tu turno!',
+      chooseOrType: 'Elige una respuesta o escribe la tuya.',
+      placeholder: 'Escribe tu respuesta en francés...',
+      tip: 'Consejo',
+      mistakes: '¡No pasa nada si cometes errores!',
+      hello: 'BONJOUR!',
+      heroTitle1: 'Tu aventura',
+      heroTitle2: 'en francés',
+      heroTitle3: 'empieza aquí.',
+      heroText:
+        'Aprende francés hablando, jugando y completando pequeñas misiones con Mimi.',
+      readyToPlay: '¿Listo para jugar?',
+      selectLanguage: 'Idioma',
+    },
+    scenarios: {
+      school: {
+        name: 'En la escuela',
+        description:
+          'Habla sobre la escuela, tus amigos y tus asignaturas favoritas.',
+        category: 'VIDA COTIDIANA',
+        intro:
+          'Imagina que estamos en una escuela de Francia. Te ayudaré a hablar sobre tu día, tus amigos y las asignaturas que te gustan.',
+        meaning:
+          'Vamos a practicar francés para hablar de la escuela y tus asignaturas favoritas.',
+      },
+      sports: {
+        name: 'Deportes',
+        description:
+          'Habla sobre deportes, equipos y lo que te gusta practicar.',
+        category: 'JUEGOS Y DIVERSIÓN',
+        intro:
+          'Imagina que hablamos de deportes después de la escuela. Te preguntaré por tus deportes y equipos favoritos.',
+        meaning:
+          'Vamos a practicar francés para hablar de deportes y actividades que te gustan.',
+      },
+      animals: {
+        name: 'Animales',
+        description:
+          'Descubre animales y describe tus favoritos.',
+        category: 'NATURALEZA',
+        intro:
+          'Imagina que visitamos un parque de animales. Te ayudaré a hablar de diferentes animales y a describir los que te gustan.',
+        meaning:
+          'Vamos a practicar francés para describir animales y hablar de tus favoritos.',
+      },
+      hobbies: {
+        name: 'Mis aficiones',
+        description:
+          'Habla sobre juegos, música, dibujo y tu tiempo libre.',
+        category: 'TIEMPO LIBRE',
+        intro:
+          'Hablemos de lo que te gusta hacer en tu tiempo libre. Podemos hablar de juegos, música, dibujo y otras aficiones.',
+        meaning:
+          'Vamos a practicar francés para hablar de las cosas que te gusta hacer.',
+      },
+      family: {
+        name: 'Mi familia',
+        description:
+          'Presenta a tu familia y habla de las personas que quieres.',
+        category: 'PERSONAS',
+        intro:
+          'Hablemos de tu familia. Te ayudaré a presentar a las personas de tu familia y decir algunas cosas sobre ellas.',
+        meaning:
+          'Vamos a practicar francés para hablar de tu familia.',
+      },
+      birthday: {
+        name: 'Fiesta de cumpleaños',
+        description:
+          'Habla sobre cumpleaños, regalos, tarta y celebraciones.',
+        category: 'CELEBRACIONES',
+        intro:
+          'Imagina que estamos en una fiesta de cumpleaños. Podemos hablar de cumpleaños, regalos, tarta y lo que te gusta hacer en las fiestas.',
+        meaning:
+          'Vamos a practicar francés para una fiesta de cumpleaños.',
+      },
+      park: {
+        name: 'En el parque',
+        description:
+          'Explora el parque y habla de lo que puedes ver.',
+        category: 'AL AIRE LIBRE',
+        intro:
+          'Imagina que pasamos la tarde en un parque francés. Hablemos de lo que podemos ver y de lo que nos gusta hacer fuera.',
+        meaning:
+          'Vamos a practicar francés para hablar de las cosas que ves y haces en un parque.',
+      },
+      shopping: {
+        name: 'De compras',
+        description:
+          'Aprende francés útil para tiendas, ropa y precios.',
+        category: 'VIDA COTIDIANA',
+        intro:
+          'Imagina que estamos en una tienda francesa. Te ayudaré a practicar palabras útiles para ropa, colores, precios y compras.',
+        meaning:
+          'Vamos a practicar francés útil para ir de compras.',
+      },
+    },
+  },
+};
+
 const scenarios = [
   {
     id: 'school',
     number: '01',
-    name: 'At School',
-    description: 'Talk about school, friends and your favourite subjects.',
     color: '#7DD9EA',
-    category: 'EVERYDAY LIFE',
     icon: 'book',
   },
   {
     id: 'sports',
     number: '02',
-    name: 'Sports',
-    description: 'Talk about sports, teams and what you like to play.',
     color: '#FFB86B',
-    category: 'FUN & GAMES',
     icon: 'ball',
   },
   {
     id: 'animals',
     number: '03',
-    name: 'Animals',
-    description: 'Discover animals and describe your favourites.',
     color: '#A9D98B',
-    category: 'NATURE',
     icon: 'paw',
   },
   {
     id: 'hobbies',
     number: '04',
-    name: 'My Hobbies',
-    description: 'Talk about games, music, drawing and your free time.',
     color: '#C5A7F7',
-    category: 'FREE TIME',
     icon: 'star',
   },
   {
     id: 'family',
     number: '05',
-    name: 'My Family',
-    description: 'Introduce your family and talk about the people you love.',
     color: '#F4A6C8',
-    category: 'PEOPLE',
     icon: 'family',
   },
   {
     id: 'birthday',
     number: '06',
-    name: 'Birthday Party',
-    description: 'Talk about birthdays, presents, cake and celebrations.',
     color: '#FFD86B',
-    category: 'CELEBRATIONS',
     icon: 'cake',
   },
   {
     id: 'park',
     number: '07',
-    name: 'At the Park',
-    description: 'Explore the park and talk about what you can see.',
     color: '#8ED5AE',
-    category: 'OUTSIDE',
     icon: 'tree',
   },
   {
     id: 'shopping',
     number: '08',
-    name: 'Shopping',
-    description: 'Learn useful French for shops, clothes and prices.',
     color: '#9DBAF4',
-    category: 'EVERYDAY LIFE',
     icon: 'bag',
   },
 ];
 
-function getScenarioText(id) {
-  const texts = {
-    school:
-      "Imagine we are at school in France. I will help you talk about your school day, your friends and the subjects you like.",
-    sports:
-      "Imagine we are talking about sports after school. I will ask you about the sports you enjoy and your favourite teams.",
-    animals:
-      "Imagine we are visiting an animal park. I will help you talk about different animals and describe the ones you like.",
-    hobbies:
-      "Let's talk about what you enjoy doing in your free time. We can talk about games, music, drawing and other hobbies.",
-    family:
-      "Let's talk about your family. I will help you introduce people in your family and say a few things about them.",
-    birthday:
-      "Imagine we are at a birthday party. We can talk about birthdays, presents, cake and what you like to do at parties.",
-    park:
-      "Imagine we are spending the afternoon in a French park. Let's talk about what we can see and what we like doing outside.",
-    shopping:
-      "Imagine we are in a French shop. I will help you practise useful words for clothes, colours, prices and buying things.",
-  };
-
-  return texts[id] || texts.school;
+function getScenarioText(id, baseLanguage) {
+  return (
+    languages[baseLanguage]?.scenarios?.[id]?.intro ||
+    languages.en.scenarios[id].intro
+  );
 }
 
-function getInitialMeaning(id) {
-  const meanings = {
-    school: 'We are going to practise talking about school and your favourite subjects.',
-    sports: 'We are going to practise talking about sports and activities you enjoy.',
-    animals: 'We are going to practise describing animals and talking about your favourites.',
-    hobbies: 'We are going to practise talking about things you enjoy doing.',
-    family: 'We are going to practise talking about your family.',
-    birthday: 'We are going to practise French for a birthday party.',
-    park: 'We are going to practise talking about things you see and do in a park.',
-    shopping: 'We are going to practise useful French for shopping.',
-  };
-
-  return meanings[id] || meanings.school;
+function getInitialMeaning(id, baseLanguage) {
+  return (
+    languages[baseLanguage]?.scenarios?.[id]?.meaning ||
+    languages.en.scenarios[id].meaning
+  );
 }
 
 function getFrenchVoice() {
@@ -123,8 +702,12 @@ function getFrenchVoice() {
   const voices = window.speechSynthesis.getVoices();
 
   return (
-    voices.find((voice) => voice.lang?.toLowerCase().startsWith('fr')) ||
-    voices.find((voice) => voice.lang?.toLowerCase().includes('fr')) ||
+    voices.find((voice) =>
+      voice.lang?.toLowerCase().startsWith('fr')
+    ) ||
+    voices.find((voice) =>
+      voice.lang?.toLowerCase().includes('fr')
+    ) ||
     null
   );
 }
@@ -249,6 +832,7 @@ function MissionIcon({ type }) {
 }
 
 export default function Home() {
+  const [baseLanguage, setBaseLanguage] = useState('en');
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -260,6 +844,30 @@ export default function Home() {
   const [showMeaning, setShowMeaning] = useState(false);
 
   const messagesEndRef = useRef(null);
+
+  const ui = languages[baseLanguage]?.ui || languages.en.ui;
+
+  useEffect(() => {
+    const savedLanguage = window.localStorage.getItem(
+      'mimiBaseLanguage'
+    );
+
+    if (
+      savedLanguage &&
+      languages[savedLanguage]
+    ) {
+      setBaseLanguage(savedLanguage);
+    }
+  }, []);
+
+  function changeLanguage(language) {
+    setBaseLanguage(language);
+
+    window.localStorage.setItem(
+      'mimiBaseLanguage',
+      language
+    );
+  }
 
   useEffect(() => {
     if (!selectedScenario || showIntro) return;
@@ -287,14 +895,20 @@ export default function Home() {
   async function beginMission() {
     setShowIntro(false);
 
-    const scenarioText = getScenarioText(selectedScenario.id);
+    const scenarioText = getScenarioText(
+      selectedScenario.id,
+      baseLanguage
+    );
 
     setMessages([
       {
         role: 'mimi',
         text: scenarioText,
         speechText: scenarioText,
-        meaning: getInitialMeaning(selectedScenario.id),
+        meaning: getInitialMeaning(
+          selectedScenario.id,
+          baseLanguage
+        ),
       },
     ]);
 
@@ -310,6 +924,7 @@ export default function Home() {
           scenario: selectedScenario.id,
           messages: [],
           start: true,
+          baseLanguage,
         }),
       });
 
@@ -345,9 +960,15 @@ export default function Home() {
 
   async function sendMessage(customMessage = null) {
     const messageToSend =
-      typeof customMessage === 'string' ? customMessage.trim() : input.trim();
+      typeof customMessage === 'string'
+        ? customMessage.trim()
+        : input.trim();
 
-    if (!messageToSend || loading || !selectedScenario) {
+    if (
+      !messageToSend ||
+      loading ||
+      !selectedScenario
+    ) {
       return;
     }
 
@@ -356,7 +977,10 @@ export default function Home() {
       text: messageToSend,
     };
 
-    const updatedMessages = [...messages, userMessage];
+    const updatedMessages = [
+      ...messages,
+      userMessage,
+    ];
 
     setMessages(updatedMessages);
     setInput('');
@@ -373,6 +997,7 @@ export default function Home() {
         body: JSON.stringify({
           scenario: selectedScenario.id,
           messages: updatedMessages,
+          baseLanguage,
         }),
       });
 
@@ -380,22 +1005,38 @@ export default function Home() {
 
       if (!response.ok) {
         console.error(data);
-        throw new Error(data?.error?.message || 'Tutor request failed');
+
+        throw new Error(
+          data?.error?.message ||
+            data?.error ||
+            'Tutor request failed'
+        );
       }
 
       const mimiMessage = {
         role: 'mimi',
         text: data.reply || 'Très bien !',
-        speechText: data.speechText || data.reply || 'Très bien !',
+        speechText:
+          data.speechText ||
+          data.reply ||
+          'Très bien !',
         meaning: data.meaning || '',
       };
 
-      setMessages((current) => [...current, mimiMessage]);
+      setMessages((current) => [
+        ...current,
+        mimiMessage,
+      ]);
+
       setAnswerOptions(data.options || []);
       setVocabulary(data.vocabulary || []);
 
       setTimeout(() => {
-        speakFrench(data.speechText || data.reply || 'Très bien !');
+        speakFrench(
+          data.speechText ||
+            data.reply ||
+            'Très bien !'
+        );
       }, 100);
     } catch (error) {
       console.error(error);
@@ -404,9 +1045,27 @@ export default function Home() {
         ...current,
         {
           role: 'mimi',
-          text: "Désolée ! Let's try that again.",
-          speechText: "Désolée ! Let's try that again.",
-          meaning: 'Something went wrong while connecting to Mimi.',
+          text:
+            baseLanguage === 'fr'
+              ? 'Désolée ! Réessayons.'
+              : baseLanguage === 'de'
+                ? 'Entschuldigung! Versuchen wir es noch einmal.'
+                : baseLanguage === 'ro'
+                  ? 'Scuze! Hai să încercăm din nou.'
+                  : baseLanguage === 'es'
+                    ? '¡Lo siento! Intentémoslo de nuevo.'
+                    : "Désolée ! Let's try that again.",
+          speechText: '',
+          meaning:
+            baseLanguage === 'fr'
+              ? 'Un problème est survenu pendant la connexion à Mimi.'
+              : baseLanguage === 'de'
+                ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
+                : baseLanguage === 'ro'
+                  ? 'A apărut o problemă la conectarea cu Mimi.'
+                  : baseLanguage === 'es'
+                    ? 'Ha ocurrido un problema al conectar con Mimi.'
+                    : 'Something went wrong while connecting to Mimi.',
         },
       ]);
     } finally {
@@ -415,7 +1074,10 @@ export default function Home() {
   }
 
   function goHome() {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
+    if (
+      typeof window !== 'undefined' &&
+      window.speechSynthesis
+    ) {
       window.speechSynthesis.cancel();
     }
 
@@ -428,7 +1090,11 @@ export default function Home() {
     setInput('');
   }
 
-  const progress = Math.min((xp / 100) * 100, 100);
+  const progress = Math.min(
+    (xp / 100) * 100,
+    100
+  );
+
   const level = Math.floor(xp / 100) + 1;
 
   return (
@@ -449,17 +1115,49 @@ export default function Home() {
           </div>
         </button>
 
-        <div className="xpArea">
-          <div className="levelLabel">
-            <span>LEVEL {level}</span>
-            <strong>{xp} XP</strong>
+        <div className="headerRight">
+          <div className="languageSelector">
+            <span>{ui.selectLanguage}</span>
+
+            <select
+              value={baseLanguage}
+              onChange={(event) =>
+                changeLanguage(event.target.value)
+              }
+              aria-label={ui.selectLanguage}
+            >
+              {Object.entries(languages).map(
+                ([code, language]) => (
+                  <option
+                    key={code}
+                    value={code}
+                  >
+                    {language.native}
+                  </option>
+                )
+              )}
+            </select>
           </div>
 
-          <div className="xpBar">
-            <div
-              className="xpFill"
-              style={{ width: `${progress}%` }}
-            />
+          <div className="xpArea">
+            <div className="levelLabel">
+              <span>
+                {ui.level} {level}
+              </span>
+
+              <strong>
+                {xp} {ui.xp}
+              </strong>
+            </div>
+
+            <div className="xpBar">
+              <div
+                className="xpFill"
+                style={{
+                  width: `${progress}%`,
+                }}
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -474,43 +1172,42 @@ export default function Home() {
             <div className="heroText">
               <div className="helloPill">
                 <span className="helloDot" />
-                BONJOUR!
+                {ui.hello}
               </div>
 
               <h1>
-                Your French
+                {ui.heroTitle1}
                 <br />
-                <span>adventure</span> starts here.
+                <span>{ui.heroTitle2}</span>{' '}
+                {ui.heroTitle3}
               </h1>
 
-              <p>
-                Learn French by talking, playing and completing fun little
-                missions with Mimi.
-              </p>
+              <p>{ui.heroText}</p>
 
               <div className="heroStats">
                 <div>
                   <strong>{scenarios.length}</strong>
-                  <span>missions</span>
+                  <span>{ui.missions}</span>
                 </div>
 
                 <div className="statDivider" />
 
                 <div>
                   <strong>5</strong>
-                  <span>XP per answer</span>
+                  <span>{ui.xpPerAnswer}</span>
                 </div>
               </div>
             </div>
 
             <div className="heroCharacter">
               <div className="characterGlow" />
+
               <div className="characterCard">
                 <Mimi />
 
                 <div className="speechBubble">
                   <span>Salut!</span>
-                  <small>Ready to play?</small>
+                  <small>{ui.readyToPlay}</small>
                 </div>
               </div>
 
@@ -523,46 +1220,81 @@ export default function Home() {
           <section className="missionsSection">
             <div className="sectionHeading">
               <div>
-                <span className="sectionEyebrow">CHOOSE YOUR ADVENTURE</span>
-                <h2>Pick a mission</h2>
+                <span className="sectionEyebrow">
+                  {ui.chooseAdventure}
+                </span>
+
+                <h2>{ui.pickMission}</h2>
               </div>
 
               <span className="missionCount">
-                {scenarios.length} to explore
+                {scenarios.length} {ui.toExplore}
               </span>
             </div>
 
             <div className="missionGrid">
-              {scenarios.map((scenario) => (
-                <button
-                  key={scenario.id}
-                  className="missionCard"
-                  onClick={() => selectScenario(scenario)}
-                  style={{ '--accent': scenario.color }}
-                >
-                  <div className="missionTop">
-                    <span className="missionNumber">{scenario.number}</span>
-                    <span className="missionArrow">↗</span>
-                  </div>
+              {scenarios.map((scenario) => {
+                const translatedScenario =
+                  languages[baseLanguage]
+                    ?.scenarios?.[scenario.id] ||
+                  languages.en.scenarios[
+                    scenario.id
+                  ];
 
-                  <MissionIcon type={scenario.icon} />
+                return (
+                  <button
+                    key={scenario.id}
+                    className="missionCard"
+                    onClick={() =>
+                      selectScenario(scenario)
+                    }
+                    style={{
+                      '--accent':
+                        scenario.color,
+                    }}
+                  >
+                    <div className="missionTop">
+                      <span className="missionNumber">
+                        {scenario.number}
+                      </span>
 
-                  <div className="missionContent">
-                    <span className="missionCategory">
-                      {scenario.category}
-                    </span>
+                      <span className="missionArrow">
+                        ↗
+                      </span>
+                    </div>
 
-                    <h3>{scenario.name}</h3>
+                    <MissionIcon
+                      type={scenario.icon}
+                    />
 
-                    <p>{scenario.description}</p>
-                  </div>
+                    <div className="missionContent">
+                      <span className="missionCategory">
+                        {
+                          translatedScenario.category
+                        }
+                      </span>
 
-                  <div className="playLabel">
-                    <span>PLAY MISSION</span>
-                    <span>→</span>
-                  </div>
-                </button>
-              ))}
+                      <h3>
+                        {translatedScenario.name}
+                      </h3>
+
+                      <p>
+                        {
+                          translatedScenario.description
+                        }
+                      </p>
+                    </div>
+
+                    <div className="playLabel">
+                      <span>
+                        {ui.playMission}
+                      </span>
+
+                      <span>→</span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -570,11 +1302,11 @@ export default function Home() {
             <div className="tipIcon">★</div>
 
             <div>
-              <strong>Little tip from Mimi</strong>
-              <p>
-                You don't need to know everything. Just try! Every answer
-                helps you learn.
-              </p>
+              <strong>
+                {ui.littleTip}
+              </strong>
+
+              <p>{ui.tipText}</p>
             </div>
           </div>
         </section>
@@ -585,38 +1317,74 @@ export default function Home() {
           <div className="introBackgroundShape introShapeOne" />
           <div className="introBackgroundShape introShapeTwo" />
 
-          <button className="backButton" onClick={goHome}>
-            ← All missions
+          <button
+            className="backButton"
+            onClick={goHome}
+          >
+            {ui.allMissions}
           </button>
 
           <div className="introCard">
             <div
               className="introMissionIcon"
-              style={{ '--accent': selectedScenario.color }}
+              style={{
+                '--accent':
+                  selectedScenario.color,
+              }}
             >
-              <MissionIcon type={selectedScenario.icon} />
+              <MissionIcon
+                type={selectedScenario.icon}
+              />
             </div>
 
             <span className="introNumber">
-              MISSION {selectedScenario.number}
+              {ui.mission}{' '}
+              {selectedScenario.number}
             </span>
 
-            <h1>{selectedScenario.name}</h1>
+            <h1>
+              {
+                languages[baseLanguage]
+                  ?.scenarios?.[
+                    selectedScenario.id
+                  ]?.name
+              }
+            </h1>
 
-            <p>{selectedScenario.description}</p>
+            <p>
+              {
+                languages[baseLanguage]
+                  ?.scenarios?.[
+                    selectedScenario.id
+                  ]?.description
+              }
+            </p>
 
             <div className="introMimi">
               <Mimi small />
 
               <div className="introMessage">
-                <strong>Hi! I'm Mimi.</strong>
-                <span>Let's practise some French together.</span>
+                <strong>
+                  {ui.hiMimi}
+                </strong>
+
+                <span>
+                  {ui.practise}
+                </span>
               </div>
             </div>
 
-            <button className="startButton" onClick={beginMission}>
-              <span>START MISSION</span>
-              <span className="startArrow">→</span>
+            <button
+              className="startButton"
+              onClick={beginMission}
+            >
+              <span>
+                {ui.startMission}
+              </span>
+
+              <span className="startArrow">
+                →
+              </span>
             </button>
           </div>
         </section>
@@ -625,27 +1393,48 @@ export default function Home() {
       {selectedScenario && !showIntro && (
         <section className="conversation">
           <div className="conversationHeader">
-            <button className="backButton" onClick={goHome}>
-              ← Missions
+            <button
+              className="backButton"
+              onClick={goHome}
+            >
+              {ui.missionsBack}
             </button>
 
             <div className="conversationTitle">
               <div
                 className="conversationMission"
-                style={{ background: selectedScenario.color }}
+                style={{
+                  background:
+                    selectedScenario.color,
+                }}
               >
                 {selectedScenario.number}
               </div>
 
               <div>
-                <span>{selectedScenario.category}</span>
-                <h1>{selectedScenario.name}</h1>
+                <span>
+                  {
+                    languages[baseLanguage]
+                      ?.scenarios?.[
+                        selectedScenario.id
+                      ]?.category
+                  }
+                </span>
+
+                <h1>
+                  {
+                    languages[baseLanguage]
+                      ?.scenarios?.[
+                        selectedScenario.id
+                      ]?.name
+                  }
+                </h1>
               </div>
             </div>
 
             <div className="readyStatus">
               <span />
-              READY
+              {ui.ready}
             </div>
           </div>
 
@@ -657,60 +1446,81 @@ export default function Home() {
 
               <div>
                 <strong>Mimi</strong>
-                <span>Your French friend</span>
+                <span>
+                  {ui.frenchFriend}
+                </span>
               </div>
             </div>
 
             <div className="messages">
-              {messages.map((message, index) => (
-                <div
-                  key={`${message.role}-${index}`}
-                  className={`messageRow ${message.role}`}
-                >
-                  {message.role === 'mimi' && (
-                    <div className="messageAvatar">
-                      <Mimi small />
-                    </div>
-                  )}
-
-                  <div className="messageContent">
-                    <div className="messageBubble">
-                      {message.text}
-                    </div>
-
-                    {message.role === 'mimi' && (
-                      <div className="messageTools">
-                        <button
-                          className="listenButton"
-                          onClick={() =>
-                            speakFrench(message.speechText || message.text)
-                          }
-                        >
-                          <span className="speakerIcon">◖</span>
-                          Listen
-                        </button>
-
-                        {message.meaning && (
-                          <button
-                            className="meaningButton"
-                            onClick={() => setShowMeaning(!showMeaning)}
-                          >
-                            {showMeaning ? 'Hide meaning' : 'Meaning'}
-                          </button>
-                        )}
+              {messages.map(
+                (message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={`messageRow ${message.role}`}
+                  >
+                    {message.role ===
+                      'mimi' && (
+                      <div className="messageAvatar">
+                        <Mimi small />
                       </div>
                     )}
 
-                    {message.role === 'mimi' &&
-                      message.meaning &&
-                      showMeaning && (
-                        <div className="meaningBox">
-                          {message.meaning}
+                    <div className="messageContent">
+                      <div className="messageBubble">
+                        {message.text}
+                      </div>
+
+                      {message.role ===
+                        'mimi' && (
+                        <div className="messageTools">
+                          {message.speechText && (
+                            <button
+                              className="listenButton"
+                              onClick={() =>
+                                speakFrench(
+                                  message.speechText ||
+                                    message.text
+                                )
+                              }
+                            >
+                              <span className="speakerIcon">
+                                ◖
+                              </span>
+
+                              {ui.listen}
+                            </button>
+                          )}
+
+                          {message.meaning && (
+                            <button
+                              className="meaningButton"
+                              onClick={() =>
+                                setShowMeaning(
+                                  !showMeaning
+                                )
+                              }
+                            >
+                              {showMeaning
+                                ? ui.hideMeaning
+                                : ui.meaning}
+                            </button>
+                          )}
                         </div>
                       )}
+
+                      {message.role ===
+                        'mimi' &&
+                        message.meaning &&
+                        showMeaning && (
+                          <div className="meaningBox">
+                            {message.meaning}
+                          </div>
+                        )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              )}
 
               {loading && (
                 <div className="messageRow mimi">
@@ -733,77 +1543,139 @@ export default function Home() {
 
             {vocabulary.length > 0 && (
               <div className="vocabulary">
-                <div className="vocabularyTitle">USEFUL WORDS</div>
+                <div className="vocabularyTitle">
+                  {ui.usefulWords}
+                </div>
 
                 <div className="vocabularyList">
-                  {vocabulary.map((word, index) => (
-                    <div className="vocabItem" key={index}>
-                      <strong>{word.french || word}</strong>
+                  {vocabulary.map(
+                    (word, index) => (
+                      <div
+                        className="vocabItem"
+                        key={index}
+                      >
+                        <strong>
+                          {word.french ||
+                            word}
+                        </strong>
 
-                      {word.english && <span>{word.english}</span>}
-                    </div>
-                  ))}
+                        {(word.translation ||
+                          word.english) && (
+                          <span>
+                            {word.translation ||
+                              word.english}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             )}
 
-            {answerOptions.length > 0 && !loading && (
-              <div className="answerArea">
-                <div className="answerTitle">
-                  <span>Your turn!</span>
-                  <small>Choose an answer or type your own.</small>
-                </div>
+            {answerOptions.length > 0 &&
+              !loading && (
+                <div className="answerArea">
+                  <div className="answerTitle">
+                    <span>
+                      {ui.yourTurn}
+                    </span>
 
-                <div className="answerOptions">
-                  {answerOptions.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() =>
-                        chooseAnswer(
-                          typeof option === 'string'
+                    <small>
+                      {ui.chooseOrType}
+                    </small>
+                  </div>
+
+                  <div className="answerOptions">
+                    {answerOptions.map(
+                      (option, index) => {
+                        const french =
+                          typeof option ===
+                          'string'
                             ? option
-                            : option.french || option.text || ''
-                        )
-                      }
-                    >
-                      <span className="optionNumber">{index + 1}</span>
+                            : option.french ||
+                              option.text ||
+                              '';
 
-                      <span>
-                        {typeof option === 'string'
-                          ? option
-                          : option.french || option.text}
-                      </span>
-                    </button>
-                  ))}
+                        const translation =
+                          typeof option ===
+                          'string'
+                            ? ''
+                            : option.translation ||
+                              option.english ||
+                              '';
+
+                        return (
+                          <button
+                            key={index}
+                            onClick={() =>
+                              chooseAnswer(
+                                french
+                              )
+                            }
+                          >
+                            <span className="optionNumber">
+                              {index + 1}
+                            </span>
+
+                            <span className="optionText">
+                              <strong>
+                                {french}
+                              </strong>
+
+                              {translation && (
+                                <small>
+                                  {translation}
+                                </small>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      }
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             <div className="inputArea">
               <div className="inputWrapper">
                 <input
                   value={input}
-                  onChange={(event) => setInput(event.target.value)}
+                  onChange={(event) =>
+                    setInput(
+                      event.target.value
+                    )
+                  }
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
+                    if (
+                      event.key === 'Enter'
+                    ) {
                       sendMessage();
                     }
                   }}
-                  placeholder="Write your answer in French..."
+                  placeholder={
+                    ui.placeholder
+                  }
                   disabled={loading}
                 />
 
                 <button
                   className="sendButton"
-                  onClick={() => sendMessage()}
-                  disabled={loading || !input.trim()}
+                  onClick={() =>
+                    sendMessage()
+                  }
+                  disabled={
+                    loading ||
+                    !input.trim()
+                  }
                 >
                   →
                 </button>
               </div>
 
               <div className="inputHint">
-                <span>Tip</span> It's okay to make mistakes!
+                <span>{ui.tip}</span>{' '}
+                {ui.mistakes}
               </div>
             </div>
           </div>
@@ -839,7 +1711,8 @@ const styles = `
   }
 
   button,
-  input {
+  input,
+  select {
     font: inherit;
   }
 
@@ -926,6 +1799,42 @@ const styles = `
     color: #85879a;
     font-size: 11px;
     margin-top: 4px;
+  }
+
+  .headerRight {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+  }
+
+  .languageSelector {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .languageSelector > span {
+    color: #999aaa;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+  }
+
+  .languageSelector select {
+    appearance: none;
+    border: 1px solid #e7e6ef;
+    background: #fff;
+    color: #393a4e;
+    border-radius: 10px;
+    padding: 7px 27px 7px 10px;
+    font-size: 10px;
+    font-weight: 750;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .languageSelector select:focus {
+    border-color: #b9b0ed;
   }
 
   .xpArea {
@@ -2230,7 +3139,7 @@ const styles = `
   }
 
   .answerOptions button {
-    min-height: 44px;
+    min-height: 55px;
     border: 1px solid #e7e6ef;
     background: #fff;
     border-radius: 13px;
@@ -2265,6 +3174,25 @@ const styles = `
     justify-content: center;
     font-weight: 850;
     font-size: 9px;
+  }
+
+  .optionText {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .optionText strong {
+    color: #45465a;
+    font-size: 10px;
+    font-weight: 750;
+  }
+
+  .optionText small {
+    color: #999aaa;
+    font-size: 8px;
+    line-height: 1.25;
   }
 
   .inputArea {
@@ -2373,6 +3301,19 @@ const styles = `
     .topbar {
       height: 68px;
       padding: 0 18px;
+    }
+
+    .headerRight {
+      gap: 8px;
+    }
+
+    .languageSelector > span {
+      display: none;
+    }
+
+    .languageSelector select {
+      padding: 7px 8px;
+      max-width: 95px;
     }
 
     .xpArea {
