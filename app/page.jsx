@@ -78,6 +78,46 @@ const FrenchTutor = () => {
     setError('');
   };
 
+  const speakText = async (text) => {
+    setIsSpeaking(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Speech generation failed.');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+        setError('Sorry, the audio could not be played.');
+      };
+
+      await audio.play();
+    } catch (err) {
+      console.error(err);
+      setIsSpeaking(false);
+      setError('Sorry, the audio could not be generated.');
+    }
+  };
+
   const sendMessage = async () => {
     if (!userInput.trim()) {
       setError('Please type something first!');
@@ -329,32 +369,56 @@ const FrenchTutor = () => {
                   <div
                     key={index}
                     style={{
-                      display: 'flex',
-                      justifyContent:
-                        message.speaker === 'user'
-                          ? 'flex-end'
-                          : 'flex-start',
                       marginBottom: '14px',
                     }}
                   >
                     <div
                       style={{
-                        maxWidth: '75%',
-                        padding: '13px 16px',
-                        borderRadius: '14px',
-                        background:
+                        display: 'flex',
+                        justifyContent:
                           message.speaker === 'user'
-                            ? '#2563eb'
-                            : '#f3f4f6',
-                        color:
-                          message.speaker === 'user'
-                            ? 'white'
-                            : '#111827',
-                        lineHeight: '1.5',
+                            ? 'flex-end'
+                            : 'flex-start',
                       }}
                     >
-                      {message.text}
+                      <div
+                        style={{
+                          maxWidth: '75%',
+                          padding: '13px 16px',
+                          borderRadius: '14px',
+                          background:
+                            message.speaker === 'user'
+                              ? '#2563eb'
+                              : '#f3f4f6',
+                          color:
+                            message.speaker === 'user'
+                              ? 'white'
+                              : '#111827',
+                          lineHeight: '1.5',
+                        }}
+                      >
+                        {message.text}
+                      </div>
                     </div>
+
+                    {message.speaker === 'scenario' && (
+                      <button
+                        onClick={() => speakText(message.text)}
+                        disabled={isSpeaking}
+                        style={{
+                          marginTop: '7px',
+                          padding: '7px 12px',
+                          borderRadius: '8px',
+                          border: '1px solid #d1d5db',
+                          background: 'white',
+                          cursor: isSpeaking ? 'default' : 'pointer',
+                          color: '#374151',
+                          fontSize: '14px',
+                        }}
+                      >
+                        {isSpeaking ? '🔊 Playing...' : '🔊 Listen'}
+                      </button>
+                    )}
                   </div>
                 ))}
 
