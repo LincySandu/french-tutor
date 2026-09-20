@@ -51,70 +51,53 @@ IMPORTANT TEACHING RULES:
 - If the child makes an important mistake, briefly correct it in ${selectedLanguage}.
 - Then continue with ONE simple French question.
 - Stay within the current scenario.
-- DISPLAY must contain French only.
-- SPEECH must contain French only.
-- MEANING must be written completely in ${selectedLanguage}.
-- OPTION translations must be written in ${selectedLanguage}.
-- VOCABULARY meanings must be written in ${selectedLanguage}.
 
-After the child's answer, produce:
+OUTPUT RULES:
 
-1. DISPLAY:
-The complete response Mimi should show the child.
+DISPLAY:
+- This is what Mimi shows the child.
+- Keep the French simple and beginner-friendly.
+- It may contain a brief correction in ${selectedLanguage} if necessary.
+- Ask only ONE question.
 
-The French part of the response must be in simple beginner-level French.
+SPEECH:
+- ONLY French.
+- Only include the French words Mimi should say aloud.
+- Never include translations.
 
-If a correction is needed, explain the correction briefly in French or, when necessary, in ${selectedLanguage}, but keep the response easy for a 9-year-old.
+MEANING:
+- Give a complete and simple ${selectedLanguage} translation of everything Mimi says in DISPLAY.
 
-IMPORTANT:
-Never put English into DISPLAY unless English is the child's selected support language.
+OPTIONS:
+- ALWAYS provide exactly 3 options.
+- Each option must be a short, natural French answer to Mimi's NEW question.
+- Each option must have a ${selectedLanguage} translation.
+- The three answers must be different.
+- Do not use the same answer three times.
 
-2. SPEECH:
-ONLY the French words Mimi should say aloud.
+VOCABULARY:
+- Provide up to 3 useful beginner French words or short phrases from Mimi's response.
+- Give the ${selectedLanguage} meaning for each.
+- Do not use tiny grammar words such as "le", "la", "un", "une", "je", "tu" by themselves.
 
-Never put ${selectedLanguage} translation inside SPEECH.
-
-3. MEANING:
-A COMPLETE and SIMPLE ${selectedLanguage} translation of EVERYTHING Mimi says in DISPLAY.
-
-Do NOT translate only the question.
-
-4. OPTIONS:
-Give exactly 3 very simple French answers that the child could choose from to answer Mimi's NEW question.
-
-For EVERY option, provide:
-- the French answer
-- a simple ${selectedLanguage} translation of that answer
-
-The options should:
-- be appropriate for a 9-year-old beginner
-- be short
-- be grammatically correct French
-- directly answer Mimi's question
-- be different from each other
-- help the child continue the conversation
-
-5. VOCABULARY:
-Choose up to 3 useful French words or short phrases from Mimi's response that are worth learning.
-
-For EVERY vocabulary item, provide:
-- the French word or phrase
-- a simple ${selectedLanguage} meaning
-
-Only include useful beginner-level vocabulary.
-
-Do not include tiny grammar words such as "le", "la", "un", "une", "je", "tu", etc. by themselves.
+VERY IMPORTANT:
+- Never leave OPTIONS empty.
+- Always provide exactly 3 numbered OPTIONS.
+- Never ask more than one question.
+- French is the target language.
+- ${selectedLanguage} is the support language.
+- Keep everything appropriate for a 9-year-old beginner.
 
 Return your answer in EXACTLY this format:
 
 DISPLAY:
-[Complete French response Mimi should show]
+[Complete response Mimi should show]
 
 SPEECH:
 [Only French words Mimi should say]
 
 MEANING:
-[Complete ${selectedLanguage} translation of the entire DISPLAY]
+[Complete ${selectedLanguage} translation of DISPLAY]
 
 OPTIONS:
 1. [French answer] | [${selectedLanguage} translation]
@@ -125,15 +108,6 @@ VOCABULARY:
 1. [French word or phrase] | [${selectedLanguage} meaning]
 2. [French word or phrase] | [${selectedLanguage} meaning]
 3. [French word or phrase] | [${selectedLanguage} meaning]
-
-IMPORTANT:
-- The OPTIONS must answer the NEW question Mimi asks.
-- Never put translations inside SPEECH.
-- Never leave OPTIONS empty.
-- Never leave VOCABULARY empty unless there are genuinely no useful vocabulary items.
-- Never ask more than one question in DISPLAY.
-- Keep VOCABULARY simple and useful for a beginner.
-- Always use ${selectedLanguage} for MEANING, option translations and vocabulary translations.
 `,
             },
             {
@@ -144,7 +118,7 @@ Conversation so far:
 ${messages
   .map(
     (message) =>
-      `${message.speaker}: ${message.text}`
+      `${message.role || message.speaker}: ${message.text}`
   )
   .join('\n')}
 
@@ -174,24 +148,26 @@ Continue the conversation.`,
       data.choices?.[0]?.message?.content ||
       'Sorry, I could not answer.';
 
+    console.log('Mimi raw response:', rawReply);
+
     const displayMatch = rawReply.match(
-      /DISPLAY:\s*([\s\S]*?)(?=\s*SPEECH:|\s*MEANING:|\s*OPTIONS:|\s*VOCABULARY:|$)/i
+      /DISPLAY\s*:\s*([\s\S]*?)(?=\n\s*SPEECH\s*:|\n\s*MEANING\s*:|\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
 
     const speechMatch = rawReply.match(
-      /SPEECH:\s*([\s\S]*?)(?=\s*MEANING:|\s*OPTIONS:|\s*VOCABULARY:|$)/i
+      /SPEECH\s*:\s*([\s\S]*?)(?=\n\s*MEANING\s*:|\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
 
     const meaningMatch = rawReply.match(
-      /MEANING:\s*([\s\S]*?)(?=\s*OPTIONS:|\s*VOCABULARY:|$)/i
+      /MEANING\s*:\s*([\s\S]*?)(?=\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
 
     const optionsMatch = rawReply.match(
-      /OPTIONS:\s*([\s\S]*?)(?=\s*VOCABULARY:|$)/i
+      /OPTIONS\s*:\s*([\s\S]*?)(?=\n\s*VOCABULARY\s*:|$)/i
     );
 
     const vocabularyMatch = rawReply.match(
-      /VOCABULARY:\s*([\s\S]*)/i
+      /VOCABULARY\s*:\s*([\s\S]*)/i
     );
 
     const reply =
@@ -206,14 +182,71 @@ Continue the conversation.`,
       meaningMatch?.[1]?.trim() ||
       'Mimi is speaking French.';
 
+    /*
+     * Parse OPTIONS.
+     *
+     * We deliberately accept several separators because free models
+     * sometimes return:
+     *
+     * 1. Bonjour | Hello
+     * 1. Bonjour - Hello
+     * 1. Bonjour — Hello
+     *
+     * The preferred format remains:
+     *
+     * French | Translation
+     */
     let options = [];
 
     if (optionsMatch?.[1]) {
       options = optionsMatch[1]
-        .split('\n')
+        .split(/\r?\n/)
         .map((line) => {
           const cleaned = line
-            .replace(/^\s*\d+[\.\)]\s*/, '')
+            .replace(/^\s*(?:\d+[\.\):\-]|\-|\•)\s*/, '')
+            .trim();
+
+          if (!cleaned) {
+            return null;
+          }
+
+          let parts = cleaned.split('|');
+
+          if (parts.length < 2) {
+            parts = cleaned.split(/\s+[—–-]\s+/);
+          }
+
+          if (parts.length < 2) {
+            return null;
+          }
+
+          return {
+            french: parts[0].trim(),
+            translation: parts.slice(1).join('|').trim(),
+          };
+        })
+        .filter(
+          (option) =>
+            option &&
+            option.french &&
+            option.translation
+        )
+        .slice(0, 3);
+    }
+
+    /*
+     * Fallback:
+     * If the model ignored the formatting slightly, look for lines
+     * containing a pipe anywhere in the raw response's OPTIONS area.
+     */
+    if (options.length < 3 && optionsMatch?.[1]) {
+      const fallbackOptions = optionsMatch[1]
+        .match(/[^\r\n]+/g)
+        ?.map((line) => line.trim())
+        .filter((line) => line.includes('|'))
+        .map((line) => {
+          const cleaned = line
+            .replace(/^\s*(?:\d+[\.\):\-]|\-|\•)\s*/, '')
             .trim();
 
           const parts = cleaned.split('|');
@@ -228,19 +261,24 @@ Continue the conversation.`,
           (option) =>
             option.french &&
             option.translation
-        )
-        .slice(0, 3);
+        ) || [];
+
+      options = fallbackOptions.slice(0, 3);
     }
 
     let vocabulary = [];
 
     if (vocabularyMatch?.[1]) {
       vocabulary = vocabularyMatch[1]
-        .split('\n')
+        .split(/\r?\n/)
         .map((line) => {
           const cleaned = line
-            .replace(/^\s*\d+[\.\)]\s*/, '')
+            .replace(/^\s*(?:\d+[\.\):\-]|\-|\•)\s*/, '')
             .trim();
+
+          if (!cleaned) {
+            return null;
+          }
 
           const parts = cleaned.split('|');
 
@@ -252,6 +290,7 @@ Continue the conversation.`,
         })
         .filter(
           (item) =>
+            item &&
             item.french &&
             item.translation
         )
