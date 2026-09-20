@@ -223,6 +223,9 @@ export default function Home() {
   const [answerOptions, setAnswerOptions] =
     useState([]);
 
+  const [vocabulary, setVocabulary] =
+    useState([]);
+
   const [showMeaning, setShowMeaning] =
     useState(false);
 
@@ -231,6 +234,7 @@ export default function Home() {
     setShowIntro(true);
     setMessages([]);
     setAnswerOptions([]);
+    setVocabulary([]);
     setInput('');
     setShowMeaning(false);
   }
@@ -238,6 +242,7 @@ export default function Home() {
   function beginMission() {
     setShowIntro(false);
     setAnswerOptions([]);
+    setVocabulary([]);
     setShowMeaning(false);
 
     const scenarioText =
@@ -314,8 +319,10 @@ export default function Home() {
           english: 'I like drawing.',
         },
         {
-          french: 'J’aime écouter de la musique.',
-          english: 'I like listening to music.',
+          french:
+            'J’aime écouter de la musique.',
+          english:
+            'I like listening to music.',
         },
       ],
 
@@ -329,8 +336,10 @@ export default function Home() {
           english: 'Yes, I have a sister.',
         },
         {
-          french: 'Non, je suis enfant unique.',
-          english: 'No, I am an only child.',
+          french:
+            'Non, je suis enfant unique.',
+          english:
+            'No, I am an only child.',
         },
       ],
 
@@ -359,8 +368,10 @@ export default function Home() {
           english: 'I like running.',
         },
         {
-          french: 'J’aime faire du vélo.',
-          english: 'I like riding a bike.',
+          french:
+            'J’aime faire du vélo.',
+          english:
+            'I like riding a bike.',
         },
       ],
 
@@ -463,6 +474,28 @@ export default function Home() {
         data.options || []
       );
 
+      setVocabulary((current) => {
+        const newWords =
+          data.vocabulary || [];
+
+        const combined = [
+          ...current,
+          ...newWords,
+        ];
+
+        const unique = combined.filter(
+          (item, index, array) =>
+            index ===
+            array.findIndex(
+              (existing) =>
+                existing.french.toLowerCase() ===
+                item.french.toLowerCase()
+            )
+        );
+
+        return unique;
+      });
+
       setShowMeaning(false);
 
       speakFrench(
@@ -507,6 +540,7 @@ export default function Home() {
     setShowIntro(false);
     setMessages([]);
     setAnswerOptions([]);
+    setVocabulary([]);
     setInput('');
     setShowMeaning(false);
   }
@@ -817,6 +851,7 @@ export default function Home() {
                       }
                     >
                       💡 What does this mean?
+
                       <span>
                         {showMeaning
                           ? '▲'
