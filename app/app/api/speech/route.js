@@ -11,9 +11,9 @@ export async function POST(request) {
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'mistralai/voxtral-mini-tts-2603',
+          model: 'hexgrad/kokoro-82m',
           input: body.text,
-          voice: 'en_paul_neutral',
+          voice: 'ff_siwis',
           response_format: 'mp3',
         }),
       }
