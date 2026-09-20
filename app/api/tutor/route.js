@@ -36,8 +36,6 @@ IMPORTANT TEACHING RULES:
 - Then continue with ONE simple French question.
 - Stay within the current scenario.
 
-VERY IMPORTANT:
-
 After the child's answer, produce:
 
 1. DISPLAY:
@@ -45,17 +43,20 @@ The complete response Mimi should show the child.
 
 2. SPEECH:
 ONLY the French words Mimi should say aloud.
-Do not put English in SPEECH.
+Never put English inside SPEECH.
 
 3. MEANING:
 A COMPLETE and SIMPLE English translation of EVERYTHING Mimi says in DISPLAY.
 Do NOT translate only the question.
-If DISPLAY contains a correction, comment, and question, translate all of them.
 
 4. OPTIONS:
 Give exactly 3 very simple French answers that the child could choose from to answer Mimi's NEW question.
 
-The three options should:
+For EVERY option, provide:
+- the French answer
+- a simple English translation of that answer
+
+The options should:
 - be appropriate for a 9-year-old beginner
 - be short
 - be grammatically correct French
@@ -75,9 +76,9 @@ MEANING:
 [Complete English translation of the entire DISPLAY]
 
 OPTIONS:
-1. [Simple French answer]
-2. [Simple French answer]
-3. [Simple French answer]
+1. [French answer] | [English translation]
+2. [French answer] | [English translation]
+3. [French answer] | [English translation]
 
 Example:
 
@@ -91,9 +92,9 @@ MEANING:
 Nice! Dogs are great. Do you have a dog?
 
 OPTIONS:
-1. Oui, j’ai un chien.
-2. Non, je n’ai pas de chien.
-3. Oui, j’adore les chiens.
+1. Oui, j’ai un chien. | Yes, I have a dog.
+2. Non, je n’ai pas de chien. | No, I don't have a dog.
+3. Oui, j’adore les chiens. | Yes, I love dogs.
 
 Another example when correcting the child:
 
@@ -107,15 +108,15 @@ MEANING:
 Almost! We say "I like dogs." Do you have a pet at home?
 
 OPTIONS:
-1. Oui, j’ai un chien.
-2. Oui, j’ai un chat.
-3. Non, je n’ai pas d’animal.
+1. Oui, j’ai un chien. | Yes, I have a dog.
+2. Oui, j’ai un chat. | Yes, I have a cat.
+3. Non, je n’ai pas d’animal. | No, I don't have a pet.
 
 IMPORTANT:
-The OPTIONS must answer the NEW question Mimi asks.
-Never put English inside OPTIONS.
-Never leave OPTIONS empty.
-Never ask more than one question in DISPLAY.
+- The OPTIONS must answer the NEW question Mimi asks.
+- Never put English inside DISPLAY or SPEECH.
+- Never leave OPTIONS empty.
+- Never ask more than one question in DISPLAY.
 `,
             },
             {
@@ -189,12 +190,23 @@ Continue the conversation.`,
     if (optionsMatch?.[1]) {
       options = optionsMatch[1]
         .split('\n')
-        .map((line) =>
-          line
+        .map((line) => {
+          const cleaned = line
             .replace(/^\s*\d+[\.\)]\s*/, '')
-            .trim()
+            .trim();
+
+          const parts = cleaned.split('|');
+
+          return {
+            french: parts[0]?.trim() || '',
+            english: parts.slice(1).join('|').trim() || '',
+          };
+        })
+        .filter(
+          (option) =>
+            option.french &&
+            option.english
         )
-        .filter(Boolean)
         .slice(0, 3);
     }
 
