@@ -42,7 +42,7 @@ const languages = {
       heroText:
         'Learn French by talking, playing and completing fun little missions with Mimi.',
       readyToPlay: 'Ready to play?',
-      selectLanguage: 'Language',
+      selectLanguage: 'Explanations in',
     },
     scenarios: {
       school: {
@@ -167,11 +167,11 @@ const languages = {
       heroText:
         'Apprends le français en parlant, en jouant et en faisant de petites missions avec Mimi.',
       readyToPlay: 'Prêt à jouer ?',
-      selectLanguage: 'Langue',
+      selectLanguage: 'Explications en',
     },
     scenarios: {
       school: {
-        name: 'À l’école',
+        name: 'À l'école',
         description:
           "Parle de l'école, de tes amis et de tes matières préférées.",
         category: 'VIE QUOTIDIENNE',
@@ -186,7 +186,7 @@ const languages = {
           'Parle de sport, des équipes et de ce que tu aimes pratiquer.',
         category: 'JEUX & PLAISIR',
         intro:
-          'Imagine que nous parlons de sport après l’école. Je vais te poser des questions sur les sports que tu aimes et tes équipes préférées.',
+          'Imagine que nous parlons de sport après l'école. Je vais te poser des questions sur les sports que tu aimes et tes équipes préférées.',
         meaning:
           'Nous allons pratiquer le français pour parler du sport et des activités que tu aimes.',
       },
@@ -196,7 +196,7 @@ const languages = {
           'Découvre les animaux et décris tes préférés.',
         category: 'NATURE',
         intro:
-          'Imagine que nous visitons un parc animalier. Je vais t’aider à parler de différents animaux et à décrire ceux que tu aimes.',
+          'Imagine que nous visitons un parc animalier. Je vais t'aider à parler de différents animaux et à décrire ceux que tu aimes.',
         meaning:
           'Nous allons pratiquer le français pour décrire les animaux et parler de tes préférés.',
       },
@@ -216,7 +216,7 @@ const languages = {
           'Présente ta famille et parle des personnes que tu aimes.',
         category: 'PERSONNES',
         intro:
-          'Parlons de ta famille. Je vais t’aider à présenter les personnes de ta famille et à dire quelques choses sur elles.',
+          'Parlons de ta famille. Je vais t'aider à présenter les personnes de ta famille et à dire quelques choses sur elles.',
         meaning:
           'Nous allons pratiquer le français pour parler de ta famille.',
       },
@@ -236,7 +236,7 @@ const languages = {
           'Explore le parc et parle de ce que tu peux voir.',
         category: 'DEHORS',
         intro:
-          'Imagine que nous passons l’après-midi dans un parc français. Parlons de ce que nous pouvons voir et de ce que nous aimons faire dehors.',
+          'Imagine que nous passons l'après-midi dans un parc français. Parlons de ce que nous pouvons voir et de ce que nous aimons faire dehors.',
         meaning:
           'Nous allons pratiquer le français pour parler de ce que tu vois et fais dans un parc.',
       },
@@ -246,7 +246,7 @@ const languages = {
           'Apprends le français utile pour les magasins, les vêtements et les prix.',
         category: 'VIE QUOTIDIENNE',
         intro:
-          'Imagine que nous sommes dans un magasin français. Je vais t’aider à pratiquer des mots utiles pour les vêtements, les couleurs, les prix et les achats.',
+          'Imagine que nous sommes dans un magasin français. Je vais t'aider à pratiquer des mots utiles pour les vêtements, les couleurs, les prix et les achats.',
         meaning:
           'Nous allons pratiquer le français utile pour faire des achats.',
       },
@@ -292,7 +292,7 @@ const languages = {
       heroText:
         'Lerne Französisch mit Mimi durch Sprechen, Spielen und kleine Missionen.',
       readyToPlay: 'Bereit zum Spielen?',
-      selectLanguage: 'Sprache',
+      selectLanguage: 'Erklärungen in',
     },
     scenarios: {
       school: {
@@ -417,7 +417,7 @@ const languages = {
       heroText:
         'Învață franceza vorbind, jucându-te și completând mici misiuni cu Mimi.',
       readyToPlay: 'Gata de joacă?',
-      selectLanguage: 'Limbă',
+      selectLanguage: 'Explicații în',
     },
     scenarios: {
       school: {
@@ -542,7 +542,7 @@ const languages = {
       heroText:
         'Aprende francés hablando, jugando y completando pequeñas misiones con Mimi.',
       readyToPlay: '¿Listo para jugar?',
-      selectLanguage: 'Idioma',
+      selectLanguage: 'Explicaciones en',
     },
     scenarios: {
       school: {
@@ -680,16 +680,16 @@ const scenarios = [
   },
 ];
 
-function getScenarioText(id, baseLanguage) {
+function getScenarioText(id, interfaceLanguage) {
   return (
-    languages[baseLanguage]?.scenarios?.[id]?.intro ||
+    languages[interfaceLanguage]?.scenarios?.[id]?.intro ||
     languages.en.scenarios[id].intro
   );
 }
 
-function getInitialMeaning(id, baseLanguage) {
+function getInitialMeaning(id, interfaceLanguage) {
   return (
-    languages[baseLanguage]?.scenarios?.[id]?.meaning ||
+    languages[interfaceLanguage]?.scenarios?.[id]?.meaning ||
     languages.en.scenarios[id].meaning
   );
 }
@@ -841,7 +841,8 @@ function MissionIcon({ type }) {
 }
 
 export default function Home() {
-  const [baseLanguage, setBaseLanguage] = useState('en');
+  const [interfaceLanguage, setInterfaceLanguage] = useState('en');
+  const [secondaryLanguage, setSecondaryLanguage] = useState('en');
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [showIntro, setShowIntro] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -855,28 +856,48 @@ export default function Home() {
   const messagesEndRef = useRef(null);
 
   const ui =
-    languages[baseLanguage]?.ui ||
+    languages[interfaceLanguage]?.ui ||
     languages.en.ui;
 
   useEffect(() => {
-    const savedLanguage =
+    const savedInterfaceLanguage =
       window.localStorage.getItem(
-        'mimiBaseLanguage'
+        'mimiInterfaceLanguage'
+      );
+    const savedSecondaryLanguage =
+      window.localStorage.getItem(
+        'mimiSecondaryLanguage'
       );
 
     if (
-      savedLanguage &&
-      languages[savedLanguage]
+      savedInterfaceLanguage &&
+      languages[savedInterfaceLanguage]
     ) {
-      setBaseLanguage(savedLanguage);
+      setInterfaceLanguage(savedInterfaceLanguage);
+    }
+
+    if (
+      savedSecondaryLanguage &&
+      languages[savedSecondaryLanguage]
+    ) {
+      setSecondaryLanguage(savedSecondaryLanguage);
     }
   }, []);
 
-  function changeLanguage(language) {
-    setBaseLanguage(language);
+  function changeInterfaceLanguage(language) {
+    setInterfaceLanguage(language);
 
     window.localStorage.setItem(
-      'mimiBaseLanguage',
+      'mimiInterfaceLanguage',
+      language
+    );
+  }
+
+  function changeSecondaryLanguage(language) {
+    setSecondaryLanguage(language);
+
+    window.localStorage.setItem(
+      'mimiSecondaryLanguage',
       language
     );
   }
@@ -914,20 +935,20 @@ export default function Home() {
 
     const scenarioText = getScenarioText(
       selectedScenario.id,
-      baseLanguage
+      interfaceLanguage
     );
 
-setMessages([
-  {
-    role: 'mimi',
-    text: scenarioText,
-    speechText: '',
-    meaning: getInitialMeaning(
-      selectedScenario.id,
-      baseLanguage
-    ),
-  },
-]);
+    setMessages([
+      {
+        role: 'mimi',
+        text: scenarioText,
+        speechText: '',
+        meaning: getInitialMeaning(
+          selectedScenario.id,
+          interfaceLanguage
+        ),
+      },
+    ]);
 
     setAnswerOptions([]);
     setVocabulary([]);
@@ -947,7 +968,8 @@ setMessages([
               selectedScenario.id,
             messages: [],
             start: true,
-            baseLanguage,
+            interfaceLanguage,
+            secondaryLanguage,
           }),
         }
       );
@@ -1003,24 +1025,24 @@ setMessages([
         {
           role: 'mimi',
           text:
-            baseLanguage === 'fr'
+            interfaceLanguage === 'fr'
               ? 'Désolée ! Réessayons.'
-              : baseLanguage === 'de'
+              : interfaceLanguage === 'de'
                 ? 'Entschuldigung! Versuchen wir es noch einmal.'
-                : baseLanguage === 'ro'
+                : interfaceLanguage === 'ro'
                   ? 'Scuze! Hai să încercăm din nou.'
-                  : baseLanguage === 'es'
+                  : interfaceLanguage === 'es'
                     ? '¡Lo siento! Intentémoslo de nuevo.'
                     : "Désolée ! Let's try that again.",
           speechText: '',
           meaning:
-            baseLanguage === 'fr'
+            interfaceLanguage === 'fr'
               ? 'Un problème est survenu pendant la connexion à Mimi.'
-              : baseLanguage === 'de'
+              : interfaceLanguage === 'de'
                 ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
-                : baseLanguage === 'ro'
+                : interfaceLanguage === 'ro'
                   ? 'A apărut o problemă la conectarea cu Mimi.'
-                  : baseLanguage === 'es'
+                  : interfaceLanguage === 'es'
                     ? 'Ha ocurrido un problema al conectar con Mimi.'
                     : 'Something went wrong while connecting to Mimi.',
         },
@@ -1079,7 +1101,8 @@ setMessages([
             scenario:
               selectedScenario.id,
             messages: updatedMessages,
-            baseLanguage,
+            interfaceLanguage,
+            secondaryLanguage,
           }),
         }
       );
@@ -1140,24 +1163,24 @@ setMessages([
         {
           role: 'mimi',
           text:
-            baseLanguage === 'fr'
+            interfaceLanguage === 'fr'
               ? 'Désolée ! Réessayons.'
-              : baseLanguage === 'de'
+              : interfaceLanguage === 'de'
                 ? 'Entschuldigung! Versuchen wir es noch einmal.'
-                : baseLanguage === 'ro'
+                : interfaceLanguage === 'ro'
                   ? 'Scuze! Hai să încercăm din nou.'
-                  : baseLanguage === 'es'
+                  : interfaceLanguage === 'es'
                     ? '¡Lo siento! Intentémoslo de nuevo.'
                     : "Désolée ! Let's try that again.",
           speechText: '',
           meaning:
-            baseLanguage === 'fr'
+            interfaceLanguage === 'fr'
               ? 'Un problème est survenu pendant la connexion à Mimi.'
-              : baseLanguage === 'de'
+              : interfaceLanguage === 'de'
                 ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
-                : baseLanguage === 'ro'
+                : interfaceLanguage === 'ro'
                   ? 'A apărut o problemă la conectarea cu Mimi.'
-                  : baseLanguage === 'es'
+                  : interfaceLanguage === 'es'
                     ? 'Ha ocurrido un problema al conectar con Mimi.'
                     : 'Something went wrong while connecting to Mimi.',
         },
@@ -1222,9 +1245,9 @@ setMessages([
             </span>
 
             <select
-              value={baseLanguage}
+              value={secondaryLanguage}
               onChange={(event) =>
-                changeLanguage(
+                changeSecondaryLanguage(
                   event.target.value
                 )
               }
@@ -1358,7 +1381,7 @@ setMessages([
                 (scenario) => {
                   const translatedScenario =
                     languages[
-                      baseLanguage
+                      interfaceLanguage
                     ]?.scenarios?.[
                       scenario.id
                     ] ||
@@ -1487,7 +1510,7 @@ setMessages([
               <h1>
                 {
                   languages[
-                    baseLanguage
+                    interfaceLanguage
                   ]?.scenarios?.[
                     selectedScenario.id
                   ]?.name
@@ -1497,7 +1520,7 @@ setMessages([
               <p>
                 {
                   languages[
-                    baseLanguage
+                    interfaceLanguage
                   ]?.scenarios?.[
                     selectedScenario.id
                   ]?.description
@@ -1564,7 +1587,7 @@ setMessages([
                   <span>
                     {
                       languages[
-                        baseLanguage
+                        interfaceLanguage
                       ]?.scenarios?.[
                         selectedScenario.id
                       ]?.category
@@ -1574,7 +1597,7 @@ setMessages([
                   <h1>
                     {
                       languages[
-                        baseLanguage
+                        interfaceLanguage
                       ]?.scenarios?.[
                         selectedScenario.id
                       ]?.name
@@ -1637,9 +1660,10 @@ setMessages([
                                       message.text
                                   )
                                 }
+                                title="Listen to the French pronunciation"
                               >
                                 <span className="speakerIcon">
-                                  ◖
+                                  🔊
                                 </span>
 
                                 {ui.listen}
@@ -3087,18 +3111,21 @@ const styles = `
     padding: 4px 7px;
     color: #898999;
     font-size: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
   .listenButton:hover,
   .meaningButton:hover {
     color: #7569d5;
     border-color: #d7d2f0;
+    background: #f9f8fd;
   }
 
   .speakerIcon {
     display: inline-block;
     margin-right: 3px;
-    color: #7569d5;
+    font-size: 10px;
   }
 
   .meaningBox {
