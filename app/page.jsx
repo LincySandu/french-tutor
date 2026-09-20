@@ -53,7 +53,7 @@ const languages = {
         intro:
           'Imagine we are at school in France. I will help you talk about your school day, your friends and the subjects you like.',
         meaning:
-          "We are going to practise talking about school and your favourite subjects.",
+          'We are going to practise talking about school and your favourite subjects.',
       },
       sports: {
         name: 'Sports',
@@ -695,7 +695,10 @@ function getInitialMeaning(id, baseLanguage) {
 }
 
 function getFrenchVoice() {
-  if (typeof window === 'undefined' || !window.speechSynthesis) {
+  if (
+    typeof window === 'undefined' ||
+    !window.speechSynthesis
+  ) {
     return null;
   }
 
@@ -713,7 +716,11 @@ function getFrenchVoice() {
 }
 
 function speakFrench(text) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) {
+  if (
+    typeof window === 'undefined' ||
+    !window.speechSynthesis ||
+    !text
+  ) {
     return;
   }
 
@@ -796,7 +803,9 @@ function MissionIcon({ type }) {
         </>
       )}
 
-      {type === 'star' && <div className="starShape">★</div>}
+      {type === 'star' && (
+        <div className="starShape">★</div>
+      )}
 
       {type === 'family' && (
         <>
@@ -845,12 +854,15 @@ export default function Home() {
 
   const messagesEndRef = useRef(null);
 
-  const ui = languages[baseLanguage]?.ui || languages.en.ui;
+  const ui =
+    languages[baseLanguage]?.ui ||
+    languages.en.ui;
 
   useEffect(() => {
-    const savedLanguage = window.localStorage.getItem(
-      'mimiBaseLanguage'
-    );
+    const savedLanguage =
+      window.localStorage.getItem(
+        'mimiBaseLanguage'
+      );
 
     if (
       savedLanguage &&
@@ -880,7 +892,12 @@ export default function Home() {
     }, 50);
 
     return () => clearTimeout(timer);
-  }, [messages, loading, selectedScenario, showIntro]);
+  }, [
+    messages,
+    loading,
+    selectedScenario,
+    showIntro,
+  ]);
 
   function selectScenario(scenario) {
     setSelectedScenario(scenario);
@@ -912,43 +929,102 @@ export default function Home() {
       },
     ]);
 
+    setAnswerOptions([]);
+    setVocabulary([]);
     setLoading(true);
 
     try {
-      const response = await fetch('/api/tutor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scenario: selectedScenario.id,
-          messages: [],
-          start: true,
-          baseLanguage,
-        }),
-      });
+      const response = await fetch(
+        '/api/tutor',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            scenario:
+              selectedScenario.id,
+            messages: [],
+            start: true,
+            baseLanguage,
+          }),
+        }
+      );
 
       const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+
+        throw new Error(
+          data?.error?.message ||
+            data?.error ||
+            'Tutor request failed'
+        );
+      }
 
       if (data.reply) {
         setMessages([
           {
             role: 'mimi',
             text: data.reply,
-            speechText: data.speechText || data.reply,
+            speechText:
+              data.speechText ||
+              data.reply,
             meaning: data.meaning || '',
           },
         ]);
 
-        setAnswerOptions(data.options || []);
-        setVocabulary(data.vocabulary || []);
+        setAnswerOptions(
+          Array.isArray(data.options)
+            ? data.options
+            : []
+        );
+
+        setVocabulary(
+          Array.isArray(data.vocabulary)
+            ? data.vocabulary
+            : []
+        );
 
         setTimeout(() => {
-          speakFrench(data.speechText || data.reply);
+          speakFrench(
+            data.speechText ||
+              data.reply
+          );
         }, 150);
       }
     } catch (error) {
       console.error(error);
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: 'mimi',
+          text:
+            baseLanguage === 'fr'
+              ? 'Désolée ! Réessayons.'
+              : baseLanguage === 'de'
+                ? 'Entschuldigung! Versuchen wir es noch einmal.'
+                : baseLanguage === 'ro'
+                  ? 'Scuze! Hai să încercăm din nou.'
+                  : baseLanguage === 'es'
+                    ? '¡Lo siento! Intentémoslo de nuevo.'
+                    : "Désolée ! Let's try that again.",
+          speechText: '',
+          meaning:
+            baseLanguage === 'fr'
+              ? 'Un problème est survenu pendant la connexion à Mimi.'
+              : baseLanguage === 'de'
+                ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
+                : baseLanguage === 'ro'
+                  ? 'A apărut o problemă la conectarea cu Mimi.'
+                  : baseLanguage === 'es'
+                    ? 'Ha ocurrido un problema al conectar con Mimi.'
+                    : 'Something went wrong while connecting to Mimi.',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -958,7 +1034,9 @@ export default function Home() {
     setInput(answer);
   }
 
-  async function sendMessage(customMessage = null) {
+  async function sendMessage(
+    customMessage = null
+  ) {
     const messageToSend =
       typeof customMessage === 'string'
         ? customMessage.trim()
@@ -989,17 +1067,22 @@ export default function Home() {
     setXp((current) => current + 5);
 
     try {
-      const response = await fetch('/api/tutor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          scenario: selectedScenario.id,
-          messages: updatedMessages,
-          baseLanguage,
-        }),
-      });
+      const response = await fetch(
+        '/api/tutor',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            scenario:
+              selectedScenario.id,
+            messages: updatedMessages,
+            baseLanguage,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -1015,7 +1098,9 @@ export default function Home() {
 
       const mimiMessage = {
         role: 'mimi',
-        text: data.reply || 'Très bien !',
+        text:
+          data.reply ||
+          'Très bien !',
         speechText:
           data.speechText ||
           data.reply ||
@@ -1028,8 +1113,17 @@ export default function Home() {
         mimiMessage,
       ]);
 
-      setAnswerOptions(data.options || []);
-      setVocabulary(data.vocabulary || []);
+      setAnswerOptions(
+        Array.isArray(data.options)
+          ? data.options
+          : []
+      );
+
+      setVocabulary(
+        Array.isArray(data.vocabulary)
+          ? data.vocabulary
+          : []
+      );
 
       setTimeout(() => {
         speakFrench(
@@ -1095,14 +1189,20 @@ export default function Home() {
     100
   );
 
-  const level = Math.floor(xp / 100) + 1;
+  const level =
+    Math.floor(xp / 100) + 1;
 
   return (
     <main className="page">
-      <style jsx global>{styles}</style>
+      <style jsx global>
+        {styles}
+      </style>
 
       <header className="topbar">
-        <button className="brand" onClick={goHome}>
+        <button
+          className="brand"
+          onClick={goHome}
+        >
           <div className="brandMark">
             <span className="brandBlue" />
             <span className="brandWhite" />
@@ -1117,16 +1217,24 @@ export default function Home() {
 
         <div className="headerRight">
           <div className="languageSelector">
-            <span>{ui.selectLanguage}</span>
+            <span>
+              {ui.selectLanguage}
+            </span>
 
             <select
               value={baseLanguage}
               onChange={(event) =>
-                changeLanguage(event.target.value)
+                changeLanguage(
+                  event.target.value
+                )
               }
-              aria-label={ui.selectLanguage}
+              aria-label={
+                ui.selectLanguage
+              }
             >
-              {Object.entries(languages).map(
+              {Object.entries(
+                languages
+              ).map(
                 ([code, language]) => (
                   <option
                     key={code}
@@ -1178,7 +1286,9 @@ export default function Home() {
               <h1>
                 {ui.heroTitle1}
                 <br />
-                <span>{ui.heroTitle2}</span>{' '}
+                <span>
+                  {ui.heroTitle2}
+                </span>{' '}
                 {ui.heroTitle3}
               </h1>
 
@@ -1186,15 +1296,21 @@ export default function Home() {
 
               <div className="heroStats">
                 <div>
-                  <strong>{scenarios.length}</strong>
-                  <span>{ui.missions}</span>
+                  <strong>
+                    {scenarios.length}
+                  </strong>
+                  <span>
+                    {ui.missions}
+                  </span>
                 </div>
 
                 <div className="statDivider" />
 
                 <div>
                   <strong>5</strong>
-                  <span>{ui.xpPerAnswer}</span>
+                  <span>
+                    {ui.xpPerAnswer}
+                  </span>
                 </div>
               </div>
             </div>
@@ -1207,7 +1323,9 @@ export default function Home() {
 
                 <div className="speechBubble">
                   <span>Salut!</span>
-                  <small>{ui.readyToPlay}</small>
+                  <small>
+                    {ui.readyToPlay}
+                  </small>
                 </div>
               </div>
 
@@ -1224,82 +1342,101 @@ export default function Home() {
                   {ui.chooseAdventure}
                 </span>
 
-                <h2>{ui.pickMission}</h2>
+                <h2>
+                  {ui.pickMission}
+                </h2>
               </div>
 
               <span className="missionCount">
-                {scenarios.length} {ui.toExplore}
+                {scenarios.length}{' '}
+                {ui.toExplore}
               </span>
             </div>
 
             <div className="missionGrid">
-              {scenarios.map((scenario) => {
-                const translatedScenario =
-                  languages[baseLanguage]
-                    ?.scenarios?.[scenario.id] ||
-                  languages.en.scenarios[
-                    scenario.id
-                  ];
+              {scenarios.map(
+                (scenario) => {
+                  const translatedScenario =
+                    languages[
+                      baseLanguage
+                    ]?.scenarios?.[
+                      scenario.id
+                    ] ||
+                    languages.en
+                      .scenarios[
+                        scenario.id
+                      ];
 
-                return (
-                  <button
-                    key={scenario.id}
-                    className="missionCard"
-                    onClick={() =>
-                      selectScenario(scenario)
-                    }
-                    style={{
-                      '--accent':
-                        scenario.color,
-                    }}
-                  >
-                    <div className="missionTop">
-                      <span className="missionNumber">
-                        {scenario.number}
-                      </span>
+                  return (
+                    <button
+                      key={scenario.id}
+                      className="missionCard"
+                      onClick={() =>
+                        selectScenario(
+                          scenario
+                        )
+                      }
+                      style={{
+                        '--accent':
+                          scenario.color,
+                      }}
+                    >
+                      <div className="missionTop">
+                        <span className="missionNumber">
+                          {scenario.number}
+                        </span>
 
-                      <span className="missionArrow">
-                        ↗
-                      </span>
-                    </div>
+                        <span className="missionArrow">
+                          ↗
+                        </span>
+                      </div>
 
-                    <MissionIcon
-                      type={scenario.icon}
-                    />
-
-                    <div className="missionContent">
-                      <span className="missionCategory">
-                        {
-                          translatedScenario.category
+                      <MissionIcon
+                        type={
+                          scenario.icon
                         }
-                      </span>
+                      />
 
-                      <h3>
-                        {translatedScenario.name}
-                      </h3>
+                      <div className="missionContent">
+                        <span className="missionCategory">
+                          {
+                            translatedScenario.category
+                          }
+                        </span>
 
-                      <p>
-                        {
-                          translatedScenario.description
-                        }
-                      </p>
-                    </div>
+                        <h3>
+                          {
+                            translatedScenario.name
+                          }
+                        </h3>
 
-                    <div className="playLabel">
-                      <span>
-                        {ui.playMission}
-                      </span>
+                        <p>
+                          {
+                            translatedScenario.description
+                          }
+                        </p>
+                      </div>
 
-                      <span>→</span>
-                    </div>
-                  </button>
-                );
-              })}
+                      <div className="playLabel">
+                        <span>
+                          {
+                            ui.playMission
+                          }
+                        </span>
+
+                        <span>→</span>
+                      </div>
+                    </button>
+                  );
+                }
+              )}
             </div>
           </section>
 
           <div className="homeTip">
-            <div className="tipIcon">★</div>
+            <div className="tipIcon">
+              ★
+            </div>
 
             <div>
               <strong>
@@ -1312,324 +1449,302 @@ export default function Home() {
         </section>
       )}
 
-      {selectedScenario && showIntro && (
-        <section className="introScreen">
-          <div className="introBackgroundShape introShapeOne" />
-          <div className="introBackgroundShape introShapeTwo" />
+      {selectedScenario &&
+        showIntro && (
+          <section className="introScreen">
+            <div className="introBackgroundShape introShapeOne" />
+            <div className="introBackgroundShape introShapeTwo" />
 
-          <button
-            className="backButton"
-            onClick={goHome}
-          >
-            {ui.allMissions}
-          </button>
-
-          <div className="introCard">
-            <div
-              className="introMissionIcon"
-              style={{
-                '--accent':
-                  selectedScenario.color,
-              }}
-            >
-              <MissionIcon
-                type={selectedScenario.icon}
-              />
-            </div>
-
-            <span className="introNumber">
-              {ui.mission}{' '}
-              {selectedScenario.number}
-            </span>
-
-            <h1>
-              {
-                languages[baseLanguage]
-                  ?.scenarios?.[
-                    selectedScenario.id
-                  ]?.name
-              }
-            </h1>
-
-            <p>
-              {
-                languages[baseLanguage]
-                  ?.scenarios?.[
-                    selectedScenario.id
-                  ]?.description
-              }
-            </p>
-
-            <div className="introMimi">
-              <Mimi small />
-
-              <div className="introMessage">
-                <strong>
-                  {ui.hiMimi}
-                </strong>
-
-                <span>
-                  {ui.practise}
-                </span>
-              </div>
-            </div>
-
-            <button
-              className="startButton"
-              onClick={beginMission}
-            >
-              <span>
-                {ui.startMission}
-              </span>
-
-              <span className="startArrow">
-                →
-              </span>
-            </button>
-          </div>
-        </section>
-      )}
-
-      {selectedScenario && !showIntro && (
-        <section className="conversation">
-          <div className="conversationHeader">
             <button
               className="backButton"
               onClick={goHome}
             >
-              {ui.missionsBack}
+              {ui.allMissions}
             </button>
 
-            <div className="conversationTitle">
+            <div className="introCard">
               <div
-                className="conversationMission"
+                className="introMissionIcon"
                 style={{
-                  background:
+                  '--accent':
                     selectedScenario.color,
                 }}
               >
-                {selectedScenario.number}
+                <MissionIcon
+                  type={
+                    selectedScenario.icon
+                  }
+                />
               </div>
 
-              <div>
+              <span className="introNumber">
+                {ui.mission}{' '}
+                {
+                  selectedScenario.number
+                }
+              </span>
+
+              <h1>
+                {
+                  languages[
+                    baseLanguage
+                  ]?.scenarios?.[
+                    selectedScenario.id
+                  ]?.name
+                }
+              </h1>
+
+              <p>
+                {
+                  languages[
+                    baseLanguage
+                  ]?.scenarios?.[
+                    selectedScenario.id
+                  ]?.description
+                }
+              </p>
+
+              <div className="introMimi">
+                <Mimi small />
+
+                <div className="introMessage">
+                  <strong>
+                    {ui.hiMimi}
+                  </strong>
+
+                  <span>
+                    {ui.practise}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                className="startButton"
+                onClick={
+                  beginMission
+                }
+              >
                 <span>
+                  {ui.startMission}
+                </span>
+
+                <span className="startArrow">
+                  →
+                </span>
+              </button>
+            </div>
+          </section>
+        )}
+
+      {selectedScenario &&
+        !showIntro && (
+          <section className="conversation">
+            <div className="conversationHeader">
+              <button
+                className="backButton"
+                onClick={goHome}
+              >
+                {ui.missionsBack}
+              </button>
+
+              <div className="conversationTitle">
+                <div
+                  className="conversationMission"
+                  style={{
+                    background:
+                      selectedScenario.color,
+                  }}
+                >
                   {
-                    languages[baseLanguage]
-                      ?.scenarios?.[
+                    selectedScenario.number
+                  }
+                </div>
+
+                <div>
+                  <span>
+                    {
+                      languages[
+                        baseLanguage
+                      ]?.scenarios?.[
                         selectedScenario.id
                       ]?.category
-                  }
-                </span>
+                    }
+                  </span>
 
-                <h1>
-                  {
-                    languages[baseLanguage]
-                      ?.scenarios?.[
+                  <h1>
+                    {
+                      languages[
+                        baseLanguage
+                      ]?.scenarios?.[
                         selectedScenario.id
                       ]?.name
-                  }
-                </h1>
+                    }
+                  </h1>
+                </div>
+              </div>
+
+              <div className="readyStatus">
+                <span />
+                {ui.ready}
               </div>
             </div>
 
-            <div className="readyStatus">
-              <span />
-              {ui.ready}
-            </div>
-          </div>
+            <div className="chatCard">
+              <div className="chatHeader">
+                <div className="chatMimi">
+                  <Mimi small />
+                </div>
 
-          <div className="chatCard">
-            <div className="chatHeader">
-              <div className="chatMimi">
-                <Mimi small />
+                <div>
+                  <strong>Mimi</strong>
+                  <span>
+                    {ui.frenchFriend}
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <strong>Mimi</strong>
-                <span>
-                  {ui.frenchFriend}
-                </span>
-              </div>
-            </div>
-
-            <div className="messages">
-              {messages.map(
-                (message, index) => (
-                  <div
-                    key={`${message.role}-${index}`}
-                    className={`messageRow ${message.role}`}
-                  >
-                    {message.role ===
-                      'mimi' && (
-                      <div className="messageAvatar">
-                        <Mimi small />
-                      </div>
-                    )}
-
-                    <div className="messageContent">
-                      <div className="messageBubble">
-                        {message.text}
-                      </div>
-
+              <div className="messages">
+                {messages.map(
+                  (
+                    message,
+                    index
+                  ) => (
+                    <div
+                      key={`${message.role}-${index}`}
+                      className={`messageRow ${message.role}`}
+                    >
                       {message.role ===
                         'mimi' && (
-                        <div className="messageTools">
-                          {message.speechText && (
-                            <button
-                              className="listenButton"
-                              onClick={() =>
-                                speakFrench(
-                                  message.speechText ||
-                                    message.text
-                                )
-                              }
-                            >
-                              <span className="speakerIcon">
-                                ◖
-                              </span>
-
-                              {ui.listen}
-                            </button>
-                          )}
-
-                          {message.meaning && (
-                            <button
-                              className="meaningButton"
-                              onClick={() =>
-                                setShowMeaning(
-                                  !showMeaning
-                                )
-                              }
-                            >
-                              {showMeaning
-                                ? ui.hideMeaning
-                                : ui.meaning}
-                            </button>
-                          )}
+                        <div className="messageAvatar">
+                          <Mimi small />
                         </div>
                       )}
 
-                      {message.role ===
-                        'mimi' &&
-                        message.meaning &&
-                        showMeaning && (
-                          <div className="meaningBox">
-                            {message.meaning}
+                      <div className="messageContent">
+                        <div className="messageBubble">
+                          {message.text}
+                        </div>
+
+                        {message.role ===
+                          'mimi' && (
+                          <div className="messageTools">
+                            {message.speechText && (
+                              <button
+                                className="listenButton"
+                                onClick={() =>
+                                  speakFrench(
+                                    message.speechText ||
+                                      message.text
+                                  )
+                                }
+                              >
+                                <span className="speakerIcon">
+                                  ◖
+                                </span>
+
+                                {ui.listen}
+                              </button>
+                            )}
+
+                            {message.meaning && (
+                              <button
+                                className="meaningButton"
+                                onClick={() =>
+                                  setShowMeaning(
+                                    !showMeaning
+                                  )
+                                }
+                              >
+                                {showMeaning
+                                  ? ui.hideMeaning
+                                  : ui.meaning}
+                              </button>
+                            )}
                           </div>
                         )}
-                    </div>
-                  </div>
-                )
-              )}
 
-              {loading && (
-                <div className="messageRow mimi">
-                  <div className="messageAvatar">
-                    <Mimi small />
-                  </div>
-
-                  <div className="messageContent">
-                    <div className="messageBubble typingBubble">
-                      <span />
-                      <span />
-                      <span />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
-            </div>
-
-            {vocabulary.length > 0 && (
-              <div className="vocabulary">
-                <div className="vocabularyTitle">
-                  {ui.usefulWords}
-                </div>
-
-                <div className="vocabularyList">
-                  {vocabulary.map(
-                    (word, index) => (
-                      <div
-                        className="vocabItem"
-                        key={index}
-                      >
-                        <strong>
-                          {word.french ||
-                            word}
-                        </strong>
-
-                        {(word.translation ||
-                          word.english) && (
-                          <span>
-                            {word.translation ||
-                              word.english}
-                          </span>
-                        )}
+                        {message.role ===
+                          'mimi' &&
+                          message.meaning &&
+                          showMeaning && (
+                            <div className="meaningBox">
+                              {
+                                message.meaning
+                              }
+                            </div>
+                          )}
                       </div>
-                    )
-                  )}
-                </div>
+                    </div>
+                  )
+                )}
+
+                {loading && (
+                  <div className="messageRow mimi">
+                    <div className="messageAvatar">
+                      <Mimi small />
+                    </div>
+
+                    <div className="messageContent">
+                      <div className="messageBubble typingBubble">
+                        <span />
+                        <span />
+                        <span />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  ref={
+                    messagesEndRef
+                  }
+                />
               </div>
-            )}
 
-            {answerOptions.length > 0 &&
-              !loading && (
-                <div className="answerArea">
-                  <div className="answerTitle">
-                    <span>
-                      {ui.yourTurn}
-                    </span>
-
-                    <small>
-                      {ui.chooseOrType}
-                    </small>
+              {vocabulary.length > 0 && (
+                <div className="vocabularyArea">
+                  <div className="vocabularyTitle">
+                    {ui.usefulWords}
                   </div>
 
-                  <div className="answerOptions">
-                    {answerOptions.map(
-                      (option, index) => {
+                  <div className="vocabularyList">
+                    {vocabulary.map(
+                      (
+                        word,
+                        index
+                      ) => {
                         const french =
-                          typeof option ===
+                          typeof word ===
                           'string'
-                            ? option
-                            : option.french ||
-                              option.text ||
+                            ? word
+                            : word?.french ||
                               '';
 
                         const translation =
-                          typeof option ===
+                          typeof word ===
                           'string'
                             ? ''
-                            : option.translation ||
-                              option.english ||
+                            : word?.translation ||
+                              word?.english ||
                               '';
 
                         return (
-                          <button
+                          <div
+                            className="vocabItem"
                             key={index}
-                            onClick={() =>
-                              chooseAnswer(
-                                french
-                              )
-                            }
                           >
-                            <span className="optionNumber">
-                              {index + 1}
-                            </span>
+                            <strong>
+                              {french}
+                            </strong>
 
-                            <span className="optionText">
-                              <strong>
-                                {french}
-                              </strong>
-
-                              {translation && (
-                                <small>
-                                  {translation}
-                                </small>
-                              )}
-                            </span>
-                          </button>
+                            {translation && (
+                              <span>
+                                {
+                                  translation
+                                }
+                              </span>
+                            )}
+                          </div>
                         );
                       }
                     )}
@@ -1637,9 +1752,79 @@ export default function Home() {
                 </div>
               )}
 
-            <div className="inputArea">
-              <div className="inputWrapper">
+              {answerOptions.length >
+                0 &&
+                !loading && (
+                  <div className="answerArea">
+                    <div className="answerTitle">
+                      <span>
+                        {ui.yourTurn}
+                      </span>
+
+                      <small>
+                        {ui.chooseOrType}
+                      </small>
+                    </div>
+
+                    <div className="answerOptions">
+                      {answerOptions.map(
+                        (
+                          option,
+                          index
+                        ) => {
+                          const french =
+                            typeof option ===
+                            'string'
+                              ? option
+                              : option.french ||
+                                option.text ||
+                                '';
+
+                          const translation =
+                            typeof option ===
+                            'string'
+                              ? ''
+                              : option.translation ||
+                                option.english ||
+                                '';
+
+                          return (
+                            <button
+                              key={index}
+                              onClick={() =>
+                                chooseAnswer(
+                                  french
+                                )
+                              }
+                            >
+                              <span className="optionNumber">
+                                {index + 1}
+                              </span>
+
+                              <span className="optionText">
+                                <strong>
+                                  {french}
+                                </strong>
+
+                                {translation && (
+                                  <small>
+                                    {
+                                      translation
+                                    }
+                                  </small>
+                                )}
+                              </span>
+                            </button>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              <div className="inputArea">
                 <input
+                  type="text"
                   value={input}
                   onChange={(event) =>
                     setInput(
@@ -1648,7 +1833,8 @@ export default function Home() {
                   }
                   onKeyDown={(event) => {
                     if (
-                      event.key === 'Enter'
+                      event.key ===
+                      'Enter'
                     ) {
                       sendMessage();
                     }
@@ -1668,19 +1854,21 @@ export default function Home() {
                     loading ||
                     !input.trim()
                   }
+                  aria-label="Send"
                 >
                   →
                 </button>
               </div>
 
-              <div className="inputHint">
-                <span>{ui.tip}</span>{' '}
+              <div className="conversationTip">
+                <span>
+                  {ui.tip}
+                </span>
                 {ui.mistakes}
               </div>
             </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )}
     </main>
   );
 }
@@ -1694,8 +1882,12 @@ const styles = `
   body {
     margin: 0;
     padding: 0;
-    background: #f8f8fc;
-    color: #20233a;
+    min-height: 100%;
+  }
+
+  body {
+    background: #ffffff;
+    color: #25263a;
     font-family:
       Inter,
       ui-sans-serif,
@@ -1704,10 +1896,6 @@ const styles = `
       BlinkMacSystemFont,
       "Segoe UI",
       sans-serif;
-  }
-
-  body {
-    min-height: 100vh;
   }
 
   button,
@@ -1722,89 +1910,100 @@ const styles = `
 
   .page {
     min-height: 100vh;
-    overflow-x: hidden;
     background:
-      radial-gradient(circle at 85% 8%, rgba(197, 167, 247, 0.16), transparent 25%),
-      radial-gradient(circle at 5% 35%, rgba(125, 217, 234, 0.13), transparent 25%),
-      #f8f8fc;
+      radial-gradient(
+        circle at 80% 8%,
+        rgba(228, 224, 255, 0.55),
+        transparent 24%
+      ),
+      linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #faf9ff 100%
+      );
+    overflow-x: hidden;
   }
-
-  /* =========================
-     HEADER
-  ========================= */
 
   .topbar {
     height: 76px;
-    padding: 0 5vw;
+    padding: 0 42px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(255, 255, 255, 0.92);
-    border-bottom: 1px solid #ececf3;
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    backdrop-filter: blur(14px);
+    border-bottom: 1px solid #eeeef4;
+    background: rgba(255, 255, 255, 0.94);
+    position: relative;
+    z-index: 10;
   }
 
   .brand {
     border: 0;
     background: transparent;
+    padding: 0;
     display: flex;
     align-items: center;
     gap: 11px;
-    padding: 0;
-    color: #20233a;
+    text-align: left;
   }
 
   .brandMark {
-    width: 34px;
-    height: 34px;
+    width: 31px;
+    height: 31px;
     border-radius: 10px;
+    background: #7569d5;
+    position: relative;
     overflow: hidden;
-    display: flex;
-    transform: rotate(-3deg);
-    box-shadow: 0 5px 15px rgba(40, 44, 80, 0.12);
+    transform: rotate(-6deg);
   }
 
-  .brandMark span {
-    flex: 1;
+  .brandBlue,
+  .brandWhite,
+  .brandRed {
+    position: absolute;
+    height: 7px;
+    width: 22px;
+    border-radius: 8px;
+    left: 5px;
   }
 
   .brandBlue {
-    background: #3155a5;
+    top: 5px;
+    background: #7dcce0;
   }
 
   .brandWhite {
-    background: #fff;
+    top: 12px;
+    background: #ffffff;
   }
 
   .brandRed {
-    background: #ef5062;
+    top: 19px;
+    background: #ef879e;
   }
 
   .brandText {
     display: flex;
     flex-direction: column;
-    text-align: left;
-    line-height: 1.05;
+    gap: 1px;
   }
 
   .brandText strong {
-    font-size: 17px;
-    letter-spacing: -0.4px;
+    color: #34354a;
+    font-size: 15px;
+    font-weight: 850;
+    line-height: 1;
   }
 
   .brandText span {
-    color: #85879a;
-    font-size: 11px;
-    margin-top: 4px;
+    color: #9b9baa;
+    font-size: 9px;
+    line-height: 1;
   }
 
   .headerRight {
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: 25px;
   }
 
   .languageSelector {
@@ -1816,110 +2015,95 @@ const styles = `
   .languageSelector > span {
     color: #999aaa;
     font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.4px;
+    font-weight: 700;
   }
 
   .languageSelector select {
-    appearance: none;
-    border: 1px solid #e7e6ef;
+    border: 1px solid #e8e7ef;
+    border-radius: 9px;
+    padding: 6px 25px 6px 9px;
     background: #fff;
-    color: #393a4e;
-    border-radius: 10px;
-    padding: 7px 27px 7px 10px;
+    color: #444559;
     font-size: 10px;
-    font-weight: 750;
-    cursor: pointer;
     outline: none;
   }
 
-  .languageSelector select:focus {
-    border-color: #b9b0ed;
-  }
-
   .xpArea {
-    width: 180px;
+    width: 145px;
   }
 
   .levelLabel {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    color: #85879a;
+    margin-bottom: 5px;
+    color: #9a9baa;
+    font-size: 8px;
+    font-weight: 750;
   }
 
   .levelLabel strong {
-    color: #20233a;
-    font-size: 10px;
+    color: #7569d5;
+    font-size: 9px;
   }
 
   .xpBar {
-    height: 7px;
-    border-radius: 10px;
-    background: #e9e9f0;
+    width: 100%;
+    height: 5px;
+    border-radius: 99px;
+    background: #ecebf4;
     overflow: hidden;
   }
 
   .xpFill {
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #7b6de8, #a98cf3);
-    transition: width 0.35s ease;
+    background: #7569d5;
+    transition: width 0.3s ease;
   }
 
-  /* =========================
-     HOME
-  ========================= */
-
   .home {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 60px 28px 70px;
     position: relative;
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 62px 35px 60px;
   }
 
   .decor {
     position: absolute;
-    pointer-events: none;
     border-radius: 50%;
-    opacity: 0.5;
+    pointer-events: none;
   }
 
   .decorOne {
-    width: 14px;
-    height: 14px;
-    background: #ffb86b;
-    right: 9%;
-    top: 115px;
+    width: 110px;
+    height: 110px;
+    background: #eef9fb;
+    left: -80px;
+    top: 210px;
   }
 
   .decorTwo {
-    width: 9px;
-    height: 9px;
-    background: #f4a6c8;
-    left: 5%;
-    top: 350px;
+    width: 70px;
+    height: 70px;
+    background: #f8edf3;
+    right: -20px;
+    top: 420px;
   }
 
   .decorThree {
-    width: 18px;
-    height: 18px;
-    border: 4px solid #8ed5ae;
-    right: 3%;
-    top: 510px;
+    width: 35px;
+    height: 35px;
+    border: 6px solid #eeeafc;
+    right: 80px;
+    top: 80px;
   }
 
   .hero {
     min-height: 390px;
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
+    grid-template-columns: 1fr 0.9fr;
     align-items: center;
     gap: 50px;
-    margin-bottom: 70px;
   }
 
   .heroText {
@@ -1930,91 +2114,77 @@ const styles = `
   .helloPill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: #fff;
-    border: 1px solid #e9e8f0;
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: #7266cf;
-    box-shadow: 0 7px 20px rgba(43, 44, 80, 0.05);
+    gap: 7px;
+    padding: 6px 10px;
+    border-radius: 99px;
+    background: #f3f1fd;
+    color: #7569d5;
+    font-size: 8px;
+    font-weight: 850;
+    letter-spacing: 0.08em;
   }
 
   .helloDot {
-    width: 7px;
-    height: 7px;
-    background: #ffad69;
+    width: 6px;
+    height: 6px;
+    background: #7569d5;
     border-radius: 50%;
   }
 
   .hero h1 {
-    margin: 19px 0 18px;
-    font-size: clamp(44px, 5vw, 68px);
+    margin: 17px 0 14px;
+    color: #303147;
+    font-size: clamp(39px, 5vw, 62px);
     line-height: 0.98;
-    letter-spacing: -3px;
-    font-weight: 850;
-    color: #25263b;
+    letter-spacing: -0.045em;
+    font-weight: 900;
   }
 
   .hero h1 span {
-    color: #7668d6;
-    position: relative;
-  }
-
-  .hero h1 span::after {
-    content: "";
-    position: absolute;
-    height: 7px;
-    left: 2px;
-    right: 4px;
-    bottom: -5px;
-    background: #ffd86b;
-    border-radius: 20px;
-    transform: rotate(-2deg);
-    z-index: -1;
+    color: #7569d5;
   }
 
   .heroText > p {
-    max-width: 500px;
-    margin: 0;
-    color: #707287;
-    font-size: 17px;
+    max-width: 470px;
+    color: #858697;
+    font-size: 14px;
     line-height: 1.65;
+    margin: 0;
   }
 
   .heroStats {
     display: flex;
     align-items: center;
-    gap: 20px;
-    margin-top: 30px;
+    gap: 22px;
+    margin-top: 27px;
   }
 
-  .heroStats div:not(.statDivider) {
+  .heroStats > div:not(.statDivider) {
     display: flex;
     flex-direction: column;
+    gap: 1px;
   }
 
   .heroStats strong {
-    font-size: 20px;
-    color: #292b40;
+    color: #35364b;
+    font-size: 22px;
+    line-height: 1;
   }
 
   .heroStats span {
-    color: #9698a8;
-    font-size: 11px;
-    margin-top: 2px;
+    color: #9b9baa;
+    font-size: 8px;
+    font-weight: 700;
   }
 
   .statDivider {
     width: 1px;
     height: 30px;
-    background: #dedee8;
+    background: #e7e6ef;
   }
 
   .heroCharacter {
-    min-height: 360px;
+    min-height: 350px;
     position: relative;
     display: flex;
     align-items: center;
@@ -2023,21 +2193,22 @@ const styles = `
 
   .characterGlow {
     position: absolute;
-    width: 310px;
-    height: 310px;
+    width: 300px;
+    height: 300px;
     border-radius: 50%;
-    background: #ebe7ff;
-    opacity: 0.75;
+    background: #f2f0fd;
   }
 
   .characterCard {
     position: relative;
-    width: 300px;
-    height: 315px;
-    background: #fff;
-    border-radius: 40px;
-    border: 1px solid #eeeef5;
-    box-shadow: 0 25px 60px rgba(53, 53, 88, 0.12);
+    z-index: 2;
+    width: 270px;
+    height: 290px;
+    border-radius: 35px;
+    background: #ffffff;
+    box-shadow:
+      0 20px 55px rgba(82, 77, 130, 0.12),
+      0 4px 15px rgba(82, 77, 130, 0.05);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2045,287 +2216,226 @@ const styles = `
 
   .speechBubble {
     position: absolute;
-    top: 42px;
-    right: -45px;
-    background: #fff;
-    border: 1px solid #ececf3;
-    border-radius: 17px;
-    padding: 12px 17px;
-    box-shadow: 0 12px 30px rgba(40, 40, 70, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    transform: rotate(3deg);
+    right: -65px;
+    top: 32px;
+    min-width: 115px;
+    padding: 10px 13px;
+    border-radius: 13px 13px 13px 3px;
+    background: #7569d5;
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(117, 105, 213, 0.2);
   }
 
-  .speechBubble::after {
-    content: "";
-    position: absolute;
-    bottom: -7px;
-    left: 23px;
-    width: 14px;
-    height: 14px;
-    background: white;
-    border-right: 1px solid #ececf3;
-    border-bottom: 1px solid #ececf3;
-    transform: rotate(45deg);
+  .speechBubble span,
+  .speechBubble small {
+    display: block;
   }
 
   .speechBubble span {
-    color: #7266cf;
-    font-size: 17px;
-    font-weight: 850;
+    font-size: 11px;
+    font-weight: 800;
   }
 
   .speechBubble small {
-    color: #9293a3;
-    font-size: 10px;
+    margin-top: 2px;
+    font-size: 8px;
+    opacity: 0.8;
   }
 
   .floatingShape {
     position: absolute;
-    border-radius: 50%;
-  }
-
-  .shapeOne {
-    width: 17px;
-    height: 17px;
-    background: #ffb86b;
-    top: 34px;
-    left: 20%;
-  }
-
-  .shapeTwo {
-    width: 12px;
-    height: 12px;
-    background: #7dd9ea;
-    bottom: 42px;
-    right: 15%;
-  }
-
-  .shapeThree {
-    width: 25px;
-    height: 25px;
-    border: 5px solid #f4a6c8;
-    bottom: 65px;
-    left: 12%;
-  }
-
-  /* =========================
-     MIMI
-  ========================= */
-
-  .mimi {
-    width: 170px;
-    height: 205px;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-  }
-
-  .mimiEar {
-    width: 45px;
-    height: 65px;
-    background: #a995e8;
-    border-radius: 50%;
-    position: absolute;
-    top: 24px;
     z-index: 1;
   }
 
-  .mimiEar::after {
-    content: "";
+  .shapeOne {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    background: #ffd86b;
+    top: 42px;
+    left: 20px;
+    transform: rotate(15deg);
+  }
+
+  .shapeTwo {
+    width: 28px;
+    height: 28px;
+    border: 7px solid #f4a6c8;
+    border-radius: 50%;
+    right: 5px;
+    bottom: 48px;
+  }
+
+  .shapeThree {
+    width: 16px;
+    height: 16px;
+    background: #8ed5ae;
+    border-radius: 4px;
+    left: 55px;
+    bottom: 28px;
+    transform: rotate(25deg);
+  }
+
+  .mimi {
+    width: 130px;
+    height: 190px;
+    position: relative;
+  }
+
+  .mimiSmall {
+    transform: scale(0.45);
+    transform-origin: bottom center;
+    width: 130px;
+    height: 190px;
+  }
+
+  .mimiEar {
     position: absolute;
-    inset: 8px;
-    border-radius: inherit;
-    background: #d9d0fa;
+    top: 23px;
+    width: 39px;
+    height: 53px;
+    border-radius: 50% 50% 42% 42%;
+    background: #7569d5;
+    z-index: 1;
   }
 
   .mimiEarLeft {
-    left: 8px;
-    transform: rotate(-20deg);
+    left: 9px;
+    transform: rotate(-19deg);
   }
 
   .mimiEarRight {
-    right: 8px;
-    transform: rotate(20deg);
+    right: 9px;
+    transform: rotate(19deg);
   }
 
   .mimiHead {
-    width: 125px;
-    height: 115px;
-    background: #b6a4ef;
-    border-radius: 48% 48% 45% 45%;
-    position: relative;
+    position: absolute;
     z-index: 2;
-    box-shadow: inset 0 -7px 0 rgba(80, 60, 150, 0.07);
+    top: 23px;
+    left: 18px;
+    width: 94px;
+    height: 96px;
+    border-radius: 48% 48% 45% 45%;
+    background: #c8a07c;
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,0.03);
   }
 
   .mimiEye {
     position: absolute;
-    top: 45px;
-    width: 11px;
-    height: 15px;
+    top: 38px;
+    width: 9px;
+    height: 12px;
     border-radius: 50%;
-    background: #34334b;
-  }
-
-  .mimiEye::after {
-    content: "";
-    position: absolute;
-    width: 3px;
-    height: 4px;
-    border-radius: 50%;
-    background: #fff;
-    top: 3px;
-    left: 3px;
+    background: #303147;
   }
 
   .mimiEyeLeft {
-    left: 35px;
+    left: 26px;
   }
 
   .mimiEyeRight {
-    right: 35px;
+    right: 26px;
   }
 
   .mimiNose {
     position: absolute;
-    top: 65px;
-    left: 58px;
-    width: 9px;
+    top: 53px;
+    left: 43px;
+    width: 8px;
     height: 7px;
     border-radius: 50%;
-    background: #806dc9;
+    background: #8d6652;
   }
 
   .mimiSmile {
     position: absolute;
-    top: 76px;
-    left: 50px;
-    width: 25px;
-    height: 13px;
-    border-bottom: 3px solid #5e4c9e;
-    border-radius: 0 0 20px 20px;
+    left: 36px;
+    top: 63px;
+    width: 23px;
+    height: 11px;
+    border-bottom: 3px solid #5b4140;
+    border-radius: 0 0 50% 50%;
   }
 
   .mimiBody {
-    width: 105px;
-    height: 70px;
     position: absolute;
-    bottom: 0;
-    background: #7d70db;
-    border-radius: 42px 42px 28px 28px;
-    z-index: 1;
+    left: 23px;
+    top: 108px;
+    width: 84px;
+    height: 74px;
+    border-radius: 38px 38px 18px 18px;
+    background: #7569d5;
   }
 
   .mimiScarf {
     position: absolute;
-    width: 92px;
-    height: 19px;
-    top: 9px;
-    left: 6px;
-    background: #ffd76a;
-    border-radius: 20px;
-    transform: rotate(-2deg);
+    top: 2px;
+    left: 7px;
+    right: 7px;
+    height: 15px;
+    border-radius: 99px;
+    background: #f4a6c8;
   }
-
-  .mimiScarf::after {
-    content: "";
-    position: absolute;
-    width: 18px;
-    height: 30px;
-    right: 5px;
-    top: 11px;
-    background: #ffd76a;
-    border-radius: 5px 5px 12px 12px;
-    transform: rotate(-6deg);
-  }
-
-  .mimiSmall {
-    transform: scale(0.56);
-    transform-origin: center bottom;
-    width: 100px;
-    height: 120px;
-  }
-
-  /* =========================
-     MISSIONS
-  ========================= */
 
   .missionsSection {
-    position: relative;
+    margin-top: 35px;
   }
 
   .sectionHeading {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: 24px;
+    margin-bottom: 19px;
   }
 
   .sectionEyebrow {
-    font-size: 10px;
+    display: block;
+    color: #aaaaba;
+    font-size: 8px;
     font-weight: 850;
-    letter-spacing: 1.3px;
-    color: #8a89a0;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
   }
 
   .sectionHeading h2 {
-    margin: 6px 0 0;
-    font-size: 31px;
-    letter-spacing: -1.2px;
+    margin: 0;
+    color: #35364b;
+    font-size: 24px;
+    letter-spacing: -0.025em;
   }
 
   .missionCount {
-    color: #898a9d;
-    font-size: 12px;
-    background: #fff;
-    border: 1px solid #ececf3;
-    padding: 8px 12px;
-    border-radius: 999px;
+    color: #a0a0ae;
+    font-size: 9px;
+    font-weight: 700;
   }
 
   .missionGrid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 17px;
+    gap: 13px;
   }
 
   .missionCard {
-    border: 1px solid #ececf3;
+    min-height: 235px;
+    padding: 15px;
+    border: 1px solid #ecebf2;
+    border-radius: 20px;
     background: #fff;
-    border-radius: 25px;
-    padding: 18px;
     text-align: left;
     position: relative;
-    min-height: 285px;
-    display: flex;
-    flex-direction: column;
     overflow: hidden;
     transition:
-      transform 0.22s ease,
-      box-shadow 0.22s ease,
-      border-color 0.22s ease;
-  }
-
-  .missionCard::before {
-    content: "";
-    position: absolute;
-    width: 115px;
-    height: 115px;
-    background: var(--accent);
-    opacity: 0.16;
-    border-radius: 50%;
-    top: 42px;
-    right: -42px;
+      transform 0.18s ease,
+      box-shadow 0.18s ease,
+      border-color 0.18s ease;
   }
 
   .missionCard:hover {
-    transform: translateY(-6px) rotate(-0.4deg);
+    transform: translateY(-4px);
     border-color: var(--accent);
-    box-shadow: 0 20px 40px rgba(50, 50, 80, 0.1);
+    box-shadow: 0 12px 30px rgba(70, 67, 105, 0.09);
   }
 
   .missionTop {
@@ -2335,35 +2445,23 @@ const styles = `
   }
 
   .missionNumber {
-    width: 34px;
-    height: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 11px;
-    background: var(--accent);
-    color: #3c3c51;
+    color: #b0afbc;
+    font-size: 8px;
     font-weight: 850;
-    font-size: 10px;
   }
 
   .missionArrow {
-    font-size: 20px;
-    color: #aaaabd;
-    transition: transform 0.2s ease;
-  }
-
-  .missionCard:hover .missionArrow {
-    transform: translate(3px, -3px);
+    color: #a9a8b7;
+    font-size: 15px;
   }
 
   .missionIcon {
-    width: 68px;
-    height: 68px;
-    border-radius: 22px;
-    background: var(--accent);
+    width: 62px;
+    height: 62px;
+    margin: 18px 0 15px;
+    border-radius: 19px;
+    background: color-mix(in srgb, var(--accent, #7569d5) 22%, white);
     position: relative;
-    margin: 18px 0 17px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2377,50 +2475,48 @@ const styles = `
   .missionIcon-cake,
   .missionIcon-tree,
   .missionIcon-bag {
-    --accent: #dedbf8;
+    --accent: #7569d5;
   }
 
   .bookShape {
     position: absolute;
-    width: 22px;
-    height: 32px;
-    background: #fff;
-    border-radius: 4px 8px 8px 4px;
-    top: 19px;
+    width: 18px;
+    height: 25px;
+    background: #7569d5;
+    border-radius: 3px;
+    bottom: 18px;
   }
 
   .bookLeft {
     left: 14px;
-    transform: rotate(-5deg);
+    transform: skewY(7deg);
   }
 
   .bookRight {
     right: 14px;
-    transform: rotate(5deg);
+    transform: skewY(-7deg);
   }
 
   .bookLine {
-    width: 3px;
-    height: 31px;
-    background: #8a7bd8;
-    border-radius: 3px;
     position: absolute;
+    width: 3px;
+    height: 28px;
+    background: #fff;
+    opacity: 0.8;
   }
 
   .ballShape {
-    width: 38px;
-    height: 38px;
-    background: #fff;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
-    border: 4px solid #5d69a7;
+    background: #7569d5;
   }
 
   .ballLine {
     position: absolute;
-    width: 17px;
-    height: 4px;
-    background: #5d69a7;
-    border-radius: 5px;
+    background: #fff;
+    height: 2px;
+    width: 23px;
   }
 
   .ballLineOne {
@@ -2432,272 +2528,226 @@ const styles = `
   }
 
   .pawPad {
-    width: 27px;
-    height: 24px;
-    border-radius: 50%;
-    background: #fff;
+    width: 24px;
+    height: 22px;
+    border-radius: 50% 50% 45% 45%;
+    background: #7569d5;
     position: absolute;
-    bottom: 15px;
+    bottom: 16px;
   }
 
   .pawDot {
-    width: 12px;
-    height: 15px;
+    width: 10px;
+    height: 12px;
     border-radius: 50%;
-    background: #fff;
+    background: #7569d5;
     position: absolute;
-    top: 17px;
   }
 
   .pawDotOne {
-    left: 16px;
+    left: 13px;
+    top: 17px;
     transform: rotate(-25deg);
   }
 
   .pawDotTwo {
-    left: 28px;
+    left: 24px;
     top: 11px;
+    transform: rotate(-8deg);
   }
 
   .pawDotThree {
-    right: 16px;
+    right: 13px;
+    top: 17px;
     transform: rotate(25deg);
   }
 
   .pawDotFour {
-    right: 27px;
-    top: 10px;
+    right: 23px;
+    top: 12px;
+    transform: rotate(8deg);
   }
 
   .starShape {
-    color: #fff;
-    font-size: 39px;
+    color: #7569d5;
+    font-size: 34px;
     line-height: 1;
-    text-shadow: 0 3px 0 rgba(87, 73, 130, 0.18);
   }
 
   .person {
     position: absolute;
-    background: #fff;
-    border-radius: 50%;
-  }
-
-  .person::after {
-    content: "";
-    position: absolute;
-    background: #fff;
-    border-radius: 18px 18px 9px 9px;
-    width: 27px;
-    height: 26px;
-    left: -7px;
-    top: 20px;
+    bottom: 16px;
+    background: #7569d5;
+    border-radius: 50% 50% 18% 18%;
   }
 
   .personOne {
     width: 17px;
-    height: 17px;
-    left: 11px;
-    top: 17px;
+    height: 29px;
+    left: 12px;
   }
 
   .personTwo {
     width: 21px;
-    height: 21px;
-    left: 24px;
-    top: 11px;
-    z-index: 2;
+    height: 36px;
+    left: 21px;
   }
 
   .personThree {
     width: 17px;
-    height: 17px;
-    right: 11px;
-    top: 17px;
-  }
-
-  .cakeCandle {
-    width: 5px;
-    height: 17px;
-    background: #fff;
-    position: absolute;
-    top: 12px;
-    border-radius: 3px;
-  }
-
-  .cakeCandle::before {
-    content: "";
-    width: 8px;
-    height: 8px;
-    background: #ff8d68;
-    border-radius: 50% 50% 50% 0;
-    position: absolute;
-    left: -2px;
-    top: -7px;
-    transform: rotate(45deg);
-  }
-
-  .cakeTop {
-    width: 40px;
-    height: 17px;
-    background: #fff;
-    border-radius: 5px 5px 2px 2px;
-    position: absolute;
-    top: 29px;
+    height: 29px;
+    right: 12px;
   }
 
   .cakeBottom {
-    width: 49px;
-    height: 18px;
-    background: #fff;
-    border-radius: 3px 3px 8px 8px;
     position: absolute;
-    top: 46px;
+    bottom: 15px;
+    width: 36px;
+    height: 20px;
+    border-radius: 5px;
+    background: #7569d5;
+  }
+
+  .cakeTop {
+    position: absolute;
+    bottom: 34px;
+    width: 29px;
+    height: 8px;
+    border-radius: 5px;
+    background: #f4a6c8;
+  }
+
+  .cakeCandle {
+    position: absolute;
+    bottom: 42px;
+    width: 4px;
+    height: 10px;
+    background: #7569d5;
   }
 
   .treeTop {
-    width: 42px;
-    height: 42px;
-    background: #fff;
-    border-radius: 50%;
     position: absolute;
     top: 12px;
-    box-shadow:
-      -15px 10px 0 -4px #fff,
-      15px 10px 0 -4px #fff;
+    width: 37px;
+    height: 37px;
+    border-radius: 50%;
+    background: #7569d5;
   }
 
   .treeTrunk {
-    width: 10px;
+    position: absolute;
+    bottom: 14px;
+    width: 9px;
     height: 25px;
-    background: #fff;
-    position: absolute;
-    bottom: 10px;
-    border-radius: 5px;
-  }
-
-  .bagBody {
-    width: 38px;
-    height: 36px;
-    background: #fff;
-    border-radius: 4px 4px 9px 9px;
-    position: absolute;
-    bottom: 12px;
+    background: #7569d5;
+    border-radius: 3px;
   }
 
   .bagHandle {
-    width: 25px;
-    height: 17px;
-    border: 4px solid #fff;
-    border-bottom: 0;
-    border-radius: 20px 20px 0 0;
     position: absolute;
-    top: 12px;
+    top: 13px;
+    width: 22px;
+    height: 17px;
+    border: 4px solid #7569d5;
+    border-bottom: 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .bagBody {
+    width: 35px;
+    height: 29px;
+    background: #7569d5;
+    border-radius: 4px 4px 8px 8px;
+    position: absolute;
+    bottom: 14px;
   }
 
   .missionContent {
-    position: relative;
-    z-index: 2;
+    min-height: 67px;
   }
 
   .missionCategory {
-    color: #9293a4;
-    font-size: 8px;
+    color: #aaa9b7;
+    font-size: 7px;
     font-weight: 850;
-    letter-spacing: 1px;
+    letter-spacing: 0.08em;
   }
 
   .missionContent h3 {
-    margin: 6px 0 6px;
-    color: #27293e;
-    font-size: 20px;
-    letter-spacing: -0.5px;
+    margin: 4px 0 4px;
+    color: #37384c;
+    font-size: 15px;
   }
 
   .missionContent p {
     margin: 0;
-    color: #858698;
-    font-size: 11px;
-    line-height: 1.55;
+    color: #9292a1;
+    font-size: 9px;
+    line-height: 1.45;
   }
 
   .playLabel {
-    margin-top: auto;
-    padding-top: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #7468cf;
-    font-size: 9px;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #f0eff4;
+    color: #7569d5;
+    font-size: 8px;
     font-weight: 850;
-    letter-spacing: 0.7px;
   }
 
   .homeTip {
-    margin-top: 25px;
-    background: #fff9e9;
-    border: 1px solid #f2e5bb;
-    border-radius: 22px;
-    padding: 17px 20px;
+    max-width: 600px;
+    margin: 27px auto 0;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
+    padding: 13px 17px;
+    border: 1px solid #eeeef4;
+    border-radius: 15px;
+    background: #fff;
   }
 
   .tipIcon {
-    width: 38px;
-    height: 38px;
-    flex: 0 0 38px;
-    background: #ffd86b;
-    border-radius: 13px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: #fff4d2;
+    color: #d49b19;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #866d2d;
-  }
-
-  .homeTip strong {
-    color: #51472c;
     font-size: 13px;
   }
 
-  .homeTip p {
-    margin: 3px 0 0;
-    color: #82775a;
-    font-size: 11px;
+  .homeTip strong {
+    display: block;
+    color: #55566a;
+    font-size: 9px;
   }
 
-  /* =========================
-     INTRO
-  ========================= */
+  .homeTip p {
+    margin: 2px 0 0;
+    color: #9999a8;
+    font-size: 8px;
+  }
 
   .introScreen {
     min-height: calc(100vh - 76px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 45px 25px;
     position: relative;
-    overflow: hidden;
-  }
-
-  .backButton {
-    border: 0;
-    background: transparent;
-    color: #797b91;
-    font-size: 12px;
-    font-weight: 700;
-    padding: 8px 0;
-    transition: color 0.2s ease;
-  }
-
-  .backButton:hover {
-    color: #7165cf;
-  }
-
-  .introScreen > .backButton {
-    position: absolute;
-    top: 30px;
-    left: 5vw;
+    padding: 40px 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background:
+      radial-gradient(
+        circle at 20% 30%,
+        rgba(220, 244, 248, 0.8),
+        transparent 24%
+      ),
+      #fbfaff;
   }
 
   .introBackgroundShape {
@@ -2707,36 +2757,64 @@ const styles = `
   }
 
   .introShapeOne {
-    width: 330px;
-    height: 330px;
-    background: #ebe7ff;
-    right: -100px;
-    top: 10%;
+    width: 180px;
+    height: 180px;
+    left: -60px;
+    bottom: 40px;
+    background: #eef9fb;
   }
 
   .introShapeTwo {
-    width: 190px;
-    height: 190px;
-    background: #e1f7fa;
-    left: -70px;
-    bottom: 8%;
+    width: 100px;
+    height: 100px;
+    right: 5%;
+    top: 100px;
+    background: #f8edf3;
+  }
+
+  .backButton {
+    align-self: flex-start;
+    border: 0;
+    background: transparent;
+    color: #8d8d9d;
+    padding: 5px 0;
+    font-size: 10px;
+    font-weight: 750;
+    position: relative;
+    z-index: 2;
+  }
+
+  .backButton:hover {
+    color: #7569d5;
   }
 
   .introCard {
-    width: min(560px, 100%);
+    width: min(100%, 550px);
+    margin: auto;
+    padding: 38px 45px 42px;
+    border-radius: 28px;
     background: #fff;
-    border: 1px solid #ececf3;
-    border-radius: 38px;
-    box-shadow: 0 30px 80px rgba(50, 50, 90, 0.12);
-    padding: 45px;
+    box-shadow:
+      0 22px 60px rgba(80, 75, 120, 0.1),
+      0 4px 14px rgba(80, 75, 120, 0.04);
     text-align: center;
     position: relative;
     z-index: 2;
   }
 
   .introMissionIcon {
-    display: inline-flex;
-    --accent: #c5a7f7;
+    width: 74px;
+    height: 74px;
+    margin: 0 auto 15px;
+    border-radius: 22px;
+    background: color-mix(
+      in srgb,
+      var(--accent) 20%,
+      white
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .introMissionIcon .missionIcon {
@@ -2744,228 +2822,208 @@ const styles = `
   }
 
   .introNumber {
-    display: block;
-    margin-top: 20px;
-    color: #8c8ca0;
-    font-size: 9px;
+    color: #aaa9b7;
+    font-size: 8px;
     font-weight: 850;
-    letter-spacing: 1.3px;
+    letter-spacing: 0.1em;
   }
 
   .introCard h1 {
-    margin: 8px 0 10px;
-    font-size: 42px;
-    letter-spacing: -1.7px;
-    color: #25263b;
+    margin: 7px 0 8px;
+    color: #35364b;
+    font-size: 30px;
+    letter-spacing: -0.035em;
   }
 
   .introCard > p {
     margin: 0 auto;
-    max-width: 430px;
-    color: #858698;
-    line-height: 1.65;
-    font-size: 14px;
+    max-width: 400px;
+    color: #8e8e9e;
+    font-size: 11px;
+    line-height: 1.6;
   }
 
   .introMimi {
-    margin: 30px auto 27px;
-    padding: 13px 18px;
-    width: fit-content;
-    background: #f8f7fd;
-    border-radius: 22px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 3px;
+    margin: 25px 0 26px;
   }
 
   .introMessage {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     text-align: left;
-    margin-left: -4px;
+    padding: 11px 15px;
+    background: #f5f3fc;
+    border-radius: 13px 13px 13px 3px;
   }
 
   .introMessage strong {
-    font-size: 13px;
-    color: #36364c;
+    color: #4b4b5e;
+    font-size: 10px;
   }
 
   .introMessage span {
-    margin-top: 3px;
-    font-size: 10px;
-    color: #8d8ea0;
+    color: #9999a7;
+    font-size: 8px;
+    margin-top: 2px;
   }
 
   .startButton {
     width: 100%;
     border: 0;
-    border-radius: 17px;
-    padding: 17px 20px;
+    border-radius: 13px;
+    padding: 13px 17px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background: #7569d5;
     color: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
+    font-size: 10px;
     font-weight: 850;
-    font-size: 11px;
-    letter-spacing: 0.7px;
-    box-shadow: 0 12px 24px rgba(117, 105, 213, 0.22);
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
+    box-shadow: 0 9px 20px rgba(117, 105, 213, 0.22);
+    transition: transform 0.15s ease;
   }
 
   .startButton:hover {
     transform: translateY(-2px);
-    box-shadow: 0 17px 30px rgba(117, 105, 213, 0.27);
   }
 
   .startArrow {
-    font-size: 18px;
-    line-height: 1;
+    font-size: 16px;
   }
 
-  /* =========================
-     CONVERSATION
-  ========================= */
-
   .conversation {
-    max-width: 1000px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: 25px 25px 50px;
+    padding: 28px 30px 45px;
   }
 
   .conversationHeader {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
   }
 
-  .conversationHeader > .backButton {
+  .conversationHeader .backButton {
     justify-self: start;
   }
 
   .conversationTitle {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
   }
 
   .conversationMission {
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
+    width: 39px;
+    height: 39px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3c3c51;
-    font-size: 10px;
-    font-weight: 850;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 900;
   }
 
   .conversationTitle span {
     display: block;
-    color: #9192a4;
-    font-size: 8px;
+    color: #aaa9b8;
+    font-size: 7px;
     font-weight: 850;
-    letter-spacing: 1px;
+    letter-spacing: 0.08em;
   }
 
   .conversationTitle h1 {
-    margin: 3px 0 0;
-    font-size: 18px;
-    letter-spacing: -0.5px;
+    margin: 2px 0 0;
+    color: #38394d;
+    font-size: 19px;
+    line-height: 1;
   }
 
   .readyStatus {
     justify-self: end;
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
+    color: #8f909f;
     font-size: 8px;
-    font-weight: 850;
-    letter-spacing: 0.8px;
-    color: #8a8b9d;
+    font-weight: 800;
   }
 
   .readyStatus span {
-    width: 7px;
-    height: 7px;
-    background: #6fd09a;
+    width: 6px;
+    height: 6px;
+    background: #8ed5ae;
     border-radius: 50%;
-    box-shadow: 0 0 0 4px rgba(111, 208, 154, 0.12);
   }
 
   .chatCard {
-    background: #fff;
-    border: 1px solid #ececf3;
-    border-radius: 28px;
     overflow: hidden;
-    box-shadow: 0 20px 60px rgba(45, 45, 80, 0.08);
+    border: 1px solid #ecebf2;
+    border-radius: 23px;
+    background: #fff;
+    box-shadow: 0 10px 35px rgba(72, 69, 105, 0.06);
   }
 
   .chatHeader {
-    height: 72px;
-    padding: 0 24px;
-    border-bottom: 1px solid #f0f0f5;
+    height: 64px;
+    padding: 0 22px;
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 7px;
+    border-bottom: 1px solid #f0eff4;
+    background: #fff;
   }
 
   .chatMimi {
-    width: 48px;
-    height: 58px;
+    width: 32px;
+    height: 42px;
     overflow: hidden;
-    display: flex;
-    align-items: flex-end;
+    position: relative;
+  }
+
+  .chatMimi .mimi {
+    position: absolute;
+    left: -49px;
+    top: -63px;
+    transform: scale(0.35);
+  }
+
+  .chatHeader strong,
+  .chatHeader span {
+    display: block;
   }
 
   .chatHeader strong {
-    display: block;
-    font-size: 13px;
-    color: #303147;
+    color: #444559;
+    font-size: 10px;
   }
 
   .chatHeader span {
-    display: block;
-    font-size: 9px;
-    color: #999aaa;
-    margin-top: 3px;
+    color: #a0a0ae;
+    font-size: 8px;
   }
 
   .messages {
-    height: 420px;
+    height: 430px;
+    padding: 22px;
     overflow-y: auto;
-    overflow-x: hidden;
-    padding: 22px 22px 10px;
-    min-height: 0;
-    scroll-behavior: smooth;
-    overscroll-behavior: contain;
-  }
-
-  .messages::-webkit-scrollbar {
-    width: 7px;
-  }
-
-  .messages::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .messages::-webkit-scrollbar-thumb {
-    background: #dddde8;
-    border-radius: 20px;
+    background: #fff;
   }
 
   .messageRow {
-  display: flex;
-  gap: 9px;
-  margin-bottom: 17px;
-  width: 100%;
-  min-width: 0;
-}
+    display: flex;
+    gap: 9px;
+    margin-bottom: 17px;
+    width: 100%;
+    min-width: 0;
+  }
 
   .messageRow.user {
     justify-content: flex-end;
@@ -2980,29 +3038,34 @@ const styles = `
     align-items: flex-end;
   }
 
-.messageContent {
-  width: 100%;
-  max-width: 100%;
-  min-width: 0;
-  flex: 1;
-}
+  .messageAvatar .mimi {
+    transform: scale(0.27);
+    transform-origin: bottom left;
+  }
 
-.messageBubble {
-  width: 500px;
-  max-width: 100%;
-  padding: 12px 15px;
-  border-radius: 17px 17px 17px 5px;
-  background: #f4f3fb;
-  color: #3d3e52;
-  font-size: 13px;
-  line-height: 1.55;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
+  .messageContent {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1;
+  }
 
-.messageRow.user .messageContent {
-  margin-left: auto;
-}
+  .messageBubble {
+    width: 500px;
+    max-width: 100%;
+    padding: 12px 15px;
+    border-radius: 17px 17px 17px 5px;
+    background: #f4f3fb;
+    color: #3d3e52;
+    font-size: 13px;
+    line-height: 1.55;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .messageRow.user .messageContent {
+    margin-left: auto;
+  }
 
   .messageRow.user .messageBubble {
     background: #7569d5;
@@ -3012,52 +3075,56 @@ const styles = `
 
   .messageTools {
     display: flex;
-    gap: 7px;
-    margin-top: 6px;
+    gap: 6px;
+    margin-top: 7px;
   }
 
   .listenButton,
   .meaningButton {
-    border: 0;
-    background: transparent;
-    color: #8b8c9f;
-    font-size: 9px;
-    padding: 3px 5px;
+    border: 1px solid #e9e8f0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 4px 7px;
+    color: #898999;
+    font-size: 8px;
   }
 
   .listenButton:hover,
   .meaningButton:hover {
     color: #7569d5;
+    border-color: #d7d2f0;
   }
 
   .speakerIcon {
     display: inline-block;
     margin-right: 3px;
-    font-size: 12px;
+    color: #7569d5;
   }
 
   .meaningBox {
+    max-width: 500px;
     margin-top: 7px;
     padding: 9px 11px;
-    background: #fff9e9;
     border-radius: 10px;
-    color: #756b50;
-    font-size: 10px;
-    line-height: 1.45;
+    background: #faf9fd;
+    color: #858595;
+    font-size: 9px;
+    line-height: 1.5;
   }
 
   .typingBubble {
+    width: 62px;
     display: flex;
+    align-items: center;
     gap: 4px;
-    padding: 14px 17px;
   }
 
   .typingBubble span {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background: #9b95c9;
-    animation: typing 1s infinite ease-in-out;
+    background: #aaa6cf;
+    animation: typing 1.2s infinite ease-in-out;
   }
 
   .typingBubble span:nth-child(2) {
@@ -3077,49 +3144,49 @@ const styles = `
     }
 
     30% {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       opacity: 1;
     }
   }
 
-  .vocabulary {
-    border-top: 1px solid #f0f0f5;
-    padding: 15px 22px;
-    background: #fafafd;
+  .vocabularyArea {
+    padding: 14px 22px 13px;
+    border-top: 1px solid #f0eff4;
+    background: #fcfbfe;
   }
 
   .vocabularyTitle {
-    font-size: 8px;
+    color: #9d9dab;
+    font-size: 7px;
     font-weight: 850;
-    letter-spacing: 1px;
-    color: #9697a9;
+    letter-spacing: 0.1em;
     margin-bottom: 8px;
   }
 
   .vocabularyList {
     display: flex;
-    flex-wrap: wrap;
     gap: 7px;
+    flex-wrap: wrap;
   }
 
   .vocabItem {
-    background: #fff;
-    border: 1px solid #ececf3;
-    border-radius: 10px;
-    padding: 6px 9px;
     display: flex;
-    gap: 6px;
     align-items: center;
+    gap: 6px;
+    padding: 6px 9px;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #ecebf2;
   }
 
   .vocabItem strong {
-    color: #7165cf;
-    font-size: 10px;
+    color: #55566a;
+    font-size: 9px;
   }
 
   .vocabItem span {
-    color: #9798a8;
-    font-size: 9px;
+    color: #9b9baa;
+    font-size: 8px;
   }
 
   .answerArea {
@@ -3209,111 +3276,83 @@ const styles = `
   }
 
   .inputArea {
-    padding: 13px 22px 20px;
-  }
-
-  .inputWrapper {
-    height: 52px;
-    border: 2px solid #e8e7f0;
-    border-radius: 17px;
     display: flex;
-    align-items: center;
-    padding: 4px;
-    transition: border-color 0.2s ease;
+    gap: 8px;
+    padding: 14px 22px;
+    border-top: 1px solid #f0eff4;
+    background: #fff;
   }
 
-  .inputWrapper:focus-within {
-    border-color: #b9b0ed;
-  }
-
-  .inputWrapper input {
-    flex: 1;
+  .inputArea input {
     min-width: 0;
-    border: 0;
-    outline: 0;
-    background: transparent;
-    padding: 0 12px;
-    color: #343549;
-    font-size: 12px;
+    flex: 1;
+    height: 42px;
+    border: 1px solid #e7e6ef;
+    border-radius: 12px;
+    padding: 0 13px;
+    color: #4b4c5e;
+    font-size: 10px;
+    outline: none;
   }
 
-  .inputWrapper input::placeholder {
-    color: #aaaaba;
+  .inputArea input:focus {
+    border-color: #c9c3ee;
+    box-shadow: 0 0 0 3px rgba(117, 105, 213, 0.06);
+  }
+
+  .inputArea input::placeholder {
+    color: #b0afbb;
   }
 
   .sendButton {
-    width: 43px;
-    height: 43px;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
     border: 0;
-    border-radius: 13px;
+    border-radius: 12px;
     background: #7569d5;
     color: #fff;
-    font-size: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-      transform 0.15s ease,
-      opacity 0.15s ease;
-  }
-
-  .sendButton:hover:not(:disabled) {
-    transform: translateX(2px);
+    font-size: 18px;
+    font-weight: 600;
   }
 
   .sendButton:disabled {
-    opacity: 0.35;
+    opacity: 0.4;
     cursor: default;
   }
 
-  .inputHint {
-    margin-top: 7px;
-    color: #a0a1b0;
-    font-size: 9px;
+  .conversationTip {
+    padding: 0 22px 14px;
+    color: #a1a1af;
+    font-size: 8px;
   }
 
-  .inputHint span {
+  .conversationTip span {
     color: #7569d5;
     font-weight: 850;
+    margin-right: 4px;
   }
 
-  /* =========================
-     RESPONSIVE
-  ========================= */
-
-  @media (max-width: 950px) {
+  @media (max-width: 900px) {
     .missionGrid {
       grid-template-columns: repeat(2, 1fr);
     }
 
     .hero {
-      grid-template-columns: 1fr;
       gap: 20px;
-      text-align: center;
-    }
-
-    .heroText > p {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .heroStats {
-      justify-content: center;
-    }
-
-    .heroCharacter {
-      min-height: 320px;
     }
 
     .speechBubble {
-      right: calc(50% - 190px);
+      right: -15px;
     }
   }
 
   @media (max-width: 700px) {
     .topbar {
-      height: 68px;
-      padding: 0 18px;
+      height: auto;
+      min-height: 70px;
+      padding: 12px 17px;
+      gap: 12px;
     }
 
     .headerRight {
@@ -3324,13 +3363,8 @@ const styles = `
       display: none;
     }
 
-    .languageSelector select {
-      padding: 7px 8px;
-      max-width: 95px;
-    }
-
     .xpArea {
-      width: 125px;
+      width: 85px;
     }
 
     .brandText span {
@@ -3338,40 +3372,35 @@ const styles = `
     }
 
     .home {
-      padding: 42px 18px 50px;
+      padding: 35px 17px 40px;
     }
 
     .hero {
       min-height: auto;
-      margin-bottom: 50px;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .hero h1 {
-      font-size: 47px;
-      letter-spacing: -2px;
-    }
-
-    .heroText > p {
-      font-size: 15px;
+      font-size: 43px;
     }
 
     .heroCharacter {
-      min-height: 285px;
+      min-height: 290px;
     }
 
     .characterCard {
-      width: 250px;
-      height: 270px;
+      width: 220px;
+      height: 230px;
     }
 
-    .characterGlow {
-      width: 260px;
-      height: 260px;
+    .characterCard .mimi {
+      transform: scale(0.8);
     }
 
-    .sectionHeading {
-      align-items: flex-start;
-      gap: 10px;
+    .speechBubble {
+      right: -30px;
+      top: 25px;
     }
 
     .missionGrid {
@@ -3379,20 +3408,11 @@ const styles = `
     }
 
     .missionCard {
-      min-height: 250px;
-    }
-
-    .introCard {
-      padding: 32px 23px;
-      border-radius: 28px;
-    }
-
-    .introCard h1 {
-      font-size: 34px;
+      min-height: 205px;
     }
 
     .conversation {
-      padding: 17px 12px 35px;
+      padding: 20px 12px 30px;
     }
 
     .conversationHeader {
@@ -3400,72 +3420,123 @@ const styles = `
       gap: 10px;
     }
 
+    .conversationHeader .backButton {
+      font-size: 8px;
+    }
+
     .conversationTitle h1 {
       font-size: 15px;
     }
 
     .readyStatus {
-      display: none;
+      font-size: 7px;
+    }
+
+    .chatCard {
+      border-radius: 18px;
     }
 
     .messages {
-      height: 380px;
-      padding: 18px 14px 8px;
+      height: 430px;
+      padding: 16px 13px;
     }
 
     .messageContent {
       max-width: 82%;
     }
 
+    .messageBubble {
+      width: auto;
+      font-size: 12px;
+    }
+
     .answerOptions {
       grid-template-columns: 1fr;
     }
 
-    .chatHeader {
-      padding: 0 15px;
+    .answerArea {
+      padding-left: 13px;
+      padding-right: 13px;
     }
 
-    .answerArea,
-    .inputArea,
-    .vocabulary {
-      padding-left: 15px;
-      padding-right: 15px;
+    .inputArea {
+      padding-left: 13px;
+      padding-right: 13px;
+    }
+
+    .conversationTip {
+      padding-left: 13px;
+      padding-right: 13px;
+    }
+
+    .introScreen {
+      padding: 25px 15px;
+    }
+
+    .introCard {
+      padding: 30px 22px 32px;
     }
   }
 
-  @media (max-width: 460px) {
+  @media (max-width: 430px) {
     .brandText strong {
-      font-size: 15px;
+      font-size: 13px;
     }
 
-    .xpArea {
-      width: 105px;
+    .headerRight {
+      gap: 5px;
+    }
+
+    .languageSelector select {
+      max-width: 88px;
     }
 
     .hero h1 {
-      font-size: 41px;
+      font-size: 38px;
     }
 
-    .heroStats {
-      gap: 14px;
-    }
-
-    .speechBubble {
-      right: 0;
-      top: 25px;
-    }
-
-    .messages {
-      height: 350px;
+    .heroText > p {
+      font-size: 12px;
     }
 
     .conversationTitle span {
-      display: none;
+      font-size: 6px;
+    }
+
+    .conversationTitle h1 {
+      font-size: 13px;
     }
 
     .conversationMission {
-      width: 36px;
-      height: 36px;
+      width: 34px;
+      height: 34px;
+    }
+
+    .readyStatus {
+      display: none;
+    }
+
+    .messageRow {
+      gap: 6px;
+    }
+
+    .messageAvatar {
+      width: 29px;
+      flex-basis: 29px;
+    }
+
+    .messageContent {
+      max-width: 88%;
+    }
+
+    .answerTitle {
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .vocabularyList {
+      display: grid;
+      grid-template-columns: 1fr;
     }
   }
 `;
