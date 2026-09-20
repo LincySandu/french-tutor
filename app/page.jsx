@@ -67,6 +67,8 @@ const FrenchTutor = () => {
   }, [dialogue]);
 
   const startScenario = (idx) => {
+    window.speechSynthesis?.cancel();
+
     setCurrentScenario(idx);
     setDialogue([
       {
@@ -76,54 +78,51 @@ const FrenchTutor = () => {
     ]);
     setUserInput('');
     setError('');
+    setIsSpeaking(false);
   };
 
-  const speakText = async (text) => {
-    setIsSpeaking(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text }),
-      });
-
-      const dataType = response.headers.get('content-type') || '';
-
-      if (!response.ok) {
-        if (dataType.includes('application/json')) {
-          const data = await response.json();
-          throw new Error(data.error || 'Speech generation failed.');
-        }
-
-        const errorText = await response.text();
-        throw new Error(errorText || 'Speech generation failed.');
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-
-      audio.onended = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      audio.onerror = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-        setError('The audio file was generated but could not be played.');
-      };
-
-      await audio.play();
-    } catch (err) {
-      console.error(err);
-      setIsSpeaking(false);
-      setError(err.message || 'Sorry, the audio could not be generated.');
+  const speakText = (text) => {
+    if (!('speechSynthesis' in window)) {
+      setError('Your browser does not support text-to-speech.');
+      return;
     }
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.85;
+    utterance.pitch = 1;
+
+    const voices = window.speechSynthesis.getVoices();
+
+    const frenchVoice = voices.find(
+      (voice) =>
+        voice.lang &&
+        voice.lang.toLowerCase().startsWith('fr')
+    );
+
+    if (frenchVoice) {
+      utterance.voice = frenchVoice;
+    }
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      setError('');
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = (event) => {
+      console.error('Speech error:', event);
+      setIsSpeaking(false);
+      setError('The French voice could not be played.');
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const sendMessage = async () => {
@@ -180,7 +179,9 @@ const FrenchTutor = () => {
       });
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Sorry, something went wrong. Please try again.');
+      setError(
+        err.message || 'Sorry, something went wrong. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -188,6 +189,8 @@ const FrenchTutor = () => {
 
   const resetScenario = () => {
     if (currentScenario === null) return;
+
+    window.speechSynthesis?.cancel();
 
     setDialogue([
       {
@@ -198,6 +201,7 @@ const FrenchTutor = () => {
 
     setUserInput('');
     setError('');
+    setIsSpeaking(false);
   };
 
   return (
@@ -322,7 +326,11 @@ const FrenchTutor = () => {
               }}
             >
               <button
-                onClick={() => setCurrentScenario(null)}
+                onClick={() => {
+                  window.speechSynthesis?.cancel();
+                  setIsSpeaking(false);
+                  setCurrentScenario(null);
+                }}
                 style={{
                   border: 'none',
                   background: 'transparent',
@@ -419,7 +427,9 @@ const FrenchTutor = () => {
                           borderRadius: '8px',
                           border: '1px solid #d1d5db',
                           background: 'white',
-                          cursor: isSpeaking ? 'default' : 'pointer',
+                          cursor: isSpeaking
+                            ? 'default'
+                            : 'pointer',
                           color: '#374151',
                           fontSize: '14px',
                         }}
