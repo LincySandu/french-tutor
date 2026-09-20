@@ -2986,7 +2986,7 @@ const styles = `
 }
 
 .messageBubble {
-  width: 100%;
+  width: 500px;
   max-width: 100%;
   padding: 12px 15px;
   border-radius: 17px 17px 17px 5px;
