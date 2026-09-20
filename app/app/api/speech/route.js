@@ -21,10 +21,11 @@ export async function POST(request) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(errorText);
+
+      console.error('OPENROUTER SPEECH ERROR:', errorText);
 
       return Response.json(
-        { error: 'Speech generation failed.' },
+        { error: errorText },
         { status: response.status }
       );
     }
@@ -37,10 +38,10 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.error('SPEECH ERROR:', error);
 
     return Response.json(
-      { error: 'Unable to generate speech.' },
+      { error: error.message },
       { status: 500 }
     );
   }
