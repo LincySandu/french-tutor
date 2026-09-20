@@ -171,7 +171,7 @@ const languages = {
     },
     scenarios: {
       school: {
-        name: 'À l'école',
+        name: "À l'école",
         description:
           "Parle de l'école, de tes amis et de tes matières préférées.",
         category: 'VIE QUOTIDIENNE',
