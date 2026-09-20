@@ -2978,10 +2978,11 @@ const styles = `
     align-items: flex-end;
   }
 
-  .messageContent {
-  width: min(82%, 720px);
-  max-width: 720px;
+.messageContent {
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  flex: 1;
 }
 
 .messageBubble {
