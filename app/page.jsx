@@ -197,17 +197,22 @@ export default function Home() {
   const [answerOptions, setAnswerOptions] =
     useState([]);
 
+  const [showMeaning, setShowMeaning] =
+    useState(false);
+
   function selectScenario(scenario) {
     setSelectedScenario(scenario);
     setShowIntro(true);
     setMessages([]);
     setAnswerOptions([]);
     setInput('');
+    setShowMeaning(false);
   }
 
   function beginMission() {
     setShowIntro(false);
     setAnswerOptions([]);
+    setShowMeaning(false);
 
     const scenarioText =
       getScenarioText(selectedScenario.id);
@@ -306,6 +311,7 @@ export default function Home() {
 
     setInput('');
     setAnswerOptions([]);
+    setShowMeaning(false);
     setLoading(true);
 
     try {
@@ -353,6 +359,8 @@ export default function Home() {
         data.options || []
       );
 
+      setShowMeaning(false);
+
       speakFrench(
         data.speechText ||
           data.reply
@@ -377,6 +385,9 @@ export default function Home() {
         errorMessage,
       ]);
 
+      setAnswerOptions([]);
+      setShowMeaning(false);
+
       speakFrench(
         errorMessage.speechText
       );
@@ -391,10 +402,19 @@ export default function Home() {
     setMessages([]);
     setAnswerOptions([]);
     setInput('');
+    setShowMeaning(false);
   }
 
   const currentLevel =
     Math.floor(xp / 50) + 1;
+
+  const latestTutorMessage =
+    [...messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.speaker === 'tutor'
+      );
 
   return (
     <main className="page">
@@ -678,10 +698,46 @@ export default function Home() {
               </div>
 
               {!loading &&
+                latestTutorMessage && (
+                  <div className="meaningArea">
+                    <button
+                      className="meaningButton"
+                      onClick={() =>
+                        setShowMeaning(
+                          (current) =>
+                            !current
+                        )
+                      }
+                    >
+                      💡 What does this mean?
+                      <span>
+                        {showMeaning
+                          ? '▲'
+                          : '▼'}
+                      </span>
+                    </button>
+
+                    {showMeaning && (
+                      <div className="meaningBox">
+                        <div className="meaningLabel">
+                          In English:
+                        </div>
+
+                        <div className="meaningText">
+                          {getEnglishHelp(
+                            latestTutorMessage.text
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+              {!loading &&
                 answerOptions.length > 0 && (
                   <div className="suggestedAnswers">
                     <div className="suggestedTitle">
-                      💡 You can say:
+                      💬 You can say:
                     </div>
 
                     <div className="answerOptions">
@@ -746,6 +802,118 @@ export default function Home() {
         )}
     </main>
   );
+}
+
+function getEnglishHelp(text) {
+  const cleanText =
+    text
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  const lower =
+    cleanText.toLowerCase();
+
+  if (
+    lower.includes(
+      'quel est ton animal préféré'
+    )
+  ) {
+    return 'What is your favourite animal?';
+  }
+
+  if (
+    lower.includes(
+      'quel est ton sport préféré'
+    )
+  ) {
+    return 'What is your favourite sport?';
+  }
+
+  if (
+    lower.includes(
+      'quelle est ta matière préférée'
+    )
+  ) {
+    return 'What is your favourite school subject?';
+  }
+
+  if (
+    lower.includes(
+      'tu aimes le sport'
+    )
+  ) {
+    return 'Do you like sport?';
+  }
+
+  if (
+    lower.includes(
+      'qu’est-ce que tu aimes faire'
+    ) ||
+    lower.includes(
+      "qu'est-ce que tu aimes faire"
+    )
+  ) {
+    return 'What do you like to do?';
+  }
+
+  if (
+    lower.includes(
+      'tu as des frères ou des sœurs'
+    )
+  ) {
+    return 'Do you have any brothers or sisters?';
+  }
+
+  if (
+    lower.includes(
+      'c’est bientôt ton anniversaire'
+    ) ||
+    lower.includes(
+      "c'est bientôt ton anniversaire"
+    )
+  ) {
+    return 'Is your birthday soon?';
+  }
+
+  if (
+    lower.includes(
+      'qu’est-ce que tu voudrais'
+    ) ||
+    lower.includes(
+      "qu'est-ce que tu voudrais"
+    )
+  ) {
+    return 'What would you like?';
+  }
+
+  if (
+    lower.includes(
+      'qu’est-ce que tu aimes dehors'
+    ) ||
+    lower.includes(
+      "qu'est-ce que tu aimes dehors"
+    )
+  ) {
+    return 'What do you like to do outside?';
+  }
+
+  if (
+    lower.includes(
+      'quelle est ta couleur préférée'
+    )
+  ) {
+    return 'What is your favourite colour?';
+  }
+
+  if (
+    lower.includes(
+      'tu veux acheter quelque chose'
+    )
+  ) {
+    return 'Do you want to buy something?';
+  }
+
+  return 'Mimi is asking you a question in French. Listen to her and choose an answer below!';
 }
 
 const styles = `
@@ -1195,38 +1363,51 @@ const styles = `
     font-weight: 800;
   }
 
-  .typing {
+  .meaningArea {
+    margin: 0 0 13px;
+  }
+
+  .meaningButton {
+    width: 100%;
+    border: 1px solid #e6e0fb;
+    background: #faf9ff;
+    color: #6758a5;
+    border-radius: 15px;
+    padding: 11px 13px;
     display: flex;
-    gap: 4px;
-    padding: 5px 2px;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
   }
 
-  .typing span {
-    width: 7px;
-    height: 7px;
-    background: #9b91c5;
-    border-radius: 50%;
-    animation: bounce 1s infinite;
+  .meaningButton span {
+    font-size: 10px;
+    margin-left: 8px;
   }
 
-  .typing span:nth-child(2) {
-    animation-delay: 0.15s;
+  .meaningBox {
+    margin-top: 8px;
+    padding: 13px 15px;
+    background: #fffdf3;
+    border: 1px solid #f1e8bd;
+    border-radius: 15px;
   }
 
-  .typing span:nth-child(3) {
-    animation-delay: 0.3s;
+  .meaningLabel {
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9a8b54;
+    margin-bottom: 5px;
   }
 
-  @keyframes bounce {
-    0%,
-    60%,
-    100% {
-      transform: translateY(0);
-    }
-
-    30% {
-      transform: translateY(-4px);
-    }
+  .meaningText {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #5f5a4a;
   }
 
   .suggestedAnswers {
@@ -1311,6 +1492,40 @@ const styles = `
   .sendButton:disabled {
     opacity: 0.45;
     cursor: default;
+  }
+
+  .typing {
+    display: flex;
+    gap: 4px;
+    padding: 5px 2px;
+  }
+
+  .typing span {
+    width: 7px;
+    height: 7px;
+    background: #9b91c5;
+    border-radius: 50%;
+    animation: bounce 1s infinite;
+  }
+
+  .typing span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .typing span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  @keyframes bounce {
+    0%,
+    60%,
+    100% {
+      transform: translateY(0);
+    }
+
+    30% {
+      transform: translateY(-4px);
+    }
   }
 
   @media (max-width: 700px) {
