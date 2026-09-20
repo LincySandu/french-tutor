@@ -64,6 +64,16 @@ The options should:
 - be different from each other
 - help the child continue the conversation
 
+5. VOCABULARY:
+Choose up to 3 useful French words or short phrases from Mimi's response that are worth learning.
+
+For EVERY vocabulary item, provide:
+- the French word or phrase
+- a simple English meaning
+
+Only include useful beginner-level vocabulary.
+Do not include tiny grammar words such as "le", "la", "un", "une", "je", "tu", etc. by themselves.
+
 Return your answer in EXACTLY this format:
 
 DISPLAY:
@@ -80,21 +90,31 @@ OPTIONS:
 2. [French answer] | [English translation]
 3. [French answer] | [English translation]
 
+VOCABULARY:
+1. [French word or phrase] | [English meaning]
+2. [French word or phrase] | [English meaning]
+3. [French word or phrase] | [English meaning]
+
 Example:
 
 DISPLAY:
-Sympa ! Les chiens sont géniaux. Tu as un chien ?
+Super ! Les chiens sont géniaux. Tu as un chien ?
 
 SPEECH:
-Sympa ! Les chiens sont géniaux. Tu as un chien ?
+Super ! Les chiens sont géniaux. Tu as un chien ?
 
 MEANING:
-Nice! Dogs are great. Do you have a dog?
+Great! Dogs are great. Do you have a dog?
 
 OPTIONS:
 1. Oui, j’ai un chien. | Yes, I have a dog.
 2. Non, je n’ai pas de chien. | No, I don't have a dog.
 3. Oui, j’adore les chiens. | Yes, I love dogs.
+
+VOCABULARY:
+1. un chien | a dog
+2. génial | great
+3. adorer | to love
 
 Another example when correcting the child:
 
@@ -112,11 +132,18 @@ OPTIONS:
 2. Oui, j’ai un chat. | Yes, I have a cat.
 3. Non, je n’ai pas d’animal. | No, I don't have a pet.
 
+VOCABULARY:
+1. aimer | to like
+2. un animal | a pet / an animal
+3. à la maison | at home
+
 IMPORTANT:
 - The OPTIONS must answer the NEW question Mimi asks.
 - Never put English inside DISPLAY or SPEECH.
 - Never leave OPTIONS empty.
+- Never leave VOCABULARY empty unless there are genuinely no useful vocabulary items.
 - Never ask more than one question in DISPLAY.
+- Keep VOCABULARY simple and useful for a beginner.
 `,
             },
             {
@@ -158,19 +185,23 @@ Continue the conversation.`,
       'Sorry, I could not answer.';
 
     const displayMatch = rawReply.match(
-      /DISPLAY:\s*([\s\S]*?)(?=\s*SPEECH:|\s*MEANING:|\s*OPTIONS:|$)/i
+      /DISPLAY:\s*([\s\S]*?)(?=\s*SPEECH:|\s*MEANING:|\s*OPTIONS:|\s*VOCABULARY:|$)/i
     );
 
     const speechMatch = rawReply.match(
-      /SPEECH:\s*([\s\S]*?)(?=\s*MEANING:|\s*OPTIONS:|$)/i
+      /SPEECH:\s*([\s\S]*?)(?=\s*MEANING:|\s*OPTIONS:|\s*VOCABULARY:|$)/i
     );
 
     const meaningMatch = rawReply.match(
-      /MEANING:\s*([\s\S]*?)(?=\s*OPTIONS:|$)/i
+      /MEANING:\s*([\s\S]*?)(?=\s*OPTIONS:|\s*VOCABULARY:|$)/i
     );
 
     const optionsMatch = rawReply.match(
-      /OPTIONS:\s*([\s\S]*)/i
+      /OPTIONS:\s*([\s\S]*?)(?=\s*VOCABULARY:|$)/i
+    );
+
+    const vocabularyMatch = rawReply.match(
+      /VOCABULARY:\s*([\s\S]*)/i
     );
 
     const reply =
@@ -199,7 +230,8 @@ Continue the conversation.`,
 
           return {
             french: parts[0]?.trim() || '',
-            english: parts.slice(1).join('|').trim() || '',
+            english:
+              parts.slice(1).join('|').trim() || '',
           };
         })
         .filter(
@@ -210,11 +242,38 @@ Continue the conversation.`,
         .slice(0, 3);
     }
 
+    let vocabulary = [];
+
+    if (vocabularyMatch?.[1]) {
+      vocabulary = vocabularyMatch[1]
+        .split('\n')
+        .map((line) => {
+          const cleaned = line
+            .replace(/^\s*\d+[\.\)]\s*/, '')
+            .trim();
+
+          const parts = cleaned.split('|');
+
+          return {
+            french: parts[0]?.trim() || '',
+            english:
+              parts.slice(1).join('|').trim() || '',
+          };
+        })
+        .filter(
+          (item) =>
+            item.french &&
+            item.english
+        )
+        .slice(0, 3);
+    }
+
     return Response.json({
       reply,
       speechText,
       meaning,
       options,
+      vocabulary,
     });
   } catch (error) {
     console.error(error);
