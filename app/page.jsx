@@ -91,8 +91,16 @@ const FrenchTutor = () => {
         body: JSON.stringify({ text }),
       });
 
+      const dataType = response.headers.get('content-type') || '';
+
       if (!response.ok) {
-        throw new Error('Speech generation failed.');
+        if (dataType.includes('application/json')) {
+          const data = await response.json();
+          throw new Error(data.error || 'Speech generation failed.');
+        }
+
+        const errorText = await response.text();
+        throw new Error(errorText || 'Speech generation failed.');
       }
 
       const audioBlob = await response.blob();
@@ -107,14 +115,14 @@ const FrenchTutor = () => {
       audio.onerror = () => {
         setIsSpeaking(false);
         URL.revokeObjectURL(audioUrl);
-        setError('Sorry, the audio could not be played.');
+        setError('The audio file was generated but could not be played.');
       };
 
       await audio.play();
     } catch (err) {
       console.error(err);
       setIsSpeaking(false);
-      setError('Sorry, the audio could not be generated.');
+      setError(err.message || 'Sorry, the audio could not be generated.');
     }
   };
 
@@ -172,7 +180,7 @@ const FrenchTutor = () => {
       });
     } catch (err) {
       console.error(err);
-      setError('Sorry, something went wrong. Please try again.');
+      setError(err.message || 'Sorry, something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -441,6 +449,10 @@ const FrenchTutor = () => {
                   style={{
                     color: '#dc2626',
                     marginBottom: '10px',
+                    padding: '10px',
+                    background: '#fef2f2',
+                    borderRadius: '8px',
+                    wordBreak: 'break-word',
                   }}
                 >
                   {error}
