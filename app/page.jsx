@@ -186,7 +186,7 @@ const languages = {
           'Parle de sport, des équipes et de ce que tu aimes pratiquer.',
         category: 'JEUX & PLAISIR',
         intro:
-          'Imagine que nous parlons de sport après l'école. Je vais te poser des questions sur les sports que tu aimes et tes équipes préférées.',
+          "Imagine que nous parlons de sport après l'école. Je vais te poser des questions sur les sports que tu aimes et tes équipes préférées.",
         meaning:
           'Nous allons pratiquer le français pour parler du sport et des activités que tu aimes.',
       },
