@@ -917,17 +917,17 @@ export default function Home() {
       baseLanguage
     );
 
-    setMessages([
-      {
-        role: 'mimi',
-        text: scenarioText,
-        speechText: scenarioText,
-        meaning: getInitialMeaning(
-          selectedScenario.id,
-          baseLanguage
-        ),
-      },
-    ]);
+setMessages([
+  {
+    role: 'mimi',
+    text: scenarioText,
+    speechText: '',
+    meaning: getInitialMeaning(
+      selectedScenario.id,
+      baseLanguage
+    ),
+  },
+]);
 
     setAnswerOptions([]);
     setVocabulary([]);
