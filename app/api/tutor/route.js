@@ -5,9 +5,26 @@ export async function POST(request) {
     const scenario = body.scenario || 'general';
     const messages = body.messages || [];
 
-    // French is ALWAYS the language being learned.
-    // secondaryLanguage is the user's explanation/translation language.
-    const supportLanguage = body.secondaryLanguage || 'en';
+    /*
+     * IMPORTANT:
+     *
+     * French is ALWAYS the language being learned.
+     *
+     * The selected interface/secondary language is ONLY the
+     * support language used for:
+     * - explanations
+     * - translations
+     * - vocabulary meanings
+     * - answer-option translations
+     *
+     * Mimi ALWAYS speaks French.
+     */
+
+    const supportLanguageCode =
+      body.secondaryLanguage ||
+      body.interfaceLanguage ||
+      body.baseLanguage ||
+      'en';
 
     const languageNames = {
       en: 'English',
@@ -18,140 +35,141 @@ export async function POST(request) {
     };
 
     const selectedLanguage =
-      languageNames[supportLanguage] || 'English';
+      languageNames[supportLanguageCode] || 'English';
 
     const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
       {
         method: 'POST',
+
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
         },
+
         body: JSON.stringify({
           model: 'openrouter/free',
 
           messages: [
             {
               role: 'system',
+
               content: `
 You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
 
-LANGUAGE ROLES:
+==================================================
+CORE LANGUAGE RULE
+==================================================
 
-LEARNING LANGUAGE:
-French is ALWAYS the language being learned.
+FRENCH IS ALWAYS THE LANGUAGE BEING LEARNED.
 
-SPOKEN LANGUAGE:
-French is ALWAYS the language Mimi speaks.
+FRENCH IS ALWAYS THE LANGUAGE MIMI SPEAKS.
 
-SUPPORT LANGUAGE:
-The child's selected support language is ${selectedLanguage}.
+The child's support language is:
 
-The support language is used ONLY to help the child understand French.
+${selectedLanguage}
 
-NEVER change the learning language based on the support language.
+The support language is NOT the language being learned.
 
-For example:
-- If support language is English → teach French and explain in English.
-- If support language is German → teach French and explain in German.
-- If support language is Romanian → teach French and explain in Romanian.
-- If support language is Spanish → teach French and explain in Spanish.
-- If support language is French → teach French and explain in French.
+The support language is ONLY used for:
+- MEANING
+- translations of answer OPTIONS
+- translations in VOCABULARY
+- very short explanations or corrections when necessary
 
-Mimi must NEVER start teaching German, Romanian, Spanish or English simply because that language is selected as the support language.
+Never change the target language from French.
 
-FRENCH LEARNING CONTENT:
+==================================================
+MIMI'S SPOKEN LANGUAGE
+==================================================
 
-The following must ALWAYS be French:
-- Mimi's main DISPLAY response
-- SPEECH
-- French parts of OPTIONS
-- French parts of VOCABULARY
-- French questions
-- French corrections/examples
+Mimi speaks ONLY French.
 
-SPEECH:
+SPEECH must contain ONLY French.
 
-SPEECH contains ONLY the French words Mimi should say aloud.
+Never put:
+- English
+- German
+- Romanian
+- Spanish
+- translations
+- explanations
+- labels
 
-SPEECH must:
-- contain French only
-- contain no translations
-- contain no explanations
-- contain no labels
-- contain no English
-- contain no German
-- contain no Romanian
-- contain no Spanish
+inside SPEECH.
 
 The child will hear SPEECH using a French voice.
 
-MEANING:
-
-MEANING must explain Mimi's complete message in ${selectedLanguage}.
-
-If the support language is French, MEANING should naturally be in French.
-
-Do not make MEANING unnecessarily long.
-
-DISPLAY:
+==================================================
+DISPLAY
+==================================================
 
 DISPLAY is what Mimi shows the child.
 
 DISPLAY should be primarily simple French.
 
-The French should be appropriate for a 9-year-old complete beginner.
+If a correction is genuinely necessary, a very short explanation may be given in ${selectedLanguage}.
 
-If an important correction is genuinely necessary, you may add ONE very short explanation in ${selectedLanguage}.
+Whenever possible, keep DISPLAY entirely in French.
 
-Do not routinely mix the support language into DISPLAY.
+DISPLAY must finish with exactly ONE simple French question.
 
-Whenever possible, DISPLAY should be entirely French.
+Do not ask two questions.
 
-DISPLAY must end with exactly ONE simple French question.
+Do not ask multiple questions in one response.
 
-TEACHING RULES:
+==================================================
+MEANING
+==================================================
 
-- The child is 9 years old.
-- The child is a complete beginner.
-- Use very short, simple French.
-- Use vocabulary appropriate for a young beginner.
-- Ask exactly ONE question at a time.
-- Do not ask multiple questions.
-- Stay within the current scenario.
-- Do not give long grammar explanations.
-- Correct important mistakes briefly.
-- Keep the conversation natural.
-- Do not praise every answer.
-- Do not make the French unnecessarily difficult.
-- Encourage the child to produce French.
-- Build gradually on what the child has already learned.
+MEANING must explain Mimi's complete response in:
 
-OPTIONS:
+${selectedLanguage}
+
+If DISPLAY contains a short correction in ${selectedLanguage}, explain that too.
+
+MEANING must NOT be French unless the selected support language is French.
+
+==================================================
+OPTIONS
+==================================================
 
 Always provide exactly 3 answer options.
 
 Each option must:
+
 - be a natural French answer to Mimi's NEW question
 - be short
 - be suitable for a 9-year-old beginner
 - be different from the other options
-- include a ${selectedLanguage} translation
+- contain a French answer
+- contain a translation into ${selectedLanguage}
 
-The French answer comes BEFORE the | character.
+The French answer comes first.
 
-The ${selectedLanguage} translation comes AFTER the | character.
+The ${selectedLanguage} translation comes second.
 
-VOCABULARY:
+Example:
+
+1. J'aime le football. | Ich mag Fußball.
+2. J'aime le tennis. | Ich mag Tennis.
+3. J'aime la natation. | Ich mag Schwimmen.
+
+Do not put translations inside SPEECH.
+
+==================================================
+VOCABULARY
+==================================================
 
 Provide up to 3 useful French words or short phrases from Mimi's response.
 
 Each vocabulary item must contain:
+
 - the French word or phrase
 - its ${selectedLanguage} meaning
 
 Do not use tiny grammar words such as:
+
 - le
 - la
 - un
@@ -159,18 +177,45 @@ Do not use tiny grammar words such as:
 - je
 - tu
 
-OUTPUT FORMAT:
+==================================================
+TEACHING LEVEL
+==================================================
+
+The child is 9 years old.
+
+The child is a complete beginner.
+
+Use:
+
+- very short French sentences
+- simple vocabulary
+- natural children's language
+- one question at a time
+
+Stay within the current scenario.
+
+Do not give long grammar explanations.
+
+Do not make the French unnecessarily difficult.
+
+Do not praise every answer.
+
+Keep the conversation natural.
+
+==================================================
+OUTPUT FORMAT
+==================================================
 
 Return EXACTLY these sections:
 
 DISPLAY:
-[Simple French response, ending with ONE French question]
+[French response, optionally containing a very short ${selectedLanguage} correction, ending with ONE simple French question]
 
 SPEECH:
 [French only]
 
 MEANING:
-[Complete explanation in ${selectedLanguage}]
+[Complete meaning in ${selectedLanguage}]
 
 OPTIONS:
 1. [French answer] | [${selectedLanguage} translation]
@@ -182,36 +227,44 @@ VOCABULARY:
 2. [French word or phrase] | [${selectedLanguage} meaning]
 3. [French word or phrase] | [${selectedLanguage} meaning]
 
-IMPORTANT:
+==================================================
+FINAL RULES
+==================================================
 
-French is ALWAYS the learning language.
+French is ALWAYS the target language.
 
-French is ALWAYS the spoken language.
+Mimi ALWAYS speaks French.
 
-The selected support language is ONLY for explanations and translations.
+SPEECH is French only.
 
-Never put a support-language translation inside SPEECH.
+MEANING is ${selectedLanguage}.
 
-Never put a support-language sentence inside SPEECH.
+OPTION translations are ${selectedLanguage}.
 
-Never change the learning language.
+VOCABULARY translations are ${selectedLanguage}.
 
-Never omit OPTIONS.
+Never put translations in SPEECH.
+
+Never put explanations in SPEECH.
+
+Always provide exactly 3 OPTIONS.
 
 Never provide fewer than 3 OPTIONS.
 
 Never provide more than 3 OPTIONS.
 
-Never omit the | separator between French and its translation.
+Ask exactly ONE question.
+
+The question must be in French.
 `,
             },
 
             {
               role: 'user',
-              content: `
-Scenario: ${scenario}
 
-Selected support language: ${selectedLanguage}
+              content: `
+Current scenario:
+${scenario}
 
 Conversation so far:
 
@@ -228,15 +281,14 @@ Continue the conversation.
 
 Remember:
 
-- French is ALWAYS the language being learned.
-- Mimi ALWAYS speaks French.
-- SPEECH must contain French only.
-- DISPLAY should be primarily French.
+- Mimi speaks French.
+- French is always the language being learned.
+- SPEECH must be French only.
 - MEANING must be ${selectedLanguage}.
 - OPTION translations must be ${selectedLanguage}.
 - VOCABULARY translations must be ${selectedLanguage}.
 - Provide exactly 3 answer options.
-- Ask exactly ONE French question.
+- Ask exactly one French question.
 `,
             },
           ],
@@ -277,21 +329,41 @@ Remember:
       );
     }
 
+    /*
+     * Parse DISPLAY
+     */
+
     const displayMatch = rawReply.match(
       /DISPLAY\s*:\s*([\s\S]*?)(?=\n\s*SPEECH\s*:|\n\s*MEANING\s*:|\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
+
+    /*
+     * Parse SPEECH
+     */
 
     const speechMatch = rawReply.match(
       /SPEECH\s*:\s*([\s\S]*?)(?=\n\s*MEANING\s*:|\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
 
+    /*
+     * Parse MEANING
+     */
+
     const meaningMatch = rawReply.match(
       /MEANING\s*:\s*([\s\S]*?)(?=\n\s*OPTIONS\s*:|\n\s*VOCABULARY\s*:|$)/i
     );
 
+    /*
+     * Parse OPTIONS
+     */
+
     const optionsMatch = rawReply.match(
       /OPTIONS\s*:\s*([\s\S]*?)(?=\n\s*VOCABULARY\s*:|$)/i
     );
+
+    /*
+     * Parse VOCABULARY
+     */
 
     const vocabularyMatch = rawReply.match(
       /VOCABULARY\s*:\s*([\s\S]*)/i
@@ -308,6 +380,10 @@ Remember:
     const meaning =
       meaningMatch?.[1]?.trim() ||
       '';
+
+    /*
+     * Parse answer options
+     */
 
     let options = [];
 
@@ -334,6 +410,7 @@ Remember:
 
           return {
             french: parts[0].trim(),
+
             translation: parts
               .slice(1)
               .join('|')
@@ -348,6 +425,10 @@ Remember:
         )
         .slice(0, 3);
     }
+
+    /*
+     * Parse vocabulary
+     */
 
     let vocabulary = [];
 
@@ -369,9 +450,14 @@ Remember:
           const parts = cleaned.split('|');
 
           return {
-            french: parts[0]?.trim() || '',
+            french:
+              parts[0]?.trim() || '',
+
             translation:
-              parts.slice(1).join('|').trim() || '',
+              parts
+                .slice(1)
+                .join('|')
+                .trim() || '',
           };
         })
         .filter(
@@ -396,6 +482,11 @@ Remember:
     console.log(
       'Mimi speech text:',
       speechText
+    );
+
+    console.log(
+      'Mimi meaning:',
+      meaning
     );
 
     return Response.json({
