@@ -3207,3 +3207,21 @@ const styles = `
   }
 }
 `;
+const styles = `
+  /* thousands of lines of your existing CSS */
+
+  ...existing CSS...
+
+  /* NEW CHILD-FRIENDLY CHAT DESIGN */
+
+  .conversationScreen {
+    width: min(1100px, calc(100% - 48px));
+  }
+
+  .chatCard {
+    border-radius: 24px;
+  }
+
+  /* ...rest of the new CSS... */
+
+`;
