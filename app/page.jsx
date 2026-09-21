@@ -3206,4 +3206,219 @@ const styles = `
     padding-right: 15px;
   }
 }  }
+
+  /* ==========================================================
+     CHILD-FRIENDLY CHAT DESIGN
+     ========================================================== */
+
+  .conversationScreen {
+    width: min(1100px, calc(100% - 48px));
+  }
+
+  .chatCard {
+    border-radius: 24px;
+  }
+
+  .chatHeader {
+    padding: 16px 30px;
+  }
+
+  .chatMimi {
+    min-height: 68px;
+    gap: 12px;
+  }
+
+  .chatMimi strong {
+    font-size: 15px;
+  }
+
+  .chatMimi span {
+    font-size: 11px;
+  }
+
+  /* MAIN CONVERSATION */
+
+  .messages {
+    min-height: 390px;
+    max-height: 560px;
+    padding: 28px 30px;
+  }
+
+  .messageRow {
+    gap: 13px;
+    margin-bottom: 22px;
+  }
+
+  .messageContent {
+    max-width: min(78%, 760px);
+  }
+
+  .messageRow.user .messageContent {
+    max-width: min(78%, 760px);
+  }
+
+  /* FRENCH CHAT TEXT */
+
+  .messageBubble {
+    max-width: 760px;
+    padding: 17px 21px;
+    font-size: 20px;
+    line-height: 1.5;
+    border-radius: 19px 19px 19px 6px;
+  }
+
+  .messageRow.user .messageBubble {
+    border-radius: 19px 19px 6px 19px;
+  }
+
+  /* LISTEN + MEANING */
+
+  .listenButton,
+  .meaningButton {
+    font-size: 11px;
+    padding: 5px 6px;
+  }
+
+  .meaningBox {
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 12px 15px;
+  }
+
+  /* VOCABULARY */
+
+  .vocabulary {
+    padding: 16px 30px;
+  }
+
+  .vocabItem {
+    padding: 10px 13px;
+  }
+
+  .vocabItem strong {
+    font-size: 12px;
+  }
+
+  .vocabItem span {
+    font-size: 10px;
+  }
+
+  /* ANSWER CHOICES */
+
+  .answerArea {
+    padding: 20px 30px 16px;
+  }
+
+  .answerTitle span {
+    font-size: 15px;
+  }
+
+  .answerTitle small {
+    font-size: 11px;
+  }
+
+  .answerOptions {
+    gap: 12px;
+  }
+
+  .answerOptions button {
+    min-height: 76px;
+    padding: 12px 15px;
+    gap: 12px;
+    font-size: 16px;
+    border-radius: 15px;
+  }
+
+  .optionNumber {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    font-size: 13px;
+  }
+
+  .optionText strong {
+    font-size: 17px;
+  }
+
+  .optionText small {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+
+  /* TEXT INPUT */
+
+  .inputArea {
+    padding: 18px 30px 22px;
+  }
+
+  .inputWrap {
+    gap: 10px;
+  }
+
+  .inputWrap input {
+    height: 52px;
+    padding: 0 17px;
+    font-size: 18px;
+    border-radius: 13px;
+  }
+
+  .sendButton {
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
+    font-size: 22px;
+  }
+
+  .inputTip {
+    font-size: 11px;
+  }
+
+  /* MOBILE CHAT */
+
+  @media (max-width: 700px) {
+    .conversationScreen {
+      width: calc(100% - 20px);
+    }
+
+    .messages {
+      min-height: 320px;
+      padding: 20px 16px;
+    }
+
+    .messageContent,
+    .messageRow.user .messageContent {
+      max-width: 88%;
+    }
+
+    .messageBubble {
+      padding: 15px 17px;
+      font-size: 19px;
+      line-height: 1.5;
+    }
+
+    .answerArea,
+    .vocabulary,
+    .inputArea,
+    .chatHeader {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .answerOptions {
+      grid-template-columns: 1fr;
+    }
+
+    .answerOptions button {
+      min-height: 70px;
+    }
+
+    .optionText strong {
+      font-size: 17px;
+    }
+
+    .optionText small {
+      font-size: 13px;
+    }
+  }
+
 `;
