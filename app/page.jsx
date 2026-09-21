@@ -3206,7 +3206,6 @@ const styles = `
     padding-right: 15px;
   }
 }
-`;
 const styles = `
   /* thousands of lines of your existing CSS */
 
