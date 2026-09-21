@@ -1,4 +1,4 @@
-'use client';
+use client';
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -867,8 +867,8 @@ export default function Home() {
   const [vocabulary, setVocabulary] =
     useState([]);
 
-  const [showMeaning, setShowMeaning] =
-    useState(false);
+  const [meaningMessageIndex, setMeaningMessageIndex] =
+    useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -900,28 +900,29 @@ export default function Home() {
     setSecondaryLanguage(savedLanguage);
   }, []);
 
-  function changeLanguage(language) {
-    if (!languages[language]) return;
-
+  function changeInterfaceLanguage(language) {
     setInterfaceLanguage(language);
-    setSecondaryLanguage(language);
 
     window.localStorage.setItem(
       'mimiInterfaceLanguage',
       language
     );
+  }
+
+  function changeSecondaryLanguage(language) {
+    // The visible selector controls the complete support/interface language.
+    // French remains the language being learned and spoken by Mimi.
+    setSecondaryLanguage(language);
+    setInterfaceLanguage(language);
+
     window.localStorage.setItem(
       'mimiSecondaryLanguage',
       language
     );
-  }
-
-  function changeInterfaceLanguage(language) {
-    changeLanguage(language);
-  }
-
-  function changeSecondaryLanguage(language) {
-    changeLanguage(language);
+    window.localStorage.setItem(
+      'mimiInterfaceLanguage',
+      language
+    );
   }
 
   useEffect(() => {
@@ -950,11 +951,13 @@ export default function Home() {
     setMessages([]);
     setAnswerOptions([]);
     setVocabulary([]);
-    setShowMeaning(false);
+    setMeaningMessageIndex(null);
     setInput('');
   }
 
   async function beginMission() {
+    if (!selectedScenario) return;
+
     setShowIntro(false);
 
     const scenarioText = getScenarioText(
@@ -1221,7 +1224,7 @@ export default function Home() {
     setMessages([]);
     setAnswerOptions([]);
     setVocabulary([]);
-    setShowMeaning(false);
+    setMeaningMessageIndex(null);
     setInput('');
   }
 
@@ -1263,9 +1266,11 @@ export default function Home() {
             </span>
 
             <select
-              value={interfaceLanguage}
+              value={secondaryLanguage}
               onChange={(event) =>
-                changeLanguage(event.target.value)
+                changeSecondaryLanguage(
+                  event.target.value
+                )
               }
               aria-label={
                 ui.selectLanguage
@@ -1624,12 +1629,14 @@ export default function Home() {
                               <button
                                 className="meaningButton"
                                 onClick={() =>
-                                  setShowMeaning(
-                                    !showMeaning
+                                  setMeaningMessageIndex(
+                                    meaningMessageIndex === index
+                                      ? null
+                                      : index
                                   )
                                 }
                               >
-                                {showMeaning
+                                {meaningMessageIndex === index
                                   ? ui.hideMeaning
                                   : ui.meaning}
                               </button>
@@ -1640,7 +1647,7 @@ export default function Home() {
                         {message.role ===
                           'mimi' &&
                           message.meaning &&
-                          showMeaning && (
+                          meaningMessageIndex === index && (
                             <div className="meaningBox">
                               {
                                 message.meaning
@@ -2245,8 +2252,9 @@ const styles = `
 .mimiSmall {
   transform: scale(0.45);
   transform-origin: bottom center;
-  width: 68px;
-  height: 95px;
+  width: 150px;
+  height: 210px;
+  flex: 0 0 150px;
 }
 
 .missionsHeader {
@@ -2726,7 +2734,8 @@ const styles = `
   display: flex;
   align-items: center;
   gap: 4px;
-  height: 40px;
+  min-height: 54px;
+  overflow: visible;
 }
 
 .chatMimi strong {
@@ -2762,24 +2771,25 @@ const styles = `
 }
 
 .messageAvatar {
-  width: 34px;
-  height: 39px;
-  flex: 0 0 34px;
-  overflow: hidden;
+  width: 48px;
+  height: 58px;
+  flex: 0 0 48px;
+  overflow: visible;
   display: flex;
   align-items: flex-end;
+  justify-content: center;
 }
 
 .messageContent {
-  width: 100%;
-  max-width: 100%;
+  width: auto;
+  max-width: min(70%, 560px);
   min-width: 0;
-  flex: 1;
+  flex: 0 1 auto;
 }
 
 .messageBubble {
-  width: 500px;
-  max-width: 100%;
+  width: auto;
+  max-width: 560px;
   padding: 12px 15px;
   border-radius: 17px 17px 17px 5px;
   background: #f4f3fb;
@@ -2791,7 +2801,8 @@ const styles = `
 }
 
 .messageRow.user .messageContent {
-  margin-left: auto;
+  margin-left: 0;
+  max-width: min(70%, 560px);
 }
 
 .messageRow.user .messageBubble {
@@ -3168,6 +3179,10 @@ const styles = `
   }
 
   .messageContent {
+    max-width: 82%;
+  }
+
+  .messageRow.user .messageContent {
     max-width: 82%;
   }
 
