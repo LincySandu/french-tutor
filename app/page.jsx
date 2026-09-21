@@ -680,80 +680,18 @@ const scenarios = [
   },
 ];
 
-function getScenarioInfo(id, interfaceLanguage) {
+function getScenarioText(id, interfaceLanguage) {
   return (
-    languages[interfaceLanguage]?.scenarios?.[id] ||
-    languages.en.scenarios[id]
+    languages[interfaceLanguage]?.scenarios?.[id]?.intro ||
+    languages.en.scenarios[id].intro
   );
 }
 
-function getScenarioText(id, interfaceLanguage) {
-  return getScenarioInfo(id, interfaceLanguage).intro;
-}
-
 function getInitialMeaning(id, interfaceLanguage) {
-  return getScenarioInfo(id, interfaceLanguage).meaning;
-}
-
-const ERROR_MESSAGES = {
-  en: {
-    text: "Désolée ! Let's try that again.",
-    meaning: 'Something went wrong while connecting to Mimi.',
-  },
-  fr: {
-    text: 'Désolée ! Réessayons.',
-    meaning: 'Un problème est survenu pendant la connexion à Mimi.',
-  },
-  de: {
-    text: 'Entschuldigung! Versuchen wir es noch einmal.',
-    meaning: 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.',
-  },
-  ro: {
-    text: 'Scuze! Hai să încercăm din nou.',
-    meaning: 'A apărut o problemă la conectarea cu Mimi.',
-  },
-  es: {
-    text: '¡Lo siento! Intentémoslo de nuevo.',
-    meaning: 'Ha ocurrido un problema al conectar con Mimi.',
-  },
-};
-
-function getTutorErrorMessage(language) {
-  return ERROR_MESSAGES[language] || ERROR_MESSAGES.en;
-}
-
-async function readTutorResponse(response) {
-  const contentType = response.headers.get('content-type') || '';
-
-  if (contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  const text = await response.text();
-  return { error: text || 'Tutor request failed' };
-}
-
-async function callTutor(payload) {
-  const response = await fetch('/api/tutor', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await readTutorResponse(response);
-
-  if (!response.ok) {
-    console.error(data);
-    throw new Error(
-      data?.error?.message ||
-        data?.error ||
-        'Tutor request failed'
-    );
-  }
-
-  return data;
+  return (
+    languages[interfaceLanguage]?.scenarios?.[id]?.meaning ||
+    languages.en.scenarios[id].meaning
+  );
 }
 
 function getFrenchVoice() {
@@ -809,7 +747,6 @@ function speakFrench(text) {
 
   if (voices.length === 0) {
     window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.onvoiceschanged = null;
       speak();
     };
   } else {
@@ -930,8 +867,8 @@ export default function Home() {
   const [vocabulary, setVocabulary] =
     useState([]);
 
-  const [meaningMessageIndex, setMeaningMessageIndex] =
-    useState(null);
+  const [showMeaning, setShowMeaning] =
+    useState(false);
 
   const messagesEndRef = useRef(null);
 
@@ -950,41 +887,41 @@ export default function Home() {
         'mimiSecondaryLanguage'
       );
 
-    if (
-      savedInterfaceLanguage &&
-      languages[savedInterfaceLanguage]
-    ) {
-      setInterfaceLanguage(
-        savedInterfaceLanguage
-      );
-    }
-
-    if (
+    const savedLanguage =
       savedSecondaryLanguage &&
       languages[savedSecondaryLanguage]
-    ) {
-      setSecondaryLanguage(
-        savedSecondaryLanguage
-      );
-    }
+        ? savedSecondaryLanguage
+        : savedInterfaceLanguage &&
+            languages[savedInterfaceLanguage]
+          ? savedInterfaceLanguage
+          : 'en';
+
+    setInterfaceLanguage(savedLanguage);
+    setSecondaryLanguage(savedLanguage);
   }, []);
 
-  function changeInterfaceLanguage(language) {
+  function changeLanguage(language) {
+    if (!languages[language]) return;
+
     setInterfaceLanguage(language);
+    setSecondaryLanguage(language);
 
     window.localStorage.setItem(
       'mimiInterfaceLanguage',
       language
     );
-  }
-
-  function changeSecondaryLanguage(language) {
-    setSecondaryLanguage(language);
-
     window.localStorage.setItem(
       'mimiSecondaryLanguage',
       language
     );
+  }
+
+  function changeInterfaceLanguage(language) {
+    changeLanguage(language);
+  }
+
+  function changeSecondaryLanguage(language) {
+    changeLanguage(language);
   }
 
   useEffect(() => {
@@ -1013,21 +950,22 @@ export default function Home() {
     setMessages([]);
     setAnswerOptions([]);
     setVocabulary([]);
-    setMeaningMessageIndex(null);
+    setShowMeaning(false);
     setInput('');
   }
 
   async function beginMission() {
-    if (!selectedScenario) return;
-
     setShowIntro(false);
+
+    const scenarioText = getScenarioText(
+      selectedScenario.id,
+      interfaceLanguage
+    );
+
     setMessages([
       {
         role: 'mimi',
-        text: getScenarioText(
-          selectedScenario.id,
-          interfaceLanguage
-        ),
+        text: scenarioText,
         speechText: '',
         meaning: getInitialMeaning(
           selectedScenario.id,
@@ -1035,52 +973,100 @@ export default function Home() {
         ),
       },
     ]);
+
     setAnswerOptions([]);
     setVocabulary([]);
-    setMeaningMessageIndex(null);
     setLoading(true);
 
     try {
-      const data = await callTutor({
-        scenario: selectedScenario.id,
-        messages: [],
-        start: true,
-        interfaceLanguage,
-        secondaryLanguage,
-      });
+      const response = await fetch(
+        '/api/tutor',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            scenario:
+              selectedScenario.id,
+            messages: [],
+            start: true,
+            interfaceLanguage,
+            secondaryLanguage,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+
+        throw new Error(
+          data?.error?.message ||
+            data?.error ||
+            'Tutor request failed'
+        );
+      }
 
       if (data.reply) {
         setMessages([
           {
             role: 'mimi',
             text: data.reply,
-            speechText: data.speechText || '',
+            speechText:
+              data.speechText || '',
             meaning: data.meaning || '',
           },
         ]);
 
         setAnswerOptions(
-          Array.isArray(data.options) ? data.options : []
+          Array.isArray(data.options)
+            ? data.options
+            : []
         );
+
         setVocabulary(
-          Array.isArray(data.vocabulary) ? data.vocabulary : []
+          Array.isArray(data.vocabulary)
+            ? data.vocabulary
+            : []
         );
 
         if (data.speechText) {
-          setTimeout(() => speakFrench(data.speechText), 150);
+          setTimeout(() => {
+            speakFrench(data.speechText);
+          }, 150);
         }
       }
     } catch (error) {
       console.error(error);
-      const errorMessage = getTutorErrorMessage(interfaceLanguage);
 
       setMessages((current) => [
         ...current,
         {
           role: 'mimi',
-          text: errorMessage.text,
+          text:
+            interfaceLanguage === 'fr'
+              ? 'Désolée ! Réessayons.'
+              : interfaceLanguage === 'de'
+                ? 'Entschuldigung! Versuchen wir es noch einmal.'
+                : interfaceLanguage === 'ro'
+                  ? 'Scuze! Hai să încercăm din nou.'
+                  : interfaceLanguage === 'es'
+                    ? '¡Lo siento! Intentémoslo de nuevo.'
+                    : "Désolée ! Let's try that again.",
           speechText: '',
-          meaning: errorMessage.meaning,
+          meaning:
+            interfaceLanguage === 'fr'
+              ? 'Un problème est survenu pendant la connexion à Mimi.'
+              : interfaceLanguage === 'de'
+                ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
+                : interfaceLanguage === 'ro'
+                  ? 'A apărut o problemă la conectarea cu Mimi.'
+                  : interfaceLanguage === 'es'
+                    ? 'Ha ocurrido un problema al conectar con Mimi.'
+                    : 'Something went wrong while connecting to Mimi.',
         },
       ]);
     } finally {
@@ -1092,13 +1078,19 @@ export default function Home() {
     setInput(answer);
   }
 
-  async function sendMessage(customMessage = null) {
+  async function sendMessage(
+    customMessage = null
+  ) {
     const messageToSend =
       typeof customMessage === 'string'
         ? customMessage.trim()
         : input.trim();
 
-    if (!messageToSend || loading || !selectedScenario) {
+    if (
+      !messageToSend ||
+      loading ||
+      !selectedScenario
+    ) {
       return;
     }
 
@@ -1107,52 +1099,108 @@ export default function Home() {
       text: messageToSend,
     };
 
-    const updatedMessages = [...messages, userMessage];
+    const updatedMessages = [
+      ...messages,
+      userMessage,
+    ];
 
     setMessages(updatedMessages);
     setInput('');
     setAnswerOptions([]);
-    setMeaningMessageIndex(null);
     setLoading(true);
+    setXp((current) => current + 5);
 
     try {
-      const data = await callTutor({
-        scenario: selectedScenario.id,
-        messages: updatedMessages,
-        interfaceLanguage,
-        secondaryLanguage,
-      });
+      const response = await fetch(
+        '/api/tutor',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
+          body: JSON.stringify({
+            scenario:
+              selectedScenario.id,
+            messages: updatedMessages,
+            interfaceLanguage,
+            secondaryLanguage,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data);
+
+        throw new Error(
+          data?.error?.message ||
+            data?.error ||
+            'Tutor request failed'
+        );
+      }
 
       const mimiMessage = {
         role: 'mimi',
-        text: data.reply || 'Très bien !',
-        speechText: data.speechText || '',
+        text:
+          data.reply ||
+          'Très bien !',
+        speechText:
+          data.speechText || '',
         meaning: data.meaning || '',
       };
 
-      setMessages((current) => [...current, mimiMessage]);
+      setMessages((current) => [
+        ...current,
+        mimiMessage,
+      ]);
+
       setAnswerOptions(
-        Array.isArray(data.options) ? data.options : []
+        Array.isArray(data.options)
+          ? data.options
+          : []
       );
+
       setVocabulary(
-        Array.isArray(data.vocabulary) ? data.vocabulary : []
+        Array.isArray(data.vocabulary)
+          ? data.vocabulary
+          : []
       );
-      setXp((current) => current + 5);
 
       if (data.speechText) {
-        setTimeout(() => speakFrench(data.speechText), 100);
+        setTimeout(() => {
+          speakFrench(data.speechText);
+        }, 100);
       }
     } catch (error) {
       console.error(error);
-      const errorMessage = getTutorErrorMessage(interfaceLanguage);
 
       setMessages((current) => [
         ...current,
         {
           role: 'mimi',
-          text: errorMessage.text,
+          text:
+            interfaceLanguage === 'fr'
+              ? 'Désolée ! Réessayons.'
+              : interfaceLanguage === 'de'
+                ? 'Entschuldigung! Versuchen wir es noch einmal.'
+                : interfaceLanguage === 'ro'
+                  ? 'Scuze! Hai să încercăm din nou.'
+                  : interfaceLanguage === 'es'
+                    ? '¡Lo siento! Intentémoslo de nuevo.'
+                    : "Désolée ! Let's try that again.",
           speechText: '',
-          meaning: errorMessage.meaning,
+          meaning:
+            interfaceLanguage === 'fr'
+              ? 'Un problème est survenu pendant la connexion à Mimi.'
+              : interfaceLanguage === 'de'
+                ? 'Beim Verbinden mit Mimi ist ein Problem aufgetreten.'
+                : interfaceLanguage === 'ro'
+                  ? 'A apărut o problemă la conectarea cu Mimi.'
+                  : interfaceLanguage === 'es'
+                    ? 'Ha ocurrido un problema al conectar con Mimi.'
+                    : 'Something went wrong while connecting to Mimi.',
         },
       ]);
     } finally {
@@ -1173,7 +1221,7 @@ export default function Home() {
     setMessages([]);
     setAnswerOptions([]);
     setVocabulary([]);
-    setMeaningMessageIndex(null);
+    setShowMeaning(false);
     setInput('');
   }
 
@@ -1215,11 +1263,9 @@ export default function Home() {
             </span>
 
             <select
-              value={secondaryLanguage}
+              value={interfaceLanguage}
               onChange={(event) =>
-                changeSecondaryLanguage(
-                  event.target.value
-                )
+                changeLanguage(event.target.value)
               }
               aria-label={
                 ui.selectLanguage
@@ -1578,14 +1624,12 @@ export default function Home() {
                               <button
                                 className="meaningButton"
                                 onClick={() =>
-                                  setMeaningMessageIndex(
-                                    meaningMessageIndex === index
-                                      ? null
-                                      : index
+                                  setShowMeaning(
+                                    !showMeaning
                                   )
                                 }
                               >
-                                {meaningMessageIndex === index
+                                {showMeaning
                                   ? ui.hideMeaning
                                   : ui.meaning}
                               </button>
@@ -1596,7 +1640,7 @@ export default function Home() {
                         {message.role ===
                           'mimi' &&
                           message.meaning &&
-                          meaningMessageIndex === index && (
+                          showMeaning && (
                             <div className="meaningBox">
                               {
                                 message.meaning
@@ -1765,7 +1809,6 @@ export default function Home() {
                         event.key ===
                         'Enter'
                       ) {
-                        event.preventDefault();
                         sendMessage();
                       }
                     }}
