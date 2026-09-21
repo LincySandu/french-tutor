@@ -3,6 +3,7 @@ export async function POST(request) {
     const body = await request.json();
 
     const scenario = body.scenario || 'general';
+
     const messages = Array.isArray(body.messages)
       ? body.messages
       : [];
@@ -44,37 +45,28 @@ export async function POST(request) {
      * ==========================================================
      * CONVERSATION HISTORY
      * ==========================================================
-     *
-     * Convert the frontend messages into a clean transcript.
-     *
-     * We deliberately do NOT send the UI-only meaning,
-     * speechText, options, etc. back to the model.
-     *
-     * The model needs to know what Mimi said and what
-     * the child said.
      */
 
-    const conversationHistory =
-      messages
-        .map((message) => {
-          const role =
-            message.role === 'user'
-              ? 'CHILD'
-              : 'MIMI';
+    const conversationHistory = messages
+      .map((message) => {
+        const role =
+          message.role === 'user'
+            ? 'CHILD'
+            : 'MIMI';
 
-          const text =
-            typeof message.text === 'string'
-              ? message.text.trim()
-              : '';
+        const text =
+          typeof message.text === 'string'
+            ? message.text.trim()
+            : '';
 
-          if (!text) {
-            return '';
-          }
+        if (!text) {
+          return '';
+        }
 
-          return `${role}: ${text}`;
-        })
-        .filter(Boolean)
-        .join('\n');
+        return `${role}: ${text}`;
+      })
+      .filter(Boolean)
+      .join('\n');
 
     /*
      * ==========================================================
@@ -85,28 +77,19 @@ export async function POST(request) {
     const systemPrompt = `
 You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
 
-==================================================
-ABSOLUTE LANGUAGE RULE
-==================================================
-
-French is ALWAYS the language being learned.
+FRENCH IS ALWAYS THE LANGUAGE BEING LEARNED.
 
 Mimi ALWAYS speaks French.
 
-The child's support language is:
-
-${selectedLanguage}
-
-The support language is NOT the language being learned.
+The child's support language is ${selectedLanguage}.
 
 The support language is ONLY used for:
-
 - MEANING
-- translations of OPTIONS
+- translations of answer OPTIONS
 - translations in VOCABULARY
 - very short explanations or corrections
 
-Never switch the target language away from French.
+Never change the target language away from French.
 
 ==================================================
 SPEECH
@@ -114,8 +97,7 @@ SPEECH
 
 SPEECH must contain ONLY French.
 
-Never put English, Spanish, German, Romanian, translations,
-explanations or labels inside SPEECH.
+Never put translations, explanations or another language inside SPEECH.
 
 ==================================================
 DISPLAY
@@ -123,25 +105,13 @@ DISPLAY
 
 DISPLAY is Mimi's visible response.
 
-DISPLAY should be simple French.
+DISPLAY should use simple French.
 
-Mimi should respond naturally to the child's previous message.
+If the conversation has already started, Mimi MUST respond to the child's latest answer.
 
 Do NOT restart the conversation.
 
-Do NOT say "Bonjour !" as a generic fallback.
-
-Do NOT ignore the child's previous answer.
-
-If the child says:
-
-"J'aime la musique."
-
-Mimi should respond to that information.
-
-For example:
-
-"Super ! Moi aussi, j'aime la musique. Quel type de musique aimes-tu ?"
+Do NOT simply say "Bonjour !".
 
 DISPLAY must end with exactly ONE simple French question.
 
@@ -151,21 +121,7 @@ Never ask two questions.
 MEANING
 ==================================================
 
-MEANING explains Mimi's complete response in:
-
-${selectedLanguage}
-
-MEANING must be in ${selectedLanguage}.
-
-If the support language is Spanish, MEANING must be Spanish.
-
-If the support language is German, MEANING must be German.
-
-If the support language is Romanian, MEANING must be Romanian.
-
-If the support language is English, MEANING must be English.
-
-If the support language is French, MEANING may be French.
+MEANING must explain Mimi's complete response in ${selectedLanguage}.
 
 ==================================================
 OPTIONS
@@ -174,35 +130,32 @@ OPTIONS
 Always provide exactly 3 answer options.
 
 Each option must:
-
 - be a natural French answer to Mimi's NEW question
 - be short
 - be suitable for a 9-year-old beginner
 - be different from the other options
 - contain French first
-- contain a translation into ${selectedLanguage} second
+- contain a translation into ${selectedLanguage}
 
-Use this exact format:
+Format:
 
-1. J'aime le rock. | Me gusta el rock.
-2. J'aime la pop. | Me gusta el pop.
-3. J'aime le rap. | Me gusta el rap.
-
-Never put translations inside SPEECH.
+1. J'aime le football. | I like football.
+2. J'aime le tennis. | I like tennis.
+3. J'aime la natation. | I like swimming.
 
 ==================================================
 VOCABULARY
 ==================================================
 
-Provide up to 3 useful French words or short phrases
-from Mimi's NEW response.
+Provide up to 3 useful French words or short phrases from Mimi's response.
 
-Each item must contain:
+Format:
 
-French | ${selectedLanguage}
+1. mot français | ${selectedLanguage} meaning
+2. mot français | ${selectedLanguage} meaning
+3. mot français | ${selectedLanguage} meaning
 
 Do not use tiny grammar words such as:
-
 le
 la
 un
@@ -214,13 +167,10 @@ tu
 TEACHING LEVEL
 ==================================================
 
-The child is 9 years old.
-
-The child is a complete beginner.
+The child is 9 years old and is a complete beginner.
 
 Use:
-
-- very short French sentences
+- short French sentences
 - simple vocabulary
 - natural children's language
 - one question at a time
@@ -229,15 +179,7 @@ Stay within the current scenario.
 
 Do not give long grammar explanations.
 
-Do not make French unnecessarily difficult.
-
-Do not praise every answer.
-
-Keep the conversation natural.
-
-Most importantly:
-
-RESPOND TO THE CHILD'S ACTUAL PREVIOUS MESSAGE.
+Respond naturally to what the child actually said.
 
 ==================================================
 CURRENT SCENARIO
@@ -255,7 +197,7 @@ ${
 }
 
 ==================================================
-FIRST MESSAGE RULE
+FIRST MESSAGE
 ==================================================
 
 If the conversation has not started yet:
@@ -266,15 +208,15 @@ If the conversation has not started yet:
 
 If the conversation has already started:
 
-- continue naturally
-- respond specifically to the child's latest answer
-- do NOT restart with "Bonjour !"
+- respond specifically to the child's latest message
+- continue the conversation naturally
+- do NOT restart
 
 ==================================================
 OUTPUT FORMAT
 ==================================================
 
-Return ONLY these five sections.
+Return ONLY these sections:
 
 DISPLAY:
 [French response ending with exactly ONE French question]
@@ -295,23 +237,15 @@ VOCABULARY:
 2. [French word or phrase] | [${selectedLanguage} meaning]
 3. [French word or phrase] | [${selectedLanguage} meaning]
 
-Do not add any text before DISPLAY.
+Do not add anything before DISPLAY.
 
-Do not add any text after VOCABULARY.
+Do not add anything after VOCABULARY.
 
 Do not use Markdown headings.
 
 Do not use code fences.
 
-Do not use bold around the section names.
-
-The section names must be exactly:
-
-DISPLAY:
-SPEECH:
-MEANING:
-OPTIONS:
-VOCABULARY:
+Do not use bold around section names.
 `;
 
     /*
@@ -342,33 +276,36 @@ VOCABULARY:
             {
               role: 'user',
 
-              content:
-                conversationHistory
-                  ? `
+              content: conversationHistory
+                ? `
 Continue the French-learning conversation.
 
-The child's latest message is the last CHILD message
-in the conversation above.
-
-Respond directly to that message.
+Respond directly to the child's latest message.
 
 Do not restart the conversation.
 
-Remember:
-- French is the target language.
-- Mimi speaks French.
-- MEANING is ${selectedLanguage}.
-- OPTION translations are ${selectedLanguage}.
-- VOCABULARY translations are ${selectedLanguage}.
-- Ask exactly one French question.
-- Provide exactly three options.
+French is the target language.
+
+Mimi speaks French.
+
+MEANING must be in ${selectedLanguage}.
+
+OPTION translations must be in ${selectedLanguage}.
+
+VOCABULARY translations must be in ${selectedLanguage}.
+
+Ask exactly one French question.
+
+Provide exactly three answer options.
 `
-                  : `
+                : `
 Start the conversation for the "${scenario}" scenario.
 
 Introduce the topic naturally in simple French.
 
 Ask exactly one simple French question.
+
+Provide exactly three answer options.
 `,
             },
           ],
@@ -378,7 +315,7 @@ Ask exactly one simple French question.
 
     /*
      * ==========================================================
-     * OPENROUTER ERROR
+     * OPENROUTER RESPONSE
      * ==========================================================
      */
 
@@ -403,23 +340,12 @@ Ask exactly one simple French question.
       );
     }
 
-    /*
-     * ==========================================================
-     * GET RAW MODEL RESPONSE
-     * ==========================================================
-     */
-
     const rawReply =
       data?.choices?.[0]?.message?.content?.trim() || '';
 
     console.log(
       'Mimi support language:',
       selectedLanguage
-    );
-
-    console.log(
-      'Mimi conversation history:',
-      conversationHistory
     );
 
     console.log(
@@ -441,59 +367,73 @@ Ask exactly one simple French question.
 
     /*
      * ==========================================================
-     * NORMALISE MODEL OUTPUT
+     * CLEAN MODEL RESPONSE
      * ==========================================================
-     *
-     * Some models occasionally return:
-     *
-     * **DISPLAY:**
-     *
-     * or:
-     *
-     * ```text
-     * DISPLAY:
-     *
-     * We normalise those before parsing.
      */
 
-    const normalisedReply = rawReply
-      .replace(/```(?:text|markdown)?/gi, '')
+    const cleanedReply = rawReply
+      .replace(/```text/gi, '')
+      .replace(/```markdown/gi, '')
       .replace(/```/g, '')
-      .replace(/\*\*(DISPLAY|SPEECH|MEANING|OPTIONS|VOCABULARY):\*\*/gi, '$1:')
-      .replace(/^#+\s*(DISPLAY|SPEECH|MEANING|OPTIONS|VOCABULARY)\s*:?/gim, '$1:')
+      .replace(
+        /\*\*(DISPLAY|SPEECH|MEANING|OPTIONS|VOCABULARY):\*\*/gi,
+        '$1:'
+      )
+      .replace(
+        /^#+\s*(DISPLAY|SPEECH|MEANING|OPTIONS|VOCABULARY)\s*:?\s*$/gim,
+        '$1:'
+      )
       .trim();
 
     /*
      * ==========================================================
-     * SECTION PARSER
+     * SIMPLE SECTION EXTRACTION
      * ==========================================================
      */
 
-    function extractSection(text, sectionName, nextSections) {
-      const escapedName =
-        sectionName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-      const escapedNext =
-        nextSections
-          .map((section) =>
-            section.replace(
-              /[.*+?^${}()|[\]\\]/g,
-              '\\$&'
-            )
-          )
-          .join('|');
-
-      const regex = new RegExp(
-        `${escapedName}\\s*:\\s*([\\s\\S]*?)(?=\\n\\s*(?:${escapedNext})\\s*:|$)`,
-        'i'
+    function getSection(text, sectionName, nextSectionNames) {
+      const startRegex = new RegExp(
+        '^\\s*' + sectionName + '\\s*:\\s*',
+        'im'
       );
 
-      const match = text.match(regex);
+      const startMatch = startRegex.exec(text);
 
-      return match?.[1]?.trim() || '';
+      if (!startMatch) {
+        return '';
+      }
+
+      const startIndex =
+        startMatch.index + startMatch[0].length;
+
+      let endIndex = text.length;
+
+      for (const nextName of nextSectionNames) {
+        const nextRegex = new RegExp(
+          '^\\s*' + nextName + '\\s*:\\s*',
+          'im'
+        );
+
+        const nextMatch = nextRegex.exec(
+          text.slice(startIndex)
+        );
+
+        if (nextMatch) {
+          const candidate =
+            startIndex + nextMatch.index;
+
+          if (candidate < endIndex) {
+            endIndex = candidate;
+          }
+        }
+      }
+
+      return text
+        .slice(startIndex, endIndex)
+        .trim();
     }
 
-    const sectionNames = [
+    const sections = [
       'DISPLAY',
       'SPEECH',
       'MEANING',
@@ -501,61 +441,59 @@ Ask exactly one simple French question.
       'VOCABULARY',
     ];
 
-    const display = extractSection(
-      normalisedReply,
+    const display = getSection(
+      cleanedReply,
       'DISPLAY',
-      sectionNames.filter(
-        (section) => section !== 'DISPLAY'
+      sections.filter(
+        (name) => name !== 'DISPLAY'
       )
     );
 
-    const speechText = extractSection(
-      normalisedReply,
+    const speechText = getSection(
+      cleanedReply,
       'SPEECH',
-      sectionNames.filter(
-        (section) => section !== 'SPEECH'
+      sections.filter(
+        (name) => name !== 'SPEECH'
       )
     );
 
-    const meaning = extractSection(
-      normalisedReply,
+    const meaning = getSection(
+      cleanedReply,
       'MEANING',
-      sectionNames.filter(
-        (section) => section !== 'MEANING'
+      sections.filter(
+        (name) => name !== 'MEANING'
       )
     );
 
-    const optionsText = extractSection(
-      normalisedReply,
+    const optionsText = getSection(
+      cleanedReply,
       'OPTIONS',
-      sectionNames.filter(
-        (section) => section !== 'OPTIONS'
+      sections.filter(
+        (name) => name !== 'OPTIONS'
       )
     );
 
-    const vocabularyText = extractSection(
-      normalisedReply,
+    const vocabularyText = getSection(
+      cleanedReply,
       'VOCABULARY',
-      sectionNames.filter(
-        (section) => section !== 'VOCABULARY'
+      sections.filter(
+        (name) => name !== 'VOCABULARY'
       )
     );
 
     /*
      * ==========================================================
-     * DO NOT HIDE PARSING FAILURES
+     * CHECK DISPLAY
      * ==========================================================
-     *
-     * Previously this was:
-     *
-     * display || "Bonjour !"
-     *
-     * That masked API problems.
      */
 
     if (!display) {
       console.error(
-        'Mimi parsing failed. Raw response was:',
+        'Mimi parsing failed.'
+      );
+
+      console.error(
+        'Raw response:',
         rawReply
       );
 
@@ -563,7 +501,6 @@ Ask exactly one simple French question.
         {
           error:
             'Mimi returned an unexpected response format.',
-          rawResponse: rawReply,
         },
         {
           status: 502,
@@ -604,6 +541,7 @@ Ask exactly one simple French question.
 
           return {
             french: parts[0],
+
             translation: parts
               .slice(1)
               .join('|')
@@ -652,6 +590,7 @@ Ask exactly one simple French question.
 
           return {
             french: parts[0],
+
             translation: parts
               .slice(1)
               .join('|')
@@ -669,20 +608,7 @@ Ask exactly one simple French question.
 
     /*
      * ==========================================================
-     * VALIDATION
-     * ==========================================================
-     */
-
-    if (options.length !== 3) {
-      console.warn(
-        'Mimi returned fewer than 3 valid options:',
-        options
-      );
-    }
-
-    /*
-     * ==========================================================
-     * FINAL RESPONSE
+     * LOG RESULTS
      * ==========================================================
      */
 
@@ -710,6 +636,12 @@ Ask exactly one simple French question.
       'Mimi parsed vocabulary:',
       vocabulary
     );
+
+    /*
+     * ==========================================================
+     * RETURN TO PAGE.JSX
+     * ==========================================================
+     */
 
     return Response.json({
       reply: display,
