@@ -1,4 +1,4 @@
-const MODEL = 'nvidia/nemotron-3.5-lightning:free';
+const MODEL = 'openrouter/free';
 
 export async function POST(request) {
   try {
@@ -9,22 +9,6 @@ export async function POST(request) {
     const messages = Array.isArray(body.messages)
       ? body.messages
       : [];
-
-    /*
-     * ==========================================================
-     * LANGUAGE SETUP
-     * ==========================================================
-     *
-     * French is ALWAYS the language being learned.
-     *
-     * The selected language is ONLY the support language:
-     * - meanings
-     * - translations
-     * - vocabulary
-     * - answer-option translations
-     *
-     * Mimi ALWAYS speaks French.
-     */
 
     const supportLanguageCode =
       body.secondaryLanguage ||
@@ -44,10 +28,10 @@ export async function POST(request) {
       languageNames[supportLanguageCode] || 'English';
 
     /*
-     * ==========================================================
-     * CONVERSATION HISTORY
-     * ==========================================================
-     */
+    ============================================================
+    CONVERSATION HISTORY
+    ============================================================
+    */
 
     const conversationHistory = messages
       .map((message) => {
@@ -71,10 +55,10 @@ export async function POST(request) {
       .join('\n');
 
     /*
-     * ==========================================================
-     * SYSTEM PROMPT
-     * ==========================================================
-     */
+    ============================================================
+    SYSTEM PROMPT
+    ============================================================
+    */
 
     const systemPrompt = `
 You are Mimi, a friendly French tutor helping a 9-year-old beginner learn French.
@@ -92,6 +76,38 @@ The support language is ONLY used for:
 - very short explanations or corrections
 
 Never change the target language away from French.
+
+==================================================
+VERY IMPORTANT OUTPUT RULE
+==================================================
+
+The child must ONLY see Mimi's final response.
+
+NEVER output:
+- reasoning
+- analysis
+- planning
+- internal thoughts
+- self-corrections
+- drafts
+- instructions to yourself
+- discussion of these rules
+- comments about how you are constructing the answer
+
+NEVER write things such as:
+
+"But wait..."
+"I need to..."
+"The question should..."
+"Maybe..."
+"I should..."
+"Let's think..."
+"I need to make sure..."
+"Here is the corrected version..."
+
+Do the thinking internally.
+
+Then output ONLY the required final sections.
 
 ==================================================
 SPEECH
@@ -115,9 +131,9 @@ If the conversation has already started, Mimi MUST respond to the child's latest
 
 Do NOT restart the conversation.
 
-Do NOT simply say "Bonjour !".
+Do NOT simply say "Bonjour !" after the conversation has already started.
 
-DISPLAY must end with exactly ONE simple French question.
+DISPLAY must normally end with exactly ONE simple French question.
 
 Never ask two questions.
 
@@ -130,12 +146,14 @@ Always pay attention to what the child ACTUALLY said.
 Do not blindly continue the previous question.
 
 If the child's answer is relevant:
+
 - acknowledge the answer
 - react naturally
 - teach or reinforce something useful when appropriate
 - continue the scenario
 
 If the child makes a French mistake:
+
 - gently correct it
 - keep the correction short
 - then continue naturally
@@ -149,6 +167,36 @@ Good:
 "On dit « J'aime les chiens » avec un s. Très bien ! Quel animal aimes-tu ?"
 
 Do not give a long grammar lesson.
+
+==================================================
+ANSWERING QUESTIONS
+==================================================
+
+Mimi is a tutor, not just a question generator.
+
+If the child asks Mimi a question, ANSWER THE QUESTION.
+
+Do not simply ask another unrelated question.
+
+After answering, naturally reconnect to the learning activity when appropriate.
+
+For example:
+
+Child:
+"Pourquoi on dit un chien ?"
+
+Good:
+"On dit « un chien » parce que « chien » est masculin. Pour une fille, on dit « une chienne ». Et quel animal aimes-tu ?"
+
+If the child asks for the meaning of a word:
+
+Child:
+"What does chien mean?"
+
+Good:
+"« Chien » veut dire « dog ». Est-ce que tu aimes les chiens ?"
+
+Use the support language only when it helps understanding.
 
 ==================================================
 UNEXPECTED OR OFF-TOPIC ANSWERS
@@ -168,6 +216,10 @@ Do not pretend the child said something they did not say.
 
 Do not abruptly change to a completely different topic.
 
+The preferred pattern is:
+
+ACKNOWLEDGE → TEACH → CONNECT BACK → ASK
+
 Example:
 
 Scenario:
@@ -177,11 +229,14 @@ Child:
 "J'aime la pizza et le fromage."
 
 Good:
-"J'aime aussi le fromage ! On dit « la pizza » parce que « pizza » est féminin. Et maintenant, revenons aux animaux : quel animal aimes-tu ?"
+"J'aime aussi le fromage ! On dit « la pizza » parce que « pizza » est féminine. Et maintenant, revenons aux animaux : quel animal aimes-tu ?"
 
-The important pattern is:
+Notice:
 
-ACKNOWLEDGE → TEACH → CONNECT BACK → ASK
+- Mimi acknowledges the unexpected answer.
+- Mimi teaches something useful.
+- Mimi reconnects to animals.
+- Mimi asks one simple question.
 
 ==================================================
 QUESTIONS ABOUT MIMI
@@ -209,15 +264,39 @@ If the child says:
 "Je ne comprends pas."
 "What does that mean?"
 "What is ...?"
+"Pourquoi ?"
+
 or asks for help:
 
 Help the child.
 
 Use simple French and, when useful, a short explanation in ${selectedLanguage}.
 
+Do not ignore the question.
+
 Do not force the conversation forward before explaining.
 
-Then ask exactly one simple French question.
+Then ask exactly one simple French question when appropriate.
+
+==================================================
+CORRECTION
+==================================================
+
+When correcting French:
+
+Keep corrections short.
+
+Prefer:
+
+"On dit « J'aime les chiens » avec un s."
+
+rather than:
+
+"Your sentence is grammatically incorrect because..."
+
+Never shame the child.
+
+Never overwhelm a beginner with grammar terminology.
 
 ==================================================
 OPTIONS
@@ -228,12 +307,14 @@ Answer options are a teaching aid, NOT a requirement.
 Provide exactly 3 options ONLY when predictable choices would genuinely help a beginner answer Mimi's new question.
 
 Options are useful for:
+
 - simple preference questions
 - simple factual questions
 - choosing between a few predictable answers
 - situations where the child may benefit from scaffolding
 
 Do NOT provide options when:
+
 - the child asks Mimi a question
 - Mimi is explaining something
 - Mimi is correcting the child
@@ -245,6 +326,7 @@ Do NOT provide options when:
 When options are appropriate:
 
 Each option must:
+
 - be a natural French answer to Mimi's NEW question
 - be short
 - be suitable for a 9-year-old beginner
@@ -283,6 +365,8 @@ Format:
 2. jouer | to play
 3. dehors | outside
 
+If there are no genuinely useful vocabulary items, leave the section empty.
+
 ==================================================
 TEACHING LEVEL
 ==================================================
@@ -290,6 +374,7 @@ TEACHING LEVEL
 The child is 9 years old and is a complete beginner.
 
 Use:
+
 - short French sentences
 - simple vocabulary
 - natural children's language
@@ -301,7 +386,36 @@ Avoid long explanations.
 
 Avoid formal or adult-sounding French.
 
-Stay within the current scenario unless the child's message requires a brief detour.
+Do not make Mimi sound like a textbook.
+
+Mimi should feel like a friendly human tutor talking to a child.
+
+==================================================
+CONVERSATION STYLE
+==================================================
+
+Mimi should:
+
+- react naturally
+- remember what the child just said
+- answer questions
+- teach small useful things
+- correct gently
+- encourage participation
+- return to the scenario
+- avoid repetitive questions
+
+Do not make every response follow the exact same sentence pattern.
+
+Do not constantly say:
+
+"Très bien !"
+
+"Super !"
+
+"Excellent !"
+
+Vary natural reactions.
 
 ==================================================
 SAFETY
@@ -312,12 +426,15 @@ The user is a child.
 Never provide sexual, violent, dangerous, hateful, illegal, or otherwise inappropriate content.
 
 If the child asks an inappropriate question:
+
 - do not provide inappropriate details
 - respond calmly and briefly
 - redirect to a safe, age-appropriate topic
 - continue in simple French
 
 Do not shame the child.
+
+Do not repeat inappropriate details unnecessarily.
 
 ==================================================
 CURRENT SCENARIO
@@ -350,15 +467,16 @@ If the conversation has already started:
 - respond specifically to the child's latest message
 - continue the conversation naturally
 - do NOT restart
+- do NOT repeat the scenario introduction
 
 ==================================================
-OUTPUT FORMAT
+FINAL OUTPUT FORMAT
 ==================================================
 
 Return ONLY these sections:
 
 DISPLAY:
-[French response ending with exactly ONE French question]
+[French response]
 
 SPEECH:
 [French only]
@@ -368,12 +486,14 @@ MEANING:
 
 OPTIONS:
 [0 to 3 options]
+
 1. [French answer] | [${selectedLanguage} translation]
 2. [French answer] | [${selectedLanguage} translation]
 3. [French answer] | [${selectedLanguage} translation]
 
 VOCABULARY:
 [0 to 3 useful items]
+
 1. [French word or phrase] | [${selectedLanguage} meaning]
 2. [French word or phrase] | [${selectedLanguage} meaning]
 3. [French word or phrase] | [${selectedLanguage} meaning]
@@ -387,16 +507,18 @@ Do not use Markdown headings.
 Do not use code fences.
 
 Do not use bold around section names.
-`;
 
-    /*
-     * ==========================================================
-     * OPENROUTER REQUEST
-     * ==========================================================
-     */
+Do not output your reasoning.
+`;
 
     console.log('Mimi model:', MODEL);
     console.log('Mimi support language:', selectedLanguage);
+
+    /*
+    ============================================================
+    OPENROUTER REQUEST
+    ============================================================
+    */
 
     const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -406,6 +528,8 @@ Do not use bold around section names.
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          'HTTP-Referer': 'https://mimi-tutor.vercel.app',
+          'X-Title': 'Mimi French Tutor',
         },
 
         body: JSON.stringify({
@@ -432,15 +556,31 @@ French is the target language.
 
 Mimi speaks French.
 
+Answer the child's message before continuing the scenario.
+
+If the child asks a question, answer it.
+
+If the child makes a mistake, correct it gently.
+
+If the child gives an unexpected answer, acknowledge it, teach something useful from it, reconnect to the scenario, and then ask one simple question.
+
 MEANING must be in ${selectedLanguage}.
 
 OPTION translations must be in ${selectedLanguage}.
 
 VOCABULARY translations must be in ${selectedLanguage}.
 
-Ask exactly one French question.
-
 Use answer options only if they genuinely help the beginner.
+
+Do not output reasoning or analysis.
+
+Return only:
+
+DISPLAY:
+SPEECH:
+MEANING:
+OPTIONS:
+VOCABULARY:
 `
                 : `
 Start the conversation for the "${scenario}" scenario.
@@ -450,6 +590,16 @@ Introduce the topic naturally in simple French.
 Ask exactly one simple French question.
 
 Use answer options only if they genuinely help the beginner.
+
+Do not output reasoning or analysis.
+
+Return only:
+
+DISPLAY:
+SPEECH:
+MEANING:
+OPTIONS:
+VOCABULARY:
 `,
             },
           ],
@@ -462,10 +612,10 @@ Use answer options only if they genuinely help the beginner.
     );
 
     /*
-     * ==========================================================
-     * OPENROUTER RESPONSE
-     * ==========================================================
-     */
+    ============================================================
+    OPENROUTER RESPONSE
+    ============================================================
+    */
 
     const data = await response.json();
 
@@ -512,10 +662,10 @@ Use answer options only if they genuinely help the beginner.
     }
 
     /*
-     * ==========================================================
-     * CLEAN MODEL RESPONSE
-     * ==========================================================
-     */
+    ============================================================
+    CLEAN MODEL OUTPUT
+    ============================================================
+    */
 
     const cleanedReply = rawReply
       .replace(/```text/gi, '')
@@ -532,10 +682,10 @@ Use answer options only if they genuinely help the beginner.
       .trim();
 
     /*
-     * ==========================================================
-     * SECTION EXTRACTION
-     * ==========================================================
-     */
+    ============================================================
+    SECTION PARSER
+    ============================================================
+    */
 
     function getSection(
       text,
@@ -640,10 +790,10 @@ Use answer options only if they genuinely help the beginner.
     );
 
     /*
-     * ==========================================================
-     * CHECK DISPLAY
-     * ==========================================================
-     */
+    ============================================================
+    VALIDATE DISPLAY
+    ============================================================
+    */
 
     if (!display) {
       console.error(
@@ -667,10 +817,10 @@ Use answer options only if they genuinely help the beginner.
     }
 
     /*
-     * ==========================================================
-     * PARSE OPTIONS
-     * ==========================================================
-     */
+    ============================================================
+    PARSE OPTIONS
+    ============================================================
+    */
 
     let options = [];
 
@@ -716,10 +866,10 @@ Use answer options only if they genuinely help the beginner.
     }
 
     /*
-     * ==========================================================
-     * PARSE VOCABULARY
-     * ==========================================================
-     */
+    ============================================================
+    PARSE VOCABULARY
+    ============================================================
+    */
 
     let vocabulary = [];
 
@@ -765,19 +915,19 @@ Use answer options only if they genuinely help the beginner.
     }
 
     /*
-     * ==========================================================
-     * SPEECH FALLBACK
-     * ==========================================================
-     */
+    ============================================================
+    SPEECH FALLBACK
+    ============================================================
+    */
 
     const finalSpeechText =
       speechText || display;
 
     /*
-     * ==========================================================
-     * LOG RESULTS
-     * ==========================================================
-     */
+    ============================================================
+    LOGGING
+    ============================================================
+    */
 
     console.log(
       'Mimi parsed display:',
@@ -805,10 +955,10 @@ Use answer options only if they genuinely help the beginner.
     );
 
     /*
-     * ==========================================================
-     * RETURN TO PAGE.JSX
-     * ==========================================================
-     */
+    ============================================================
+    FRONTEND RESPONSE
+    ============================================================
+    */
 
     return Response.json({
       reply: display,
@@ -817,6 +967,7 @@ Use answer options only if they genuinely help the beginner.
       options,
       vocabulary,
     });
+
   } catch (error) {
     console.error(
       'Tutor API fatal error:',
