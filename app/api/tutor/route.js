@@ -625,7 +625,7 @@ VOCABULARY translations must be in ${selectedLanguage}.
      * behaviour harder to compare.
      *
      * Current OpenRouter model:
-     * inclusionai/ling-3.0-flash:free
+     * meta-llama/llama-3.3-70b-instruct:free
      */
 
     const response = await fetch(
@@ -718,7 +718,7 @@ ${conversationHistory}
 
     console.log(
       'Mimi model:',
-      'inclusionai/ling-3.0-flash:free'
+      "meta-llama/llama-3.3-70b-instruct:free";
     );
 
     console.log(
