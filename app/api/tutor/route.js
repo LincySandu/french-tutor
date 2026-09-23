@@ -692,26 +692,26 @@ ${conversationHistory}
      * ==========================================================
      */
 
-    const data = await response.json();
+  const data = await response.json();
 
-    if (!response.ok) {
-      console.error(
-        'OpenRouter HTTP error:',
-        response.status,
-        data
-      );
+if (!response.ok) {
+  console.error('=== OPENROUTER ERROR ===');
+  console.error('Status:', response.status);
+  console.error('Model:', MODEL);
+  console.error('Error body:', JSON.stringify(data, null, 2));
+  console.error('========================');
 
-      return Response.json(
-        {
-          error:
-            data?.error?.message ||
-            `OpenRouter request failed with status ${response.status}.`,
-        },
-        {
-          status: response.status,
-        }
-      );
+  return Response.json(
+    {
+      error:
+        data?.error?.message ||
+        `OpenRouter request failed with status ${response.status}.`,
+    },
+    {
+      status: response.status,
     }
+  );
+}
 
     const rawReply =
       data?.choices?.[0]?.message?.content?.trim() || '';
