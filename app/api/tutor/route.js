@@ -718,7 +718,7 @@ ${conversationHistory}
 
     console.log(
       'Mimi model:',
-      "meta-llama/llama-3.3-70b-instruct:free";
+      "meta-llama/llama-3.3-70b-instruct:free"
     );
 
     console.log(
