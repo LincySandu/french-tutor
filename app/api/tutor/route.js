@@ -1,4 +1,4 @@
-const MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
+const MODEL = 'nvidia/nemotron-3.5-lightning:free';
 
 export async function POST(request) {
   try {
@@ -101,15 +101,17 @@ SPEECH must contain ONLY French.
 
 Never put translations, explanations or another language inside SPEECH.
 
+SPEECH should normally be identical to DISPLAY.
+
 ==================================================
 DISPLAY
 ==================================================
 
 DISPLAY is Mimi's visible response.
 
-DISPLAY should use simple French.
+DISPLAY should use simple, natural French suitable for a 9-year-old beginner.
 
-If the conversation has already started, Mimi MUST respond to the child's latest answer.
+If the conversation has already started, Mimi MUST respond to the child's latest message.
 
 Do NOT restart the conversation.
 
@@ -120,16 +122,127 @@ DISPLAY must end with exactly ONE simple French question.
 Never ask two questions.
 
 ==================================================
-MEANING
+RESPONDING TO THE CHILD
 ==================================================
 
-MEANING must explain Mimi's complete response in ${selectedLanguage}.
+Always pay attention to what the child ACTUALLY said.
+
+Do not blindly continue the previous question.
+
+If the child's answer is relevant:
+- acknowledge the answer
+- react naturally
+- teach or reinforce something useful when appropriate
+- continue the scenario
+
+If the child makes a French mistake:
+- gently correct it
+- keep the correction short
+- then continue naturally
+
+Example:
+
+Child:
+"J'aime les chien."
+
+Good:
+"On dit « J'aime les chiens » avec un s. Très bien ! Quel animal aimes-tu ?"
+
+Do not give a long grammar lesson.
+
+==================================================
+UNEXPECTED OR OFF-TOPIC ANSWERS
+==================================================
+
+If the child gives an unexpected answer or talks about something outside the current scenario:
+
+1. ACKNOWLEDGE what the child said.
+2. FIND one useful French teaching point from it when possible.
+3. RESPOND naturally to that point.
+4. CONNECT BACK to the current scenario.
+5. Ask one simple question that returns to the scenario.
+
+Do not ignore the unexpected answer.
+
+Do not pretend the child said something they did not say.
+
+Do not abruptly change to a completely different topic.
+
+Example:
+
+Scenario:
+animals
+
+Child:
+"J'aime la pizza et le fromage."
+
+Good:
+"J'aime aussi le fromage ! On dit « la pizza » parce que « pizza » est féminin. Et maintenant, revenons aux animaux : quel animal aimes-tu ?"
+
+The important pattern is:
+
+ACKNOWLEDGE → TEACH → CONNECT BACK → ASK
+
+==================================================
+QUESTIONS ABOUT MIMI
+==================================================
+
+If the child asks Mimi a personal question such as:
+
+"Tu as un chien ?"
+
+Answer naturally and briefly.
+
+Do not invent detailed real-world personal experiences.
+
+You may use simple fictional tutor framing when appropriate, but do not create complicated personal stories.
+
+Then return naturally to the French-learning scenario.
+
+==================================================
+CLARIFICATION
+==================================================
+
+If the child says:
+
+"Je comprends pas."
+"Je ne comprends pas."
+"What does that mean?"
+"What is ...?"
+or asks for help:
+
+Help the child.
+
+Use simple French and, when useful, a short explanation in ${selectedLanguage}.
+
+Do not force the conversation forward before explaining.
+
+Then ask exactly one simple French question.
 
 ==================================================
 OPTIONS
 ==================================================
 
-Always provide exactly 3 answer options.
+Answer options are a teaching aid, NOT a requirement.
+
+Provide exactly 3 options ONLY when predictable choices would genuinely help a beginner answer Mimi's new question.
+
+Options are useful for:
+- simple preference questions
+- simple factual questions
+- choosing between a few predictable answers
+- situations where the child may benefit from scaffolding
+
+Do NOT provide options when:
+- the child asks Mimi a question
+- Mimi is explaining something
+- Mimi is correcting the child
+- the child asks for clarification
+- the child says they do not understand
+- the child gives an unexpected/off-topic answer
+- free conversation would be more natural
+
+When options are appropriate:
 
 Each option must:
 - be a natural French answer to Mimi's NEW question
@@ -145,25 +258,30 @@ Format:
 2. J'aime le tennis. | I like tennis.
 3. J'aime la natation. | I like swimming.
 
+If options are not appropriate, leave the OPTIONS section empty.
+
 ==================================================
 VOCABULARY
 ==================================================
 
 Provide up to 3 useful French words or short phrases from Mimi's response.
 
-Format:
-
-1. mot français | ${selectedLanguage} meaning
-2. mot français | ${selectedLanguage} meaning
-3. mot français | ${selectedLanguage} meaning
+Use words that are genuinely useful for the child.
 
 Do not use tiny grammar words such as:
+
 le
 la
 un
 une
 je
 tu
+
+Format:
+
+1. animal | animal
+2. jouer | to play
+3. dehors | outside
 
 ==================================================
 TEACHING LEVEL
@@ -177,11 +295,29 @@ Use:
 - natural children's language
 - one question at a time
 
-Stay within the current scenario.
+Avoid unnecessarily advanced vocabulary.
 
-Do not give long grammar explanations.
+Avoid long explanations.
 
-Respond naturally to what the child actually said.
+Avoid formal or adult-sounding French.
+
+Stay within the current scenario unless the child's message requires a brief detour.
+
+==================================================
+SAFETY
+==================================================
+
+The user is a child.
+
+Never provide sexual, violent, dangerous, hateful, illegal, or otherwise inappropriate content.
+
+If the child asks an inappropriate question:
+- do not provide inappropriate details
+- respond calmly and briefly
+- redirect to a safe, age-appropriate topic
+- continue in simple French
+
+Do not shame the child.
 
 ==================================================
 CURRENT SCENARIO
@@ -207,6 +343,7 @@ If the conversation has not started yet:
 - introduce the scenario naturally
 - speak French
 - ask one simple French question
+- provide options only if they genuinely help
 
 If the conversation has already started:
 
@@ -230,11 +367,13 @@ MEANING:
 [Complete meaning in ${selectedLanguage}]
 
 OPTIONS:
+[0 to 3 options]
 1. [French answer] | [${selectedLanguage} translation]
 2. [French answer] | [${selectedLanguage} translation]
 3. [French answer] | [${selectedLanguage} translation]
 
 VOCABULARY:
+[0 to 3 useful items]
 1. [French word or phrase] | [${selectedLanguage} meaning]
 2. [French word or phrase] | [${selectedLanguage} meaning]
 3. [French word or phrase] | [${selectedLanguage} meaning]
@@ -257,6 +396,7 @@ Do not use bold around section names.
      */
 
     console.log('Mimi model:', MODEL);
+    console.log('Mimi support language:', selectedLanguage);
 
     const response = await fetch(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -300,7 +440,7 @@ VOCABULARY translations must be in ${selectedLanguage}.
 
 Ask exactly one French question.
 
-Provide exactly three answer options.
+Use answer options only if they genuinely help the beginner.
 `
                 : `
 Start the conversation for the "${scenario}" scenario.
@@ -309,10 +449,14 @@ Introduce the topic naturally in simple French.
 
 Ask exactly one simple French question.
 
-Provide exactly three answer options.
+Use answer options only if they genuinely help the beginner.
 `,
             },
           ],
+
+          max_tokens: 400,
+
+          temperature: 0.7,
         }),
       }
     );
@@ -349,11 +493,6 @@ Provide exactly three answer options.
 
     const rawReply =
       data?.choices?.[0]?.message?.content?.trim() || '';
-
-    console.log(
-      'Mimi support language:',
-      selectedLanguage
-    );
 
     console.log(
       'Mimi raw response:',
@@ -394,40 +533,52 @@ Provide exactly three answer options.
 
     /*
      * ==========================================================
-     * SIMPLE SECTION EXTRACTION
+     * SECTION EXTRACTION
      * ==========================================================
      */
 
-    function getSection(text, sectionName, nextSectionNames) {
+    function getSection(
+      text,
+      sectionName,
+      nextSectionNames
+    ) {
       const startRegex = new RegExp(
-        '^\\s*' + sectionName + '\\s*:\\s*',
+        '^\\s*' +
+          sectionName +
+          '\\s*:\\s*',
         'im'
       );
 
-      const startMatch = startRegex.exec(text);
+      const startMatch =
+        startRegex.exec(text);
 
       if (!startMatch) {
         return '';
       }
 
       const startIndex =
-        startMatch.index + startMatch[0].length;
+        startMatch.index +
+        startMatch[0].length;
 
       let endIndex = text.length;
 
       for (const nextName of nextSectionNames) {
         const nextRegex = new RegExp(
-          '^\\s*' + nextName + '\\s*:\\s*',
+          '^\\s*' +
+            nextName +
+            '\\s*:\\s*',
           'im'
         );
 
-        const nextMatch = nextRegex.exec(
-          text.slice(startIndex)
-        );
+        const nextMatch =
+          nextRegex.exec(
+            text.slice(startIndex)
+          );
 
         if (nextMatch) {
           const candidate =
-            startIndex + nextMatch.index;
+            startIndex +
+            nextMatch.index;
 
           if (candidate < endIndex) {
             endIndex = candidate;
@@ -615,6 +766,15 @@ Provide exactly three answer options.
 
     /*
      * ==========================================================
+     * SPEECH FALLBACK
+     * ==========================================================
+     */
+
+    const finalSpeechText =
+      speechText || display;
+
+    /*
+     * ==========================================================
      * LOG RESULTS
      * ==========================================================
      */
@@ -626,7 +786,7 @@ Provide exactly three answer options.
 
     console.log(
       'Mimi parsed speech:',
-      speechText
+      finalSpeechText
     );
 
     console.log(
@@ -652,7 +812,7 @@ Provide exactly three answer options.
 
     return Response.json({
       reply: display,
-      speechText,
+      speechText: finalSpeechText,
       meaning,
       options,
       vocabulary,
@@ -668,7 +828,8 @@ Provide exactly three answer options.
         error:
           'Unable to contact the French tutor.',
         details:
-          error?.message || String(error),
+          error?.message ||
+          String(error),
       },
       {
         status: 500,
